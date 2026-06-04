@@ -1,0 +1,159 @@
+{{--
+    Komponen reusable: Hasil Analisis RBS
+    Penggunaan: @include('rbs.partials._hasil_rbs', ['blokLahan' => $blokLahan])
+--}}
+
+@if($rbs = $blokLahan->rekomendasiRbsTerbaru)
+
+@php
+$warna = match($rbs->status_kebutuhan_dominan) {
+    'Darurat' => [
+        'bg'     => 'bg-red-50',
+        'border' => 'border-red-200',
+        'badge'  => 'bg-red-100 text-red-800 ring-1 ring-red-300',
+        'icon'   => '🚨',
+        'title'  => 'text-red-800',
+    ],
+    'Segera' => [
+        'bg'     => 'bg-orange-50',
+        'border' => 'border-orange-200',
+        'badge'  => 'bg-orange-100 text-orange-800 ring-1 ring-orange-300',
+        'icon'   => '⚠️',
+        'title'  => 'text-orange-800',
+    ],
+    'Normal' => [
+        'bg'     => 'bg-emerald-50',
+        'border' => 'border-emerald-200',
+        'badge'  => 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300',
+        'icon'   => '✅',
+        'title'  => 'text-emerald-800',
+    ],
+    'Tunda' => [
+        'bg'     => 'bg-slate-50',
+        'border' => 'border-slate-200',
+        'badge'  => 'bg-slate-100 text-slate-700 ring-1 ring-slate-300',
+        'icon'   => '⏸️',
+        'title'  => 'text-slate-700',
+    ],
+    default => [
+        'bg'     => 'bg-blue-50',
+        'border' => 'border-blue-200',
+        'badge'  => 'bg-blue-100 text-blue-800 ring-1 ring-blue-300',
+        'icon'   => 'ℹ️',
+        'title'  => 'text-blue-800',
+    ],
+};
+@endphp
+
+<div class="{{ $warna['bg'] }} {{ $warna['border'] }} border rounded-2xl p-5 space-y-4">
+
+    {{-- Header Status --}}
+    <div class="flex items-start justify-between gap-3">
+        <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm">
+            <span class="text-base">{{ $warna['icon'] }}</span>
+            Hasil Analisis RBS
+        </h3>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $warna['badge'] }}">
+                {{ $rbs->status_kebutuhan_dominan }}
+            </span>
+            <span class="text-xs text-slate-400">{{ $rbs->tanggal_analisis->format('d M Y') }}</span>
+        </div>
+    </div>
+
+    {{-- Masalah Teridentifikasi --}}
+    @if($rbs->masalah_teridentifikasi && count($rbs->masalah_teridentifikasi) > 0)
+    <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Masalah Teridentifikasi</p>
+        <div class="flex flex-wrap gap-1.5">
+            @foreach($rbs->masalah_teridentifikasi as $masalah)
+            <span class="inline-flex items-center px-2.5 py-1 bg-white border border-slate-200 text-slate-700 text-xs rounded-full shadow-sm">
+                {{ $masalah }}
+            </span>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    {{-- Rekomendasi Pupuk --}}
+    @if($rbs->rekomendasi_pupuk && count($rbs->rekomendasi_pupuk) > 0)
+    <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Rekomendasi Pemupukan</p>
+        <div class="space-y-2">
+            @foreach($rbs->rekomendasi_pupuk as $pupuk)
+            <div class="bg-white rounded-xl border border-slate-200 p-3 shadow-sm">
+                <div class="flex items-start justify-between gap-2 mb-1">
+                    <span class="font-semibold text-emerald-700 text-sm">🌿 {{ $pupuk['jenis_utama'] }}</span>
+                    @if(!empty($pupuk['jenis_pendukung']))
+                    <span class="text-xs text-slate-400 flex-shrink-0">+ {{ $pupuk['jenis_pendukung'] }}</span>
+                    @endif
+                </div>
+                @if(!empty($pupuk['dosis']))
+                <p class="text-xs text-slate-600"><span class="font-medium">Dosis:</span> {{ $pupuk['dosis'] }}</p>
+                @endif
+                @if(!empty($pupuk['metode']))
+                <p class="text-xs text-slate-600 mt-0.5"><span class="font-medium">Cara:</span> {{ $pupuk['metode'] }}</p>
+                @endif
+                @if(!empty($pupuk['waktu']))
+                <p class="text-xs text-slate-500 mt-0.5"><span class="font-medium">Waktu:</span> {{ $pupuk['waktu'] }}</p>
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    {{-- Saran Tindakan --}}
+    @if($rbs->saran_tindakan_utama)
+    <div class="bg-white rounded-xl border border-slate-200 p-3">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Saran Tindakan</p>
+        <p class="text-xs text-slate-700 leading-relaxed">{{ $rbs->saran_tindakan_utama }}</p>
+    </div>
+    @endif
+
+    {{-- Footer --}}
+    <div class="flex items-center justify-between pt-1">
+        <p class="text-xs text-slate-400">
+            {{ $rbs->jumlah_rule_terpicu }} rule terpicu · {{ $rbs->tanggal_analisis->diffForHumans() }}
+        </p>
+        <a href="{{ route('rbs.detail', $blokLahan) }}"
+           class="text-xs text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
+            Lihat detail →
+        </a>
+    </div>
+</div>
+
+@else
+<div class="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-6 text-center">
+    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+        <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+    </div>
+    <p class="text-slate-500 text-sm font-medium">Belum ada analisis RBS</p>
+    <p class="text-xs text-slate-400 mt-1 mb-3">
+        @if(!$blokLahan->kondisiTerbaru)
+            Input data kondisi lahan terlebih dahulu sebelum menjalankan analisis.
+        @else
+            Data kondisi tersedia. Klik tombol di bawah untuk memulai analisis.
+        @endif
+    </p>
+    @if($blokLahan->kondisiTerbaru)
+        <form action="{{ route('rbs.analisis', $blokLahan) }}" method="POST">
+            @csrf
+            <button type="submit"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-xl transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Jalankan Analisis Sekarang
+            </button>
+        </form>
+    @else
+        <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blokLahan->id]) }}"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-xl transition-colors">
+            + Input Kondisi Lahan
+        </a>
+    @endif
+</div>
+@endif
