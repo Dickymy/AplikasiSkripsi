@@ -27,36 +27,31 @@
 
 @section('content')
 
-{{-- Stats Cards --}}
-<div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+{{-- Stats Cards (akan di-update via JS saat filter berubah) --}}
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6" id="stats-cards">
     <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
         <p class="text-xs text-slate-500 mb-1">Total Blok Lahan</p>
-        <p class="text-2xl font-bold text-slate-900">{{ $stats['total_blok'] }}</p>
+        <p class="text-2xl font-bold text-slate-900" id="stat-total-blok">{{ $stats['total_blok'] }}</p>
         <p class="text-xs text-slate-400 mt-1">blok terdaftar</p>
     </div>
     <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
         <p class="text-xs text-slate-500 mb-1">Total Luas</p>
-        <p class="text-2xl font-bold text-emerald-600">{{ number_format($stats['total_luas'], 2) }}</p>
+        <p class="text-2xl font-bold text-emerald-600" id="stat-total-luas">{{ number_format($stats['total_luas'], 2) }}</p>
         <p class="text-xs text-slate-400 mt-1">hektar</p>
     </div>
     <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-        <p class="text-xs text-slate-500 mb-1">Sudah Dianalisis SPK</p>
-        <p class="text-2xl font-bold text-blue-600">{{ $stats['sudah_analisis'] }}</p>
+        <p class="text-xs text-slate-500 mb-1">Sudah Dianalisis</p>
+        <p class="text-2xl font-bold text-blue-600" id="stat-sudah-analisis">{{ $stats['sudah_analisis'] }}</p>
         <p class="text-xs text-slate-400 mt-1">dari {{ $stats['total_blok'] }} blok</p>
     </div>
     <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-l-4 border-l-red-500">
-        <p class="text-xs text-slate-500 mb-1">Segera Dipupuk (SPK)</p>
-        <p class="text-2xl font-bold text-red-600">{{ $stats['segera_pupuk'] }}</p>
-        <p class="text-xs text-slate-400 mt-1">perlu perhatian</p>
-    </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-l-4 border-l-red-700">
-        <p class="text-xs text-slate-500 mb-1">RBS Darurat</p>
-        <p class="text-2xl font-bold text-red-700">{{ $stats['rbs_darurat'] }}</p>
+        <p class="text-xs text-slate-500 mb-1">Status Darurat</p>
+        <p class="text-2xl font-bold text-red-600" id="stat-darurat">{{ $stats['darurat'] }}</p>
         <p class="text-xs text-slate-400 mt-1">penanganan segera</p>
     </div>
     <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-l-4 border-l-orange-400">
-        <p class="text-xs text-slate-500 mb-1">RBS Segera</p>
-        <p class="text-2xl font-bold text-orange-500">{{ $stats['rbs_segera'] }}</p>
+        <p class="text-xs text-slate-500 mb-1">Status Segera</p>
+        <p class="text-2xl font-bold text-orange-500" id="stat-segera">{{ $stats['segera'] }}</p>
         <p class="text-xs text-slate-400 mt-1">tindakan cepat</p>
     </div>
 </div>
@@ -168,6 +163,20 @@ pemilikList.forEach(pemilik => {
 
 let mapLayers = [];
 
+function updateStats(data) {
+    var totalBlok = data.length;
+    var totalLuas = data.reduce(function(sum, b) { return sum + (b.luas_ha || 0); }, 0);
+    var sudahAnalisis = data.filter(function(b) { return b.status_rbs && b.status_rbs !== 'Belum Dianalisis'; }).length;
+    var darurat = data.filter(function(b) { return b.status_rbs === 'Darurat'; }).length;
+    var segera = data.filter(function(b) { return b.status_rbs === 'Segera'; }).length;
+
+    document.getElementById('stat-total-blok').textContent = totalBlok;
+    document.getElementById('stat-total-luas').textContent = totalLuas.toFixed(2);
+    document.getElementById('stat-sudah-analisis').textContent = sudahAnalisis;
+    document.getElementById('stat-darurat').textContent = darurat;
+    document.getElementById('stat-segera').textContent = segera;
+}
+
 function buildPopupContent(blok) {
     const statusRbs    = blok.status_rbs    || 'Belum Dianalisis';
     const masalahRbs   = blok.masalah_rbs   || [];
@@ -239,6 +248,9 @@ function renderMapLayers(selectedPemilik = '') {
     const filteredData = selectedPemilik
         ? mapData.filter(blok => blok.nama_pemilik === selectedPemilik)
         : mapData;
+
+    // Update stats cards berdasarkan data yang difilter
+    updateStats(filteredData);
 
     filteredData.forEach(blok => {
         if (!blok.geojson) return;

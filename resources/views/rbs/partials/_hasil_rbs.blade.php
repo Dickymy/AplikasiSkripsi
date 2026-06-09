@@ -111,6 +111,22 @@ $warna = match($rbs->status_kebutuhan_dominan) {
     </div>
     @endif
 
+    {{-- Catatan Dosis Kontekstual --}}
+    @if($rbs->catatan_dosis)
+    @php
+        $catatanStyle = match($rbs->status_kebutuhan_dominan) {
+            'Darurat' => 'bg-red-50 border-red-200 text-red-800',
+            'Tunda'   => 'bg-amber-50 border-amber-200 text-amber-800',
+            'Segera'  => 'bg-blue-50 border-blue-200 text-blue-800',
+            default   => 'bg-emerald-50 border-emerald-200 text-emerald-800',
+        };
+    @endphp
+    <div class="{{ $catatanStyle }} border rounded-xl p-3">
+        <p class="text-xs font-semibold uppercase tracking-wider mb-1 opacity-70">Catatan Aplikasi Dosis</p>
+        <p class="text-xs leading-relaxed font-medium">{{ $rbs->catatan_dosis }}</p>
+    </div>
+    @endif
+
     {{-- Footer --}}
     <div class="flex items-center justify-between pt-1">
         <p class="text-xs text-slate-400">

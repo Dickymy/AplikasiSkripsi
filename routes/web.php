@@ -1,14 +1,13 @@
 <?php
 
+use App\Http\Controllers\AnggotaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlokLahanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KondisiLahanController;
-use App\Http\Controllers\KriteriaLahanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\RbsController;
 use App\Http\Controllers\RuleBaseController;
-use App\Http\Controllers\SpkController;
 use App\Http\Middleware\AdminAuthenticated;
 use Illuminate\Support\Facades\Route;
 
@@ -29,38 +28,30 @@ Route::middleware(AdminAuthenticated::class)->group(function () {
     // Dashboard (WebGIS)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Manajemen Blok Lahan
+    // Anggota Kelompok Tani
+    Route::resource('anggota', AnggotaController::class)->except(['show']);
+
+    // Manajemen Blok Lahan (termasuk kriteria agronomis)
     Route::resource('blok-lahan', BlokLahanController::class);
-
-    // Kriteria Lahan
-    Route::resource('kriteria-lahan', KriteriaLahanController::class)->except(['show']);
-
-    // Rule Base
-    Route::resource('rule-base', RuleBaseController::class)->except(['show']);
-
-    // SPK Forward Chaining
-    Route::prefix('spk')->name('spk.')->group(function () {
-        Route::get('/', [SpkController::class, 'index'])->name('index');
-        Route::post('/analisis/{blokLahan}', [SpkController::class, 'analisis'])->name('analisis');
-        Route::post('/analisis-semua', [SpkController::class, 'analisisSemua'])->name('analisis-semua');
-        Route::get('/detail/{blokLahan}', [SpkController::class, 'detail'])->name('detail');
-    });
-
-    // Laporan
-    Route::prefix('laporan')->name('laporan.')->group(function () {
-        Route::get('/', [LaporanController::class, 'index'])->name('index');
-        Route::get('/{rekomendasiSpk}', [LaporanController::class, 'show'])->name('show');
-    });
 
     // Kondisi Lahan
     Route::resource('kondisi-lahan', KondisiLahanController::class)->except(['show']);
 
-    // RBS (Rule-Based System)
+    // Rule Base RBS
+    Route::resource('rule-base', RuleBaseController::class)->except(['show']);
+
+    // Analisis RBS (Rule-Based System) — Satu-satunya mesin analisis
     Route::prefix('rbs')->name('rbs.')->group(function () {
         Route::get('/', [RbsController::class, 'index'])->name('index');
         Route::post('/analisis/{blokLahan}', [RbsController::class, 'analisis'])->name('analisis');
         Route::post('/analisis-semua', [RbsController::class, 'analisisSemua'])->name('analisisSemua');
         Route::get('/detail/{blokLahan}', [RbsController::class, 'detail'])->name('detail');
+    });
+
+    // Laporan (berbasis rekomendasi RBS)
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('/', [LaporanController::class, 'index'])->name('index');
+        Route::get('/{rekomendasiRbs}', [LaporanController::class, 'show'])->name('show');
     });
 
     // API endpoint — RBS popup WebGIS

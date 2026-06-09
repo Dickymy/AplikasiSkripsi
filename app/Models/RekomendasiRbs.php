@@ -20,6 +20,11 @@ class RekomendasiRbs extends Model
         'saran_tindakan_utama',
         'status_kebutuhan_dominan',
         'jumlah_rule_terpicu',
+        'dosis_urea',
+        'dosis_kcl',
+        'total_urea',
+        'total_kcl',
+        'catatan_dosis',
     ];
 
     protected function casts(): array
@@ -29,6 +34,10 @@ class RekomendasiRbs extends Model
             'rules_terpicu'           => 'array',
             'masalah_teridentifikasi' => 'array',
             'rekomendasi_pupuk'       => 'array',
+            'dosis_urea'              => 'double',
+            'dosis_kcl'               => 'double',
+            'total_urea'              => 'double',
+            'total_kcl'               => 'double',
         ];
     }
 
@@ -57,5 +66,21 @@ class RekomendasiRbs extends Model
             'Tunda'   => 'gray',
             default   => 'blue',
         };
+    }
+
+    /**
+     * Hitung kebutuhan karung Urea (1 karung = 50 kg)
+     */
+    public function getKarungUreaAttribute(): int
+    {
+        return $this->total_urea ? (int) ceil($this->total_urea / 50) : 0;
+    }
+
+    /**
+     * Hitung kebutuhan karung KCl (1 karung = 50 kg)
+     */
+    public function getKarungKclAttribute(): int
+    {
+        return $this->total_kcl ? (int) ceil($this->total_kcl / 50) : 0;
     }
 }

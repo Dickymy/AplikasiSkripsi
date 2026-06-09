@@ -2,50 +2,58 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RekomendasiSpk;
+use App\Models\Anggota;
+use App\Models\RekomendasiRbs;
 use Illuminate\Http\Request;
 
 class LaporanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = RekomendasiSpk::with(['blokLahan', 'admin'])
+        $query = RekomendasiRbs::with(['blokLahan.anggota', 'admin', 'kondisiLahan'])
             ->latest('tanggal_analisis');
 
         // Filter by status
-        if ($request->filled('status_akhir')) {
-            $query->where('status_akhir', $request->status_akhir);
+        if ($request->filled('status_kebutuhan_dominan')) {
+            $query->where('status_kebutuhan_dominan', $request->status_kebutuhan_dominan);
         }
 
-        // Filter by pemilik lahan
-        if ($request->filled('nama_pemilik')) {
+        // Filter by anggota/pemilik lahan
+        if ($request->filled('anggota_id')) {
             $query->whereHas('blokLahan', function ($q) use ($request) {
-                $q->where('nama_pemilik', $request->nama_pemilik);
+                $q->where('anggota_id', $request->anggota_id);
             });
+        }
+
+        // Filter by specific blok lahan
+        if ($request->filled('blok_lahan_id')) {
+            $query->where('blok_lahan_id', $request->blok_lahan_id);
         }
 
         $rekap = $query->get();
 
-        // Summary stats (only for filtered data)
-        $totalUrea   = $rekap->sum('total_urea');
-        $totalKcl    = $rekap->sum('total_kcl');
-        $karungUrea  = (int) ceil($totalUrea / 50);
-        $karungKcl   = (int) ceil($totalKcl / 50);
+        // Summary stats
+        $totalUrea  = $rekap->sum('total_urea');
+        $totalKcl   = $rekap->sum('total_kcl');
+        $karungUrea = $totalUrea > 0 ? (int) ceil($totalUrea / 50) : 0;
+        $karungKcl  = $totalKcl > 0 ? (int) ceil($totalKcl / 50) : 0;
 
-        // Daftar unik nama pemilik lahan untuk dropdown filter
-        $daftarPemilik = \App\Models\BlokLahan::select('nama_pemilik')
-            ->distinct()
-            ->orderBy('nama_pemilik')
-            ->pluck('nama_pemilik');
+        // Daftar anggota untuk dropdown filter
+        $anggotas = Anggota::orderBy('nama')->get();
+
+        // Blok options for filter (scoped by anggota if selected)
+        $blokFilter = $request->filled('anggota_id')
+            ? \App\Models\BlokLahan::where('anggota_id', $request->anggota_id)->orderBy('nama_blok')->get()
+            : collect();
 
         return view('laporan.index', compact(
-            'rekap', 'totalUrea', 'totalKcl', 'karungUrea', 'karungKcl', 'daftarPemilik'
+            'rekap', 'totalUrea', 'totalKcl', 'karungUrea', 'karungKcl', 'anggotas', 'blokFilter'
         ));
     }
 
-    public function show(RekomendasiSpk $rekomendasiSpk)
+    public function show(RekomendasiRbs $rekomendasiRbs)
     {
-        $rekomendasiSpk->load(['blokLahan.kriteriaLahan', 'admin']);
-        return view('laporan.show', compact('rekomendasiSpk'));
+        $rekomendasiRbs->load(['blokLahan.anggota', 'kondisiLahan', 'admin']);
+        return view('laporan.show', compact('rekomendasiRbs'));
     }
 }

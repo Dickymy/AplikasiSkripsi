@@ -23,8 +23,8 @@ class RbsService
             throw new \Exception("Data kondisi lahan belum tersedia untuk blok '{$blok->nama_blok}'.");
         }
 
-        // 2. Ambil kategori umur dari KriteriaLahan (gunakan sistem existing)
-        $kategoriUmur = $blok->kriteriaLahan?->kategori_umur ?? null;
+        // 2. Ambil kategori umur langsung dari blok (kriteria terintegrasi)
+        $kategoriUmur = $blok->kategori_umur;
 
         // 3. Ambil semua rule aktif, urutkan dari prioritas tertinggi (nilai terkecil = lebih penting)
         $rules = RuleBaseLanjutan::aktif()->orderBy('prioritas')->get();
@@ -52,7 +52,7 @@ class RbsService
     public function analisisSemua(): array
     {
         $blokLahans = BlokLahan::whereHas('kondisiLahans')
-            ->with(['kondisiTerbaru', 'kriteriaLahan'])
+            ->with(['kondisiTerbaru'])
             ->get();
         $results = [];
         $errors  = [];
@@ -178,6 +178,12 @@ class RbsService
             ->pluck('saran_tindakan')
             ->implode(' | ');
 
+        // Hitung dosis numerik berdasarkan kriteria lahan (integrasi Forward Chaining)
+        $dosis = $this->hitungDosisStandar($blok);
+
+        // Tentukan catatan dosis berdasarkan status
+        $catatanDosis = $this->tentukanCatatanDosis($statusDominan, $masalah);
+
         // Simpan ke database (satu record aktif per blok)
         $hasil = RekomendasiRbs::updateOrCreate(
             ['blok_lahan_id' => $blok->id],
@@ -197,6 +203,11 @@ class RbsService
                 'saran_tindakan_utama'    => $saranUtama,
                 'status_kebutuhan_dominan' => $statusDominan,
                 'jumlah_rule_terpicu'     => count($rules),
+                'dosis_urea'              => $dosis['dosis_urea'],
+                'dosis_kcl'               => $dosis['dosis_kcl'],
+                'total_urea'              => $dosis['total_urea'],
+                'total_kcl'               => $dosis['total_kcl'],
+                'catatan_dosis'           => $catatanDosis,
             ]
         );
 
@@ -208,6 +219,8 @@ class RbsService
      */
     private function hasilNormal(BlokLahan $blok, KondisiLahan $kondisi): array
     {
+        $dosis = $this->hitungDosisStandar($blok);
+
         $hasil = RekomendasiRbs::updateOrCreate(
             ['blok_lahan_id' => $blok->id],
             [
@@ -220,9 +233,124 @@ class RbsService
                 'saran_tindakan_utama'    => 'Lanjutkan program pemupukan standar. Kondisi lahan dalam batas normal.',
                 'status_kebutuhan_dominan' => 'Normal',
                 'jumlah_rule_terpicu'     => 0,
+                'dosis_urea'              => $dosis['dosis_urea'],
+                'dosis_kcl'               => $dosis['dosis_kcl'],
+                'total_urea'              => $dosis['total_urea'],
+                'total_kcl'               => $dosis['total_kcl'],
+                'catatan_dosis'           => 'Kondisi lahan normal. Dosis dapat diaplikasikan sesuai jadwal pemupukan standar.',
             ]
         );
 
         return ['sukses' => true, 'rekomendasi' => $hasil];
+    }
+
+    /**
+     * Tentukan catatan kontekstual untuk dosis berdasarkan status dan masalah.
+     */
+    private function tentukanCatatanDosis(string $statusDominan, array $masalah): string
+    {
+        $masalahStr = implode(' ', $masalah);
+
+        if ($statusDominan === 'Tunda') {
+            // Cek alasan spesifik tunda
+            if (str_contains($masalahStr, 'Tergenang') || str_contains($masalahStr, 'Waterlogging')) {
+                return 'TUNDA APLIKASI PUPUK TANAH. Lahan tergenang menyebabkan leaching. Perbaiki drainase terlebih dahulu, baru aplikasikan dosis ini setelah kondisi normal.';
+            }
+            if (str_contains($masalahStr, 'Kekeringan') || str_contains($masalahStr, 'Kemarau')) {
+                return 'TUNDA PUPUK KIMIA. Kondisi terlalu kering — pupuk tidak akan terlarut dan berisiko membakar akar. Tunggu hujan turun, baru aplikasikan dosis ini.';
+            }
+            if (str_contains($masalahStr, 'Tua Renta')) {
+                return 'Efisiensi penyerapan hara sangat rendah pada tanaman tua. Pertimbangkan pengurangan dosis 40-50% atau evaluasi replanting.';
+            }
+            return 'Pemupukan ditunda sampai kondisi lahan diperbaiki. Dosis ini dapat diaplikasikan setelah masalah teratasi.';
+        }
+
+        if ($statusDominan === 'Darurat') {
+            if (str_contains($masalahStr, 'pH') || str_contains($masalahStr, 'Masam')) {
+                return 'PERHATIAN: Jangan aplikasikan Urea/KCl sebelum pH tanah dinaikkan ke 5.0+. Lakukan pengapuran (Dolomit) terlebih dahulu. Dosis ini berlaku setelah pH normal.';
+            }
+            if (str_contains($masalahStr, 'Busuk') || str_contains($masalahStr, 'Ganoderma')) {
+                return 'PRIORITASKAN penanganan penyakit terlebih dahulu. Dosis pupuk standar ini berlaku setelah kondisi tanaman membaik.';
+            }
+            return 'Status DARURAT — atasi masalah utama terlebih dahulu. Dosis ini adalah kebutuhan standar yang berlaku setelah kondisi diperbaiki.';
+        }
+
+        if ($statusDominan === 'Segera') {
+            return 'Segera aplikasikan dosis pupuk standar ini bersamaan dengan penanganan masalah yang teridentifikasi.';
+        }
+
+        return 'Kondisi lahan normal. Dosis dapat diaplikasikan sesuai jadwal pemupukan standar.';
+    }
+
+    /**
+     * Hitung dosis standar Urea & KCl berdasarkan kriteria lahan (umur, tanah, topografi).
+     */
+    private function hitungDosisStandar(BlokLahan $blok): array
+    {
+        if (!$blok->tahun_tanam || !$blok->jenis_tanah || !$blok->topografi) {
+            return ['dosis_urea' => null, 'dosis_kcl' => null, 'total_urea' => null, 'total_kcl' => null];
+        }
+
+        $umur = now()->year - $blok->tahun_tanam;
+        $kategoriUmur = $this->tentukanKategoriUmur($umur);
+
+        // Base dosis per kategori umur (referensi PPKS)
+        $baseDosis = match($kategoriUmur) {
+            'Belum Menghasilkan' => ['urea' => 0.5,  'kcl' => 0.5],
+            'Remaja'             => ['urea' => 1.5,  'kcl' => 1.0],
+            'Menghasilkan Muda'  => ['urea' => 2.25, 'kcl' => 1.75],
+            'Menghasilkan Tua'   => ['urea' => 2.75, 'kcl' => 2.25],
+            'Tua Renta'          => ['urea' => 1.5,  'kcl' => 1.5],
+            default              => ['urea' => 1.5,  'kcl' => 1.0],
+        };
+
+        // Multiplier jenis tanah
+        $multiplierTanah = match($blok->jenis_tanah) {
+            'Tanah Lempung'                     => ['urea' => 1.0, 'kcl' => 1.0],
+            'Tanah Lempung Berpasir'            => ['urea' => 1.1, 'kcl' => 1.1],
+            'Tanah Berpasir'                    => ['urea' => 1.3, 'kcl' => 1.4],
+            'Tanah Liat'                        => ['urea' => 0.9, 'kcl' => 0.9],
+            'Tanah Gambut'                      => ['urea' => 0.6, 'kcl' => 1.5],
+            'Tanah Aluvial'                     => ['urea' => 1.0, 'kcl' => 1.0],
+            'Tanah Podsolik Merah Kuning (PMK)' => ['urea' => 1.1, 'kcl' => 1.2],
+            'Tanah Laterit'                     => ['urea' => 1.1, 'kcl' => 1.2],
+            'Tanah Berbatu'                     => ['urea' => 1.2, 'kcl' => 1.2],
+            default                             => ['urea' => 1.0, 'kcl' => 1.0],
+        };
+
+        // Multiplier topografi
+        $multiplierTopo = match($blok->topografi) {
+            'Datar 0-15°'         => ['urea' => 1.0, 'kcl' => 1.0],
+            'Bergelombang 15-30°' => ['urea' => 1.1, 'kcl' => 1.1],
+            'Curam >30°'          => ['urea' => 1.2, 'kcl' => 1.2],
+            default               => ['urea' => 1.0, 'kcl' => 1.0],
+        };
+
+        // Hitung dosis akhir (bulatkan ke 0.25 terdekat)
+        $dosisUrea = round($baseDosis['urea'] * $multiplierTanah['urea'] * $multiplierTopo['urea'] * 4) / 4;
+        $dosisKcl  = round($baseDosis['kcl']  * $multiplierTanah['kcl']  * $multiplierTopo['kcl'] * 4) / 4;
+
+        // Hitung total kebutuhan
+        $totalUrea = $dosisUrea * $blok->sph * $blok->luas_ha;
+        $totalKcl  = $dosisKcl  * $blok->sph * $blok->luas_ha;
+
+        return [
+            'dosis_urea' => $dosisUrea,
+            'dosis_kcl'  => $dosisKcl,
+            'total_urea' => $totalUrea,
+            'total_kcl'  => $totalKcl,
+        ];
+    }
+
+    /**
+     * Tentukan kategori umur tanaman kelapa sawit.
+     */
+    private function tentukanKategoriUmur(int $umur): string
+    {
+        if ($umur < 3) return 'Belum Menghasilkan';
+        if ($umur <= 8) return 'Remaja';
+        if ($umur <= 14) return 'Menghasilkan Muda';
+        if ($umur <= 25) return 'Menghasilkan Tua';
+        return 'Tua Renta';
     }
 }

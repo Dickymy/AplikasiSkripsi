@@ -13,17 +13,35 @@ class RbsController extends Controller
     public function __construct(private RbsService $rbsService) {}
 
     /**
-     * Daftar blok + status analisis RBS.
+     * Daftar blok + status analisis RBS (dengan filter anggota).
      */
-    public function index()
+    public function index(Request $request)
     {
-        $bloks = BlokLahan::with([
-            'kriteriaLahan',
+        $query = BlokLahan::with([
+            'anggota',
             'kondisiTerbaru',
             'rekomendasiRbsTerbaru',
-        ])->latest()->get();
+        ]);
 
-        return view('rbs.index', compact('bloks'));
+        // Filter by anggota
+        if ($request->filled('anggota_id')) {
+            $query->where('anggota_id', $request->anggota_id);
+        }
+
+        // Filter by specific blok
+        if ($request->filled('blok_lahan_id')) {
+            $query->where('id', $request->blok_lahan_id);
+        }
+
+        $bloks = $query->latest()->get();
+        $anggotas = \App\Models\Anggota::orderBy('nama')->get();
+
+        // Blok options for filter (scoped by anggota if selected)
+        $blokFilter = $request->filled('anggota_id')
+            ? BlokLahan::where('anggota_id', $request->anggota_id)->orderBy('nama_blok')->get()
+            : collect();
+
+        return view('rbs.index', compact('bloks', 'anggotas', 'blokFilter'));
     }
 
     /**
@@ -66,7 +84,6 @@ class RbsController extends Controller
     public function detail(BlokLahan $blokLahan)
     {
         $blokLahan->load([
-            'kriteriaLahan',
             'kondisiTerbaru',
             'kondisiLahans' => fn($q) => $q->latest('tanggal_observasi')->limit(5),
             'rekomendasiRbsTerbaru.kondisiLahan',

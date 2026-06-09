@@ -45,23 +45,23 @@
                     <span class="text-slate-500">SPH</span>
                     <span class="text-slate-700">{{ $blokLahan->sph }} pokok/Ha</span>
                 </div>
-                @if($blokLahan->kriteriaLahan)
+                @if($blokLahan->tahun_tanam)
                 <div class="pt-2 border-t border-slate-100">
                     <div class="flex justify-between">
                         <span class="text-slate-500">Tahun Tanam</span>
-                        <span class="text-slate-700">{{ $blokLahan->kriteriaLahan->tahun_tanam }}</span>
+                        <span class="text-slate-700">{{ $blokLahan->tahun_tanam }}</span>
                     </div>
                     <div class="flex justify-between mt-1">
                         <span class="text-slate-500">Umur Tanaman</span>
-                        <span class="font-semibold text-slate-800">{{ $blokLahan->kriteriaLahan->umur_tanaman }} tahun</span>
+                        <span class="font-semibold text-slate-800">{{ $blokLahan->umur_tanaman }} tahun</span>
                     </div>
                     <div class="flex justify-between mt-1">
                         <span class="text-slate-500">Kategori</span>
-                        <span class="text-emerald-700 font-medium">{{ $blokLahan->kriteriaLahan->kategori_umur }}</span>
+                        <span class="text-emerald-700 font-medium">{{ $blokLahan->kategori_umur }}</span>
                     </div>
                     <div class="flex justify-between mt-1">
                         <span class="text-slate-500">Jenis Tanah</span>
-                        <span class="text-slate-700 text-xs text-right max-w-[120px]">{{ $blokLahan->kriteriaLahan->jenis_tanah }}</span>
+                        <span class="text-slate-700 text-xs text-right max-w-[120px]">{{ $blokLahan->jenis_tanah }}</span>
                     </div>
                 </div>
                 @endif

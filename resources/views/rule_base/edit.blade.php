@@ -5,7 +5,7 @@
 @section('page-subtitle', 'Perbarui aturan Forward Chaining')
 
 @section('content')
-<div class="max-w-xl">
+<div class="max-w-2xl mx-auto">
     <div class="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
         <form method="POST" action="{{ route('rule-base.update', $ruleBase) }}" class="space-y-5">
             @csrf @method('PUT')

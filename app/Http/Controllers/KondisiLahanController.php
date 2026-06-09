@@ -19,7 +19,7 @@ class KondisiLahanController extends Controller
 
     public function create(Request $request)
     {
-        $bloks = BlokLahan::orderBy('nama_blok')->get();
+        $bloks = BlokLahan::with('anggota')->orderBy('nama_blok')->get();
         $selectedBlokId = $request->query('blok_lahan_id');
 
         return view('kondisi_lahan.create', compact('bloks', 'selectedBlokId'));
@@ -72,7 +72,7 @@ class KondisiLahanController extends Controller
 
     public function edit(KondisiLahan $kondisiLahan)
     {
-        $bloks = BlokLahan::orderBy('nama_blok')->get();
+        $bloks = BlokLahan::with('anggota')->orderBy('nama_blok')->get();
         return view('kondisi_lahan.edit', compact('kondisiLahan', 'bloks'));
     }
 

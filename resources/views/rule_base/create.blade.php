@@ -5,7 +5,7 @@
 @section('page-subtitle', 'Tambah aturan Forward Chaining baru')
 
 @section('content')
-<div class="max-w-xl">
+<div class="max-w-2xl mx-auto">
     <div class="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-5">
         <div class="p-4 rounded-xl bg-blue-50 border border-blue-100 text-blue-800 text-xs">
             <p class="font-semibold mb-1">Format Parameter Kondisi:</p>

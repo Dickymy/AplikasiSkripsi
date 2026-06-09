@@ -40,17 +40,41 @@
 
 {{-- Action Bar --}}
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-    @if($belumKondisi > 0)
-    <p class="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg">
-        ⚠ {{ $belumKondisi }} blok belum memiliki data kondisi lahan. <a href="{{ route('kondisi-lahan.create') }}" class="font-semibold underline">Input sekarang →</a>
-    </p>
-    @else
-    <div></div>
-    @endif
-    <form action="{{ route('rbs.analisisSemua') }}" method="POST"
-          onsubmit="return confirm('Jalankan analisis RBS untuk semua blok yang memiliki data kondisi?')">
+    <div class="flex flex-wrap items-center gap-3">
+        {{-- Filter Anggota & Blok --}}
+        <form method="GET" action="{{ route('rbs.index') }}" id="filter-form" class="flex flex-wrap items-center gap-2">
+            <select name="anggota_id" onchange="this.form.submit()"
+                class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors min-w-[180px]">
+                <option value="">Semua Anggota</option>
+                @foreach($anggotas as $anggota)
+                    <option value="{{ $anggota->id }}" {{ request('anggota_id') == $anggota->id ? 'selected' : '' }}>{{ $anggota->nama }}</option>
+                @endforeach
+            </select>
+
+            @if($blokFilter->isNotEmpty())
+            <select name="blok_lahan_id" onchange="this.form.submit()"
+                class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors min-w-[160px]">
+                <option value="">Semua Blok</option>
+                @foreach($blokFilter as $bf)
+                    <option value="{{ $bf->id }}" {{ request('blok_lahan_id') == $bf->id ? 'selected' : '' }}>{{ $bf->nama_blok }}</option>
+                @endforeach
+            </select>
+            @endif
+
+            @if(request()->hasAny(['anggota_id', 'blok_lahan_id']))
+                <a href="{{ route('rbs.index') }}" class="text-xs text-slate-500 hover:text-slate-700 font-medium">Reset</a>
+            @endif
+        </form>
+
+        @if($belumKondisi > 0)
+        <p class="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
+            ⚠ {{ $belumKondisi }} blok belum ada kondisi. <a href="{{ route('kondisi-lahan.create') }}" class="font-semibold underline">Input →</a>
+        </p>
+        @endif
+    </div>
+    <form action="{{ route('rbs.analisisSemua') }}" method="POST" id="form-analisis-semua">
         @csrf
-        <button type="submit"
+        <button type="button" onclick="showConfirm('Jalankan analisis RBS untuk semua blok yang memiliki data kondisi?', function(){ document.getElementById('form-analisis-semua').submit(); })"
             class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -79,7 +103,6 @@
                 @php
                     $rbs     = $blok->rekomendasiRbsTerbaru;
                     $kondisi = $blok->kondisiTerbaru;
-                    $kriteria = $blok->kriteriaLahan;
 
                     $statusConfig = match($rbs?->status_kebutuhan_dominan) {
                         'Darurat' => ['bg' => 'bg-red-100',    'text' => 'text-red-800',    'label' => 'Darurat'],
@@ -95,11 +118,11 @@
                         <p class="text-xs text-slate-400">{{ $blok->nama_pemilik }} · {{ $blok->luas_ha }} Ha</p>
                     </td>
                     <td class="px-4 py-4">
-                        @if($kriteria)
-                            <p class="text-slate-700 font-medium">{{ $kriteria->umur_tanaman }} tahun</p>
-                            <p class="text-xs text-slate-400">{{ $kriteria->kategori_umur }}</p>
+                        @if($blok->tahun_tanam)
+                            <p class="text-slate-700 font-medium">{{ $blok->umur_tanaman }} tahun</p>
+                            <p class="text-xs text-slate-400">{{ $blok->kategori_umur }}</p>
                         @else
-                            <span class="text-xs text-slate-400">Belum ada kriteria</span>
+                            <span class="text-xs text-slate-400">Belum diisi</span>
                         @endif
                     </td>
                     <td class="px-4 py-4">
