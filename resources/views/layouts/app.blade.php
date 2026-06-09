@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="h-full">
+<html lang="id" class="min-h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,17 +19,34 @@
         .leaflet-popup-content-wrapper { max-width: 90vw !important; }
         .leaflet-popup-content { max-width: 100% !important; overflow-x: hidden; }
         /* KRITIS: Prevent horizontal scroll */
-        html, body { overflow-x: hidden !important; max-width: 100vw; }
+        html { overflow-x: hidden; scroll-behavior: smooth; }
+        body { overflow-x: hidden; min-width: 0; word-wrap: break-word; overflow-wrap: break-word; }
         /* Responsive table */
         @media (max-width: 640px) {
             .hide-mobile { display: none !important; }
             table th, table td { padding: 6px 8px !important; font-size: 11px; }
         }
+        /* Gambar tidak meluber */
+        img { max-width: 100%; height: auto; }
+        /* Touch target minimum untuk checkbox/toggle di HP */
+        input[type="checkbox"] { min-width: 18px; min-height: 18px; cursor: pointer; }
+        /* Fix: semua child element tidak boleh exceed parent */
+        *, *::before, *::after { max-width: 100%; }
+        /* Exclude elements that need to overflow (tables, maps, pagination, etc) */
+        table, table *, .leaflet-container, .leaflet-container *, svg, canvas, video, iframe, nav, nav * { max-width: none; }
+        /* Print styles */
+        @media print {
+            .no-print, nav, aside, .sidebar, button, .filter-bar, header { display: none !important; }
+            .lg\:ml-64, [data-main-content] { margin-left: 0 !important; }
+            main, .main-content, .container { max-width: 100% !important; padding: 0 !important; }
+            table { width: 100% !important; font-size: 11px; }
+            .shadow-sm, .shadow-lg { box-shadow: none !important; }
+        }
     </style>
 </head>
-<body class="h-full bg-slate-50 text-slate-800 font-[Inter]">
+<body class="min-h-full bg-slate-50 text-slate-800 font-[Inter]">
 
-<div class="flex h-full">
+<div class="flex min-h-screen overflow-x-hidden">
     {{-- SIDEBAR --}}
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-[9000] w-64 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 lg:translate-x-0 -translate-x-full shadow-sm">
 
@@ -137,11 +154,11 @@
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-[8999] lg:hidden hidden" onclick="toggleSidebar()"></div>
 
     {{-- MAIN CONTENT --}}
-    <div class="flex-1 flex flex-col lg:ml-64 min-h-screen transition-all duration-300" data-main-content>
+    <div class="flex-1 flex flex-col lg:ml-64 min-h-screen min-w-0 transition-[margin] duration-300" data-main-content>
         {{-- Top Bar --}}
-        <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100">
+        <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 flex-shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
@@ -151,16 +168,19 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
                 </button>
-                <div>
-                    <h1 class="text-lg font-semibold text-slate-900">@yield('page-title', 'Dashboard')</h1>
-                    <p class="text-xs text-slate-500">@yield('page-subtitle', 'SPK Pemupukan Kelapa Sawit')</p>
+                <div class="min-w-0">
+                    <h1 class="text-base sm:text-lg font-semibold text-slate-900 truncate">@yield('page-title', 'Dashboard')</h1>
+                    <p class="text-[11px] sm:text-xs text-slate-500 truncate">@yield('page-subtitle', 'SPK Pemupukan Kelapa Sawit')</p>
                 </div>
             </div>
-            <div class="text-xs text-slate-500">{{ now()->translatedFormat('l, d F Y') }}</div>
+            <div class="text-[10px] sm:text-xs text-slate-500 flex-shrink-0 text-right leading-tight">
+                <span class="hidden sm:inline">{{ now()->translatedFormat('l, d F Y') }}</span>
+                <span class="sm:hidden">{{ now()->translatedFormat('d M Y') }}</span>
+            </div>
         </header>
 
         {{-- Flash Messages --}}
-        <div class="px-6 pt-4 space-y-2">
+        <div class="px-3 sm:px-6 pt-3 sm:pt-4 space-y-2">
             @if(session('success'))
                 <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm shadow-sm">
                     <svg class="w-5 h-5 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -182,7 +202,7 @@
         </div>
 
         {{-- Page Content --}}
-        <main class="flex-1 p-6">
+        <main class="flex-1 p-3 sm:p-6">
             @yield('content')
         </main>
     </div>
@@ -209,6 +229,10 @@
             sidebar.style.transform = '';
             if (mainContent) mainContent.style.marginLeft = '';
         }
+        // Dispatch event agar peta di halaman lain bisa invalidateSize
+        setTimeout(function() {
+            document.dispatchEvent(new Event('sidebarToggled'));
+        }, 300);
     }
 
     // ─── Custom Confirm Modal ────────────────────────────────────
@@ -239,6 +263,18 @@
             document.getElementById('logout-form').submit();
         });
     }
+
+    // Back to Top button visibility
+    var btnBackTop = document.getElementById('btn-back-top');
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+            btnBackTop.style.opacity = '1';
+            btnBackTop.style.pointerEvents = 'auto';
+        } else {
+            btnBackTop.style.opacity = '0';
+            btnBackTop.style.pointerEvents = 'none';
+        }
+    });
 </script>
 
 {{-- Global Confirm Modal --}}
@@ -259,6 +295,13 @@
         </div>
     </div>
 </div>
+
+{{-- Back to Top Button --}}
+<button id="btn-back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+    class="fixed bottom-5 right-5 z-50 w-10 h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all opacity-0 pointer-events-none"
+    aria-label="Kembali ke atas">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+</button>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 @stack('scripts')

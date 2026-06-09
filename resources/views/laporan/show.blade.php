@@ -6,10 +6,16 @@
 
 @section('content')
 <div class="space-y-5 max-w-4xl mx-auto">
-    <a href="{{ route('laporan.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-all shadow-sm">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        Kembali ke Laporan
-    </a>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <a href="{{ route('laporan.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Kembali
+        </a>
+        <a href="{{ route('laporan.pdf', $rekomendasiRbs) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Download PDF
+        </a>
+    </div>
 
     {{-- Status Banner --}}
     @php $sc = match($rekomendasiRbs->status_kebutuhan_dominan) {
@@ -85,7 +91,7 @@
                 <p class="text-[10px] text-slate-400 font-medium uppercase mt-0.5">kilogram</p>
             </div>
             <div class="bg-amber-50/60 border border-amber-100/80 rounded-xl p-4 text-center shadow-sm">
-                <p class="text-xs text-amber-800 font-semibold mb-1">Urea @50kg</p>
+                <p class="text-xs text-amber-800 font-semibold mb-1">Karung Urea</p>
                 <p class="text-2xl font-extrabold text-amber-800">{{ $rekomendasiRbs->karung_urea }}</p>
                 <p class="text-[10px] text-slate-400 font-medium uppercase mt-0.5">karung</p>
             </div>
@@ -95,7 +101,7 @@
                 <p class="text-[10px] text-slate-400 font-medium uppercase mt-0.5">kilogram</p>
             </div>
             <div class="bg-cyan-50/60 border border-cyan-100/80 rounded-xl p-4 text-center shadow-sm">
-                <p class="text-xs text-cyan-800 font-semibold mb-1">KCl @50kg</p>
+                <p class="text-xs text-cyan-800 font-semibold mb-1">Karung KCl</p>
                 <p class="text-2xl font-extrabold text-cyan-700">{{ $rekomendasiRbs->karung_kcl }}</p>
                 <p class="text-[10px] text-slate-400 font-medium uppercase mt-0.5">karung</p>
             </div>

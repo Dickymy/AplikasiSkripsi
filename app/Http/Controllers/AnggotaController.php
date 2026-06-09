@@ -9,7 +9,7 @@ class AnggotaController extends Controller
 {
     public function index()
     {
-        $anggotas = Anggota::withCount('blokLahans')->orderBy('nama')->get();
+        $anggotas = Anggota::withCount('blokLahans')->orderBy('nama')->paginate(10);
         return view('anggota.index', compact('anggotas'));
     }
 

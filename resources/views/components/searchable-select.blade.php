@@ -70,7 +70,12 @@ document.addEventListener('DOMContentLoaded', function() {
         var emptyEl = dropdown.querySelector('.ss-empty');
 
         searchEl.addEventListener('focus', function() { dropdown.classList.remove('hidden'); filterOptions(); });
-        searchEl.addEventListener('input', filterOptions);
+
+        var debounceTimer;
+        searchEl.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(filterOptions, 200);
+        });
 
         function filterOptions() {
             var q = searchEl.value.toLowerCase().trim();

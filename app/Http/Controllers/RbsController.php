@@ -33,15 +33,25 @@ class RbsController extends Controller
             $query->where('id', $request->blok_lahan_id);
         }
 
-        $bloks = $query->latest()->get();
+        $bloks = $query->latest()->paginate(10)->withQueryString();
         $anggotas = \App\Models\Anggota::orderBy('nama')->get();
+
+        // Stats (dari semua data, bukan hanya halaman ini)
+        $allBloks = BlokLahan::with('rekomendasiRbsTerbaru', 'kondisiTerbaru')->get();
+        $stats = [
+            'total' => $allBloks->count(),
+            'sudah_analisis' => $allBloks->filter(fn($b) => $b->rekomendasiRbsTerbaru)->count(),
+            'darurat' => $allBloks->filter(fn($b) => $b->rekomendasiRbsTerbaru?->status_kebutuhan_dominan === 'Darurat')->count(),
+            'segera' => $allBloks->filter(fn($b) => $b->rekomendasiRbsTerbaru?->status_kebutuhan_dominan === 'Segera')->count(),
+            'belum_kondisi' => $allBloks->filter(fn($b) => !$b->kondisiTerbaru)->count(),
+        ];
 
         // Blok options for filter (scoped by anggota if selected)
         $blokFilter = $request->filled('anggota_id')
             ? BlokLahan::where('anggota_id', $request->anggota_id)->orderBy('nama_blok')->get()
             : collect();
 
-        return view('rbs.index', compact('bloks', 'anggotas', 'blokFilter'));
+        return view('rbs.index', compact('bloks', 'anggotas', 'blokFilter', 'stats'));
     }
 
     /**

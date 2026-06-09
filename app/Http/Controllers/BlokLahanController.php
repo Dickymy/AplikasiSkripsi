@@ -8,10 +8,30 @@ use Illuminate\Http\Request;
 
 class BlokLahanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $blokLahans = BlokLahan::with(['anggota', 'rekomendasiRbsTerbaru', 'kondisiTerbaru'])->latest()->get();
-        return view('blok_lahan.index', compact('blokLahans'));
+        $query = BlokLahan::with(['anggota', 'rekomendasiRbsTerbaru', 'kondisiTerbaru']);
+
+        // Filter by anggota
+        if ($request->filled('anggota_id')) {
+            $query->where('anggota_id', $request->anggota_id);
+        }
+
+        // Filter by status RBS
+        if ($request->filled('status')) {
+            if ($request->status === 'Belum') {
+                $query->whereDoesntHave('rekomendasiRbsTerbaru');
+            } else {
+                $query->whereHas('rekomendasiRbsTerbaru', function ($q) use ($request) {
+                    $q->where('status_kebutuhan_dominan', $request->status);
+                });
+            }
+        }
+
+        $blokLahans = $query->latest()->paginate(10)->withQueryString();
+        $anggotas = \App\Models\Anggota::orderBy('nama')->get();
+
+        return view('blok_lahan.index', compact('blokLahans', 'anggotas'));
     }
 
     public function create()

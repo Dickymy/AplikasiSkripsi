@@ -25,9 +25,4 @@ class Admin extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
-    public function rekomendasiSpks()
-    {
-        return $this->hasMany(RekomendasiSpk::class, 'admin_id');
-    }
 }

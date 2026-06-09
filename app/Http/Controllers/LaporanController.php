@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Anggota;
 use App\Models\RekomendasiRbs;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class LaporanController extends Controller
@@ -55,5 +56,17 @@ class LaporanController extends Controller
     {
         $rekomendasiRbs->load(['blokLahan.anggota', 'kondisiLahan', 'admin']);
         return view('laporan.show', compact('rekomendasiRbs'));
+    }
+
+    public function exportPdf(RekomendasiRbs $rekomendasiRbs)
+    {
+        $rekomendasiRbs->load(['blokLahan.anggota', 'kondisiLahan', 'admin']);
+
+        $pdf = Pdf::loadView('laporan.pdf', compact('rekomendasiRbs'));
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Laporan_' . str_replace(' ', '_', $rekomendasiRbs->blokLahan->nama_blok) . '_' . $rekomendasiRbs->tanggal_analisis->format('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

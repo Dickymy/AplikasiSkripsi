@@ -51,6 +51,7 @@ Route::middleware(AdminAuthenticated::class)->group(function () {
     // Laporan (berbasis rekomendasi RBS)
     Route::prefix('laporan')->name('laporan.')->group(function () {
         Route::get('/', [LaporanController::class, 'index'])->name('index');
+        Route::get('/{rekomendasiRbs}/pdf', [LaporanController::class, 'exportPdf'])->name('pdf');
         Route::get('/{rekomendasiRbs}', [LaporanController::class, 'show'])->name('show');
     });
 

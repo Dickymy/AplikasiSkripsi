@@ -7,97 +7,196 @@
 @push('styles')
 <style>
     #map { height: calc(100vh - 320px); min-height: 300px; border-radius: 12px; }
-    @media (max-width: 640px) { #map { height: 300px; } }
+    @media (max-width: 640px) { #map { height: 300px; min-height: 250px; border-radius: 8px; } }
+    @media (min-width: 1024px) { #map { min-height: 420px; } }
+
     .leaflet-tooltip-label { background: transparent !important; border: none !important; box-shadow: none !important; color: #1e293b; font-size: 10px; font-weight: 700; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; padding: 0 !important; }
-    .leaflet-popup-content-wrapper { background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .leaflet-popup-tip { background: #ffffff; }
-    .leaflet-popup-content { margin: 14px 16px; }
-    .popup-title { font-size: 14px; font-weight: 700; color: #059669; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
-    .popup-row { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; padding: 3px 0; }
-    .popup-label { color: #64748b; }
-    .popup-value { color: #1e293b; font-weight: 600; }
-    .popup-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-    .badge-segera { background: #fee2e2; color: #991b1b; }
-    .badge-normal { background: #dcfce7; color: #166534; }
-    .badge-tunda { background: #fef9c3; color: #854d0e; }
-    .badge-belum { background: #f1f5f9; color: #475569; }
-    .map-legend { position: absolute; bottom: 30px; right: 10px; z-index: 42; background: rgba(255,255,255,0.95); border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #64748b; padding: 2px 0; }
-    .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .leaflet-popup-content-wrapper { background: #fff; border: 1px solid #e2e8f0; color: #1e293b; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .leaflet-popup-tip { background: #fff; }
+    .leaflet-popup-content { margin: 10px 12px; max-height: 200px; overflow-y: auto; }
+    @media (max-width: 640px) {
+        .leaflet-popup-content { margin: 8px 10px; max-height: 160px; font-size: 11px; }
+        .leaflet-popup-content-wrapper { max-width: 230px !important; }
+    }
+
+    /* Legend */
+    .map-legend { position: absolute; bottom: 10px; right: 10px; z-index: 42; background: rgba(255,255,255,0.93); border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    @media (max-width: 640px) { .map-legend { bottom: 6px; right: 6px; left: 6px; padding: 5px 8px; } .map-legend .legend-items { display: flex; flex-wrap: wrap; gap: 4px 10px; } }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #64748b; padding: 1px 0; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    /* Filter status */
+    .status-filter-btn { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 9999px; font-size: 10px; font-weight: 600; border: 1.5px solid; cursor: pointer; transition: all 0.15s; user-select: none; white-space: nowrap; line-height: 1.4; }
+    @media (max-width: 640px) { .status-filter-btn { padding: 2.5px 7px; font-size: 9px; } }
+    .status-filter-btn.active { opacity: 1; }
+    .status-filter-btn.inactive { opacity: 0.35; }
+    .status-filter-btn[data-status="Darurat"] { border-color: #fca5a5; background: #fee2e2; color: #991b1b; }
+    .status-filter-btn[data-status="Darurat"].active { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .status-filter-btn[data-status="Segera"] { border-color: #fdba74; background: #ffedd5; color: #9a3412; }
+    .status-filter-btn[data-status="Segera"].active { background: #f97316; color: #fff; border-color: #f97316; }
+    .status-filter-btn[data-status="Normal"] { border-color: #86efac; background: #dcfce7; color: #166534; }
+    .status-filter-btn[data-status="Normal"].active { background: #22c55e; color: #fff; border-color: #22c55e; }
+    .status-filter-btn[data-status="Tunda"] { border-color: #cbd5e1; background: #f1f5f9; color: #475569; }
+    .status-filter-btn[data-status="Tunda"].active { background: #94a3b8; color: #fff; border-color: #94a3b8; }
+    .status-filter-btn[data-status="Belum Dianalisis"] { border-color: #93c5fd; background: #eff6ff; color: #1e40af; }
+    .status-filter-btn[data-status="Belum Dianalisis"].active { background: #475569; color: #fff; border-color: #475569; }
+
+    /* Luas per status */
+    .luas-status-grid { display: grid; gap: 6px; }
+    @media (max-width: 640px) { .luas-status-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; } }
+    @media (min-width: 641px) { .luas-status-grid { grid-template-columns: repeat(5, 1fr); } }
+    .luas-status-item { display: flex; align-items: center; gap: 5px; padding: 5px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 10px; }
+    .luas-status-item .luas-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+    .luas-status-item .luas-label { color: #64748b; white-space: nowrap; }
+    .luas-status-item .luas-value { font-weight: 700; color: #1e293b; margin-left: auto; white-space: nowrap; }
+
+    /* Stat cards */
+    @media (max-width: 640px) {
+        #stats-cards .stat-card { padding: 8px 10px; }
+        #stats-cards .stat-value { font-size: 1.2rem; }
+        #stats-cards .stat-label { font-size: 9px; }
+        #stats-cards .stat-sub { font-size: 8px; }
+    }
+
+    select:disabled { opacity: 0.5; cursor: not-allowed; background: #f1f5f9; }
+
+    /* Action buttons */
+    .btn-map { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 1.5px solid; text-decoration: none; }
+    .btn-map.expand { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
+    .btn-map.expand:hover { background: #dbeafe; border-color: #60a5fa; }
+    .btn-map.shrink { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+    .btn-map.shrink:hover { background: #fecaca; }
+    .btn-map.tambah { background: #059669; color: #fff; border-color: #059669; }
+    .btn-map.tambah:hover { background: #047857; border-color: #047857; }
+    @media (max-width: 640px) { .btn-map { padding: 6px 10px; font-size: 10px; } }
 </style>
 @endpush
 
 @section('content')
 
-{{-- Stats Cards (akan di-update via JS saat filter berubah) --}}
-<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6" id="stats-cards">
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-        <p class="text-xs text-slate-500 mb-1">Total Blok Lahan</p>
-        <p class="text-2xl font-bold text-slate-900" id="stat-total-blok">{{ $stats['total_blok'] }}</p>
-        <p class="text-xs text-slate-400 mt-1">blok terdaftar</p>
+{{-- Stats Cards --}}
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-3 sm:mb-4" id="stats-cards">
+    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
+        <p class="stat-label text-xs text-slate-500 mb-0.5">Total Blok</p>
+        <p class="stat-value text-xl sm:text-2xl font-bold text-slate-900" id="stat-total-blok">{{ $stats['total_blok'] }}</p>
+        <p class="stat-sub text-xs text-slate-400">blok terdaftar</p>
     </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-        <p class="text-xs text-slate-500 mb-1">Total Luas</p>
-        <p class="text-2xl font-bold text-emerald-600" id="stat-total-luas">{{ number_format($stats['total_luas'], 2) }}</p>
-        <p class="text-xs text-slate-400 mt-1">hektar</p>
+    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
+        <p class="stat-label text-xs text-slate-500 mb-0.5">Total Luas</p>
+        <p class="stat-value text-xl sm:text-2xl font-bold text-emerald-600" id="stat-total-luas">{{ number_format($stats['total_luas'], 2) }}</p>
+        <p class="stat-sub text-xs text-slate-400">hektar</p>
     </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-        <p class="text-xs text-slate-500 mb-1">Sudah Dianalisis</p>
-        <p class="text-2xl font-bold text-blue-600" id="stat-sudah-analisis">{{ $stats['sudah_analisis'] }}</p>
-        <p class="text-xs text-slate-400 mt-1">dari {{ $stats['total_blok'] }} blok</p>
+    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
+        <p class="stat-label text-xs text-slate-500 mb-0.5">Dianalisis</p>
+        <p class="stat-value text-xl sm:text-2xl font-bold text-blue-600" id="stat-sudah-analisis">{{ $stats['sudah_analisis'] }}</p>
+        <p class="stat-sub text-xs text-slate-400">dari {{ $stats['total_blok'] }} blok</p>
     </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-l-4 border-l-red-500">
-        <p class="text-xs text-slate-500 mb-1">Status Darurat</p>
-        <p class="text-2xl font-bold text-red-600" id="stat-darurat">{{ $stats['darurat'] }}</p>
-        <p class="text-xs text-slate-400 mt-1">penanganan segera</p>
+    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-red-500">
+        <p class="stat-label text-xs text-slate-500 mb-0.5">Darurat</p>
+        <p class="stat-value text-xl sm:text-2xl font-bold text-red-600" id="stat-darurat">{{ $stats['darurat'] }}</p>
+        <p class="stat-sub text-xs text-slate-400">penanganan segera</p>
     </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-l-4 border-l-orange-400">
-        <p class="text-xs text-slate-500 mb-1">Status Segera</p>
-        <p class="text-2xl font-bold text-orange-500" id="stat-segera">{{ $stats['segera'] }}</p>
-        <p class="text-xs text-slate-400 mt-1">tindakan cepat</p>
+    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-orange-400">
+        <p class="stat-label text-xs text-slate-500 mb-0.5">Segera</p>
+        <p class="stat-value text-xl sm:text-2xl font-bold text-orange-500" id="stat-segera">{{ $stats['segera'] }}</p>
+        <p class="stat-sub text-xs text-slate-400">tindakan cepat</p>
+    </div>
+</div>
+
+{{-- Luas per Status --}}
+<div class="mb-3 sm:mb-4">
+    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Luas Lahan per Status</p>
+    <div class="luas-status-grid">
+        <div class="luas-status-item"><div class="luas-dot" style="background:#dc2626;"></div><span class="luas-label">Darurat</span><span class="luas-value" id="luas-darurat">0 Ha</span></div>
+        <div class="luas-status-item"><div class="luas-dot" style="background:#f97316;"></div><span class="luas-label">Segera</span><span class="luas-value" id="luas-segera">0 Ha</span></div>
+        <div class="luas-status-item"><div class="luas-dot" style="background:#22c55e;"></div><span class="luas-label">Normal</span><span class="luas-value" id="luas-normal">0 Ha</span></div>
+        <div class="luas-status-item"><div class="luas-dot" style="background:#94a3b8;"></div><span class="luas-label">Tunda</span><span class="luas-value" id="luas-tunda">0 Ha</span></div>
+        <div class="luas-status-item"><div class="luas-dot" style="background:#475569;"></div><span class="luas-label">Belum</span><span class="luas-value" id="luas-belum">0 Ha</span></div>
     </div>
 </div>
 
 {{-- Map Container --}}
 <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden relative shadow-sm" id="map-container">
-    <div class="px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-1">
-            <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span class="text-xs sm:text-sm font-semibold text-slate-800">Peta Interaktif</span>
+
+    {{-- HEADER BAR --}}
+    <div class="px-3 sm:px-4 py-2 sm:py-2.5 border-b border-slate-100" id="map-header">
+
+        {{-- Desktop layout --}}
+        <div class="hidden sm:flex items-center gap-2 flex-wrap">
+            {{-- Filter status --}}
+            <div class="flex items-center gap-1.5" id="status-filter-buttons-desktop">
+                <button type="button" class="status-filter-btn active" data-status="Darurat" onclick="toggleStatusFilter(this)">Darurat</button>
+                <button type="button" class="status-filter-btn active" data-status="Segera" onclick="toggleStatusFilter(this)">Segera</button>
+                <button type="button" class="status-filter-btn active" data-status="Normal" onclick="toggleStatusFilter(this)">Normal</button>
+                <button type="button" class="status-filter-btn active" data-status="Tunda" onclick="toggleStatusFilter(this)">Tunda</button>
+                <button type="button" class="status-filter-btn active" data-status="Belum Dianalisis" onclick="toggleStatusFilter(this)">Belum</button>
             </div>
-            {{-- Filter Pemilik --}}
-            <select id="filter-pemilik" class="pl-3 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors cursor-pointer appearance-none min-w-[150px]">
+            <div class="flex-1"></div>
+            {{-- Filters --}}
+            <select id="filter-pemilik" class="min-w-[140px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
                 <option value="">Semua Pemilik</option>
             </select>
-            {{-- Filter Blok (muncul setelah pilih pemilik) --}}
-            <select id="filter-blok" class="pl-3 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors cursor-pointer appearance-none min-w-[140px] hidden">
+            <select id="filter-blok" disabled class="min-w-[130px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
                 <option value="">Semua Blok</option>
             </select>
-        </div>
-        <div class="flex items-center gap-2 self-start sm:self-auto">
-            {{-- Tombol Fullscreen Peta --}}
-            <button type="button" onclick="toggleFullscreen()" title="Perluas Peta"
-                class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors border border-slate-200" id="btn-fullscreen">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+            {{-- Perluas / Kecilkan --}}
+            <button type="button" onclick="toggleFullscreen()" class="btn-map expand" id="btn-fs-desktop">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                <span id="btn-fs-desktop-text">Perluas Peta</span>
             </button>
-            <a href="{{ route('blok-lahan.create') }}" class="text-xs px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1.5 font-medium shadow-sm">
+            {{-- Tambah Blok --}}
+            <a href="{{ route('blok-lahan.create') }}" class="btn-map tambah">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                <span class="hidden sm:inline">Tambah Blok</span>
+                Tambah Blok
             </a>
         </div>
-    </div>
-    <div class="p-2 sm:p-4 relative">
-        <div id="map"></div>
 
-        {{-- Legend (hidden di mobile kecil) --}}
-        <div class="map-legend hidden sm:block">
-            <p class="text-xs font-semibold text-slate-700 mb-2">Status Lahan</p>
-            <div class="legend-item"><div class="legend-dot" style="background:#dc2626;"></div>Darurat</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#f97316;"></div>Segera</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>Normal</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#94a3b8;"></div>Tunda</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#475569;"></div>Belum Dianalisis</div>
+        {{-- Mobile layout --}}
+        <div class="sm:hidden space-y-2">
+            {{-- Baris 1: Filter status --}}
+            <div class="flex flex-wrap items-center gap-1" id="status-filter-buttons-mobile">
+                <button type="button" class="status-filter-btn active" data-status="Darurat" onclick="toggleStatusFilter(this)">Darurat</button>
+                <button type="button" class="status-filter-btn active" data-status="Segera" onclick="toggleStatusFilter(this)">Segera</button>
+                <button type="button" class="status-filter-btn active" data-status="Normal" onclick="toggleStatusFilter(this)">Normal</button>
+                <button type="button" class="status-filter-btn active" data-status="Tunda" onclick="toggleStatusFilter(this)">Tunda</button>
+                <button type="button" class="status-filter-btn active" data-status="Belum Dianalisis" onclick="toggleStatusFilter(this)">Belum</button>
+            </div>
+            {{-- Baris 2: Filter pemilik + blok --}}
+            <div class="flex items-center gap-2">
+                <select id="filter-pemilik-mobile" class="flex-1 pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                    <option value="">Semua Pemilik</option>
+                </select>
+                <select id="filter-blok-mobile" disabled class="flex-1 pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                    <option value="">Semua Blok</option>
+                </select>
+            </div>
+            {{-- Baris 3: Tambah + Perluas/Kecilkan (sama panjang) --}}
+            <div class="flex items-center gap-2" id="mobile-btn-row">
+                <a href="{{ route('blok-lahan.create') }}" class="btn-map tambah flex-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Tambah Blok
+                </a>
+                <button type="button" onclick="toggleFullscreen()" class="btn-map expand flex-1" id="btn-fs-mobile">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                    <span id="btn-fs-mobile-text">Perluas Peta</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- PETA --}}
+    <div class="p-1.5 sm:p-3 relative">
+        <div id="map"></div>
+        {{-- Legend --}}
+        <div class="map-legend">
+            <p class="text-[9px] sm:text-[10px] font-semibold text-slate-600 mb-1">Status Lahan</p>
+            <div class="legend-items">
+                <div class="legend-item"><div class="legend-dot" style="background:#dc2626;"></div>Darurat</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#f97316;"></div>Segera</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>Normal</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#94a3b8;"></div>Tunda</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#475569;"></div>Belum</div>
+            </div>
         </div>
     </div>
 </div>
@@ -106,7 +205,6 @@
 
 @push('scripts')
 <script>
-// Reset path icon default Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -114,274 +212,199 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const mapData = @json($mapData);
+var mapData = @json($mapData);
+var activeStatuses = ['Darurat', 'Segera', 'Normal', 'Tunda', 'Belum Dianalisis'];
 
-// Inisialisasi peta
-const map = L.map('map', {
-    center: [-2.5489, 118.0149],
-    zoom: 5,
-    zoomControl: true,
-});
-
-const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap contributors'
-});
+var map = L.map('map', { center: [-2.5489, 118.0149], zoom: 5, zoomControl: true });
+var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' });
 osm.addTo(map);
-
-const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri',
-    maxZoom: 19
-});
+var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri', maxZoom: 19 });
 L.control.layers({'Peta': osm, 'Satelit': satellite}).addTo(map);
 
-// Warna poligon berdasarkan status RBS (prioritas utama)
-function getColorRbs(statusRbs) {
-    const colors = {
-        'Darurat':          '#dc2626',
-        'Segera':           '#f97316',
-        'Normal':           '#22c55e',
-        'Tunda':            '#94a3b8',
-        'Belum Dianalisis': '#475569',
-    };
-    return colors[statusRbs] || '#475569';
-}
+function getColorRbs(s){return{'Darurat':'#dc2626','Segera':'#f97316','Normal':'#22c55e','Tunda':'#94a3b8','Belum Dianalisis':'#475569'}[s]||'#475569';}
+function getBadgeStyleRbs(s){return{'Darurat':'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;','Segera':'background:#ffedd5;color:#9a3412;border:1px solid #fdba74;','Normal':'background:#dcfce7;color:#166534;border:1px solid #86efac;','Tunda':'background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;','Belum Dianalisis':'background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;'}[s]||'background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;';}
 
-// Badge style inline untuk popup
-function getBadgeStyleRbs(status) {
-    const styles = {
-        'Darurat':          'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;',
-        'Segera':           'background:#ffedd5;color:#9a3412;border:1px solid #fdba74;',
-        'Normal':           'background:#dcfce7;color:#166534;border:1px solid #86efac;',
-        'Tunda':            'background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;',
-        'Belum Dianalisis': 'background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;',
-    };
-    return styles[status] || styles['Belum Dianalisis'];
-}
+// Populate filters
+var selectEl = document.getElementById('filter-pemilik');
+var selectElMobile = document.getElementById('filter-pemilik-mobile');
+var filterBlokEl = document.getElementById('filter-blok');
+var filterBlokElMobile = document.getElementById('filter-blok-mobile');
 
-// Populasi filter pemilik
-const selectEl = document.getElementById('filter-pemilik');
-const pemilikList = [...new Set(mapData.map(b => b.nama_pemilik).filter(Boolean))].sort();
-pemilikList.forEach(pemilik => {
-    const opt = document.createElement('option');
-    opt.value = pemilik;
-    opt.textContent = pemilik;
-    selectEl.appendChild(opt);
+var pemilikSet={},pemilikList=[];
+mapData.forEach(function(b){if(b.nama_pemilik&&!pemilikSet[b.nama_pemilik]){pemilikSet[b.nama_pemilik]=true;pemilikList.push(b.nama_pemilik);}});
+pemilikList.sort();
+pemilikList.forEach(function(p){
+    var o1=document.createElement('option');o1.value=p;o1.textContent=p;selectEl.appendChild(o1);
+    var o2=document.createElement('option');o2.value=p;o2.textContent=p;selectElMobile.appendChild(o2);
 });
 
-let mapLayers = [];
+var mapLayers=[];
 
-function updateStats(data) {
-    var totalBlok = data.length;
-    var totalLuas = data.reduce(function(sum, b) { return sum + (b.luas_ha || 0); }, 0);
-    var sudahAnalisis = data.filter(function(b) { return b.status_rbs && b.status_rbs !== 'Belum Dianalisis'; }).length;
-    var darurat = data.filter(function(b) { return b.status_rbs === 'Darurat'; }).length;
-    var segera = data.filter(function(b) { return b.status_rbs === 'Segera'; }).length;
-
-    document.getElementById('stat-total-blok').textContent = totalBlok;
-    document.getElementById('stat-total-luas').textContent = totalLuas.toFixed(2);
-    document.getElementById('stat-sudah-analisis').textContent = sudahAnalisis;
-    document.getElementById('stat-darurat').textContent = darurat;
-    document.getElementById('stat-segera').textContent = segera;
+function updateStats(data){
+    var t=0,l=0,a=0,d=0,s=0;
+    data.forEach(function(b){t++;l+=(b.luas_ha||0);if(b.status_rbs&&b.status_rbs!=='Belum Dianalisis')a++;if(b.status_rbs==='Darurat')d++;if(b.status_rbs==='Segera')s++;});
+    document.getElementById('stat-total-blok').textContent=t;
+    document.getElementById('stat-total-luas').textContent=l.toFixed(2);
+    document.getElementById('stat-sudah-analisis').textContent=a;
+    document.getElementById('stat-darurat').textContent=d;
+    document.getElementById('stat-segera').textContent=s;
 }
 
-function buildPopupContent(blok) {
-    const statusRbs    = blok.status_rbs    || 'Belum Dianalisis';
-    const masalahRbs   = blok.masalah_rbs   || [];
-    const pupukRbs     = blok.pupuk_rbs     || [];
-    const saranRbs     = blok.saran_rbs     || '';
-    const tglRbs       = blok.tgl_analisis_rbs || '-';
-    const jumlahRule   = blok.jumlah_rule   || 0;
-
-    const badgeStyle = getBadgeStyleRbs(statusRbs);
-
-    const masalahHtml = masalahRbs.length
-        ? masalahRbs.map(m => `<div style="font-size:11px;color:#374151;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:2px 8px;display:inline-block;margin:1px 2px 1px 0;">${m}</div>`).join('')
-        : '<span style="font-size:11px;color:#9ca3af">Tidak ada masalah</span>';
-
-    const pupukHtml = pupukRbs.slice(0, 2).map(p => `
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:6px 8px;margin-top:4px;">
-            <div style="font-size:12px;font-weight:600;color:#15803d;">🌿 ${p.jenis_utama}</div>
-            ${p.dosis ? `<div style="font-size:11px;color:#4b5563;margin-top:2px;">${p.dosis}</div>` : ''}
-        </div>`).join('');
-
-    const saranHtml = saranRbs
-        ? `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:6px 8px;margin-top:6px;">
-               <div style="font-size:10px;font-weight:600;color:#92400e;text-transform:uppercase;margin-bottom:2px;">Saran</div>
-               <div style="font-size:11px;color:#78350f;line-height:1.4;">${saranRbs.substring(0, 130)}${saranRbs.length > 130 ? '...' : ''}</div>
-           </div>`
-        : '';
-
-    return `
-        <div style="min-width:240px;max-width:290px;font-family:system-ui,sans-serif;">
-            <div style="font-weight:700;font-size:14px;color:#0f172a;padding-bottom:8px;border-bottom:1px solid #f1f5f9;margin-bottom:8px;">
-                🌴 ${blok.nama_blok}
-            </div>
-            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">
-                ${blok.nama_pemilik || '-'} · ${blok.luas_ha} Ha · ${blok.umur_tanaman !== null ? blok.umur_tanaman + ' thn' : '-'}
-            </div>
-
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-                <span style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Status RBS</span>
-                <span style="${badgeStyle}font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;">${statusRbs}</span>
-            </div>
-
-            <div style="margin-bottom:6px;">
-                <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Masalah Teridentifikasi</div>
-                <div>${masalahHtml}</div>
-            </div>
-
-            ${pupukRbs.length ? `
-            <div style="margin-bottom:4px;">
-                <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Rekomendasi Pupuk</div>
-                ${pupukHtml}
-            </div>` : ''}
-
-            ${saranHtml}
-
-            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;margin-top:6px;border-top:1px solid #f1f5f9;">
-                <span style="font-size:10px;color:#9ca3af;">${jumlahRule} rule · ${tglRbs}</span>
-                <a href="/rbs/detail/${blok.id}" style="font-size:11px;color:#059669;font-weight:700;text-decoration:none;">
-                    Detail RBS →
-                </a>
-            </div>
-        </div>`;
+function updateLuasPerStatus(data){
+    var r={Darurat:0,Segera:0,Normal:0,Tunda:0,Belum:0};
+    data.forEach(function(b){var s=b.status_rbs||'Belum Dianalisis';var h=b.luas_ha||0;if(s==='Darurat')r.Darurat+=h;else if(s==='Segera')r.Segera+=h;else if(s==='Normal')r.Normal+=h;else if(s==='Tunda')r.Tunda+=h;else r.Belum+=h;});
+    document.getElementById('luas-darurat').textContent=r.Darurat.toFixed(2)+' Ha';
+    document.getElementById('luas-segera').textContent=r.Segera.toFixed(2)+' Ha';
+    document.getElementById('luas-normal').textContent=r.Normal.toFixed(2)+' Ha';
+    document.getElementById('luas-tunda').textContent=r.Tunda.toFixed(2)+' Ha';
+    document.getElementById('luas-belum').textContent=r.Belum.toFixed(2)+' Ha';
 }
 
-function renderMapLayers(selectedPemilik = '') {
-    mapLayers.forEach(item => map.removeLayer(item.layer));
-    mapLayers = [];
+function buildPopupContent(blok){
+    var statusRbs=blok.status_rbs||'Belum Dianalisis',masalahRbs=blok.masalah_rbs||[],pupukRbs=blok.pupuk_rbs||[],saranRbs=blok.saran_rbs||'',tglRbs=blok.tgl_analisis_rbs||'-',jumlahRule=blok.jumlah_rule||0;
+    var bs=getBadgeStyleRbs(statusRbs);
+    var mh=masalahRbs.length?masalahRbs.slice(0,3).map(function(m){return'<span style="font-size:10px;color:#374151;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:1px 5px;display:inline-block;margin:1px 2px 1px 0;">'+m+'</span>';}).join('')+(masalahRbs.length>3?'<span style="font-size:9px;color:#9ca3af;"> +'+(masalahRbs.length-3)+'</span>':''):'<span style="font-size:10px;color:#9ca3af;">Tidak ada masalah</span>';
+    var ph=pupukRbs.length?pupukRbs.slice(0,2).map(function(p){return'<div style="font-size:10px;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:5px;padding:2px 5px;margin-top:2px;">'+p.jenis_utama+(p.dosis?' — '+p.dosis:'')+'</div>';}).join(''):'';
+    var sh=saranRbs?'<div style="font-size:9px;color:#78350f;background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:2px 5px;margin-top:3px;line-height:1.3;">'+saranRbs.substring(0,70)+(saranRbs.length>70?'...':'')+'</div>':'';
+    return'<div style="min-width:170px;max-width:220px;font-family:system-ui,sans-serif;"><div style="font-weight:700;font-size:12px;color:#0f172a;padding-bottom:4px;border-bottom:1px solid #f1f5f9;margin-bottom:4px;">'+blok.nama_blok+'</div><div style="font-size:10px;color:#64748b;margin-bottom:3px;">'+(blok.nama_pemilik||'-')+' \u00B7 '+blok.luas_ha+' Ha'+(blok.umur_tanaman!==null?' \u00B7 '+blok.umur_tanaman+' thn':'')+'</div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><span style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;">Status</span><span style="'+bs+'font-size:10px;font-weight:700;padding:1px 6px;border-radius:9999px;">'+statusRbs+'</span></div><div style="margin-bottom:3px;">'+mh+'</div>'+ph+sh+'<div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px;margin-top:3px;border-top:1px solid #f1f5f9;"><span style="font-size:9px;color:#9ca3af;">'+jumlahRule+' rule \u00B7 '+tglRbs+'</span><a href="/rbs/detail/'+blok.id+'" style="font-size:10px;color:#059669;font-weight:700;text-decoration:none;">Detail \u2192</a></div></div>';
+}
 
-    const activeLayers = [];
-    const filteredData = selectedPemilik
-        ? mapData.filter(blok => blok.nama_pemilik === selectedPemilik)
-        : mapData;
+function getSelectedPemilik(){return window.innerWidth<640?selectElMobile.value:selectEl.value;}
+function getSelectedBlok(){return window.innerWidth<640?filterBlokElMobile.value:filterBlokEl.value;}
 
-    // Update stats cards berdasarkan data yang difilter
-    updateStats(filteredData);
+function getFilteredData(){
+    var pemilik=getSelectedPemilik(),blokId=getSelectedBlok(),data=mapData;
+    if(pemilik)data=data.filter(function(b){return b.nama_pemilik===pemilik;});
+    if(blokId)data=data.filter(function(b){return b.id==blokId;});
+    data=data.filter(function(b){return activeStatuses.indexOf(b.status_rbs||'Belum Dianalisis')!==-1;});
+    return data;
+}
 
-    filteredData.forEach(blok => {
-        if (!blok.geojson) return;
-
-        const color = getColorRbs(blok.status_rbs || 'Belum Dianalisis');
-
-        const layer = L.geoJSON(blok.geojson, {
-            style: {
-                fillColor:   color,
-                fillOpacity: 0.45,
-                color:       color,
-                weight:      2,
-                opacity:     0.9,
-            }
-        });
-
-        layer.bindPopup(buildPopupContent(blok), { maxWidth: 300 });
-        layer.bindTooltip(blok.nama_blok, { permanent: true, direction: 'center', className: 'leaflet-tooltip-label' });
-
-        layer.on('mouseover', function(e) {
-            e.target.setStyle({ fillOpacity: 0.7, weight: 3 });
-        });
-        layer.on('mouseout', function(e) {
-            e.target.setStyle({ fillOpacity: 0.45, weight: 2 });
-        });
-
+function renderMapLayers(){
+    mapLayers.forEach(function(item){map.removeLayer(item.layer);});
+    mapLayers=[];
+    var filteredData=getFilteredData();
+    var pemilik=getSelectedPemilik(),blokId=getSelectedBlok();
+    var statsData=mapData;
+    if(pemilik)statsData=statsData.filter(function(b){return b.nama_pemilik===pemilik;});
+    if(blokId)statsData=statsData.filter(function(b){return b.id==blokId;});
+    updateStats(statsData);
+    updateLuasPerStatus(statsData);
+    var activeLayers=[];
+    filteredData.forEach(function(blok){
+        if(!blok.geojson)return;
+        var color=getColorRbs(blok.status_rbs||'Belum Dianalisis');
+        var layer=L.geoJSON(blok.geojson,{style:{fillColor:color,fillOpacity:0.45,color:color,weight:2,opacity:0.9}});
+        layer.bindPopup(buildPopupContent(blok),{maxWidth:230,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[10,50]});
+        layer.bindTooltip(blok.nama_blok,{permanent:true,direction:'center',className:'leaflet-tooltip-label'});
+        layer.on('mouseover',function(e){e.target.setStyle({fillOpacity:0.7,weight:3});});
+        layer.on('mouseout',function(e){e.target.setStyle({fillOpacity:0.45,weight:2});});
         layer.addTo(map);
-        mapLayers.push({ id: blok.id, layer });
+        mapLayers.push({id:blok.id,layer:layer});
         activeLayers.push(layer);
     });
-
-    if (activeLayers.length > 0) {
-        const group = L.featureGroup(activeLayers);
-        map.fitBounds(group.getBounds().pad(0.1));
-    }
+    if(activeLayers.length>0)map.fitBounds(L.featureGroup(activeLayers).getBounds().pad(0.1));
 }
 
-// Render awal
 renderMapLayers();
 
-// ─── FILTER: Pemilik + Blok ──────────────────────────────────────
-var filterBlokEl = document.getElementById('filter-blok');
-
-selectEl.addEventListener('change', function(e) {
-    var pemilik = e.target.value;
-    renderMapLayers(pemilik);
-
-    // Populate filter blok berdasarkan pemilik yang dipilih
-    filterBlokEl.innerHTML = '<option value="">Semua Blok</option>';
-    if (pemilik) {
-        var bloks = mapData.filter(function(b) { return b.nama_pemilik === pemilik; });
-        bloks.forEach(function(b) {
-            var opt = document.createElement('option');
-            opt.value = b.id;
-            opt.textContent = b.nama_blok;
-            filterBlokEl.appendChild(opt);
-        });
-        filterBlokEl.classList.remove('hidden');
-    } else {
-        filterBlokEl.classList.add('hidden');
-    }
-});
-
-filterBlokEl.addEventListener('change', function(e) {
-    var blokId = e.target.value;
-    var pemilik = selectEl.value;
-
-    if (blokId) {
-        // Filter ke satu blok spesifik
-        var filtered = mapData.filter(function(b) { return b.id == blokId; });
-        mapLayers.forEach(function(item) { map.removeLayer(item.layer); });
-        mapLayers = [];
-        updateStats(filtered);
-
-        filtered.forEach(function(blok) {
-            if (!blok.geojson) return;
-            var color = getColorRbs(blok.status_rbs || 'Belum Dianalisis');
-            var layer = L.geoJSON(blok.geojson, { style: { fillColor: color, fillOpacity: 0.45, color: color, weight: 2, opacity: 0.9 } });
-            layer.bindPopup(buildPopupContent(blok), { maxWidth: 300 });
-            layer.addTo(map);
-            mapLayers.push({ id: blok.id, layer: layer });
-        });
-        if (mapLayers.length > 0) map.fitBounds(L.featureGroup(mapLayers.map(function(m){return m.layer;})).getBounds().pad(0.2));
-    } else {
-        renderMapLayers(pemilik);
-    }
-});
-
-// ─── FULLSCREEN PETA ─────────────────────────────────────────────
-var isFullscreen = false;
-function toggleFullscreen() {
-    var container = document.getElementById('map-container');
-    var mapEl = document.getElementById('map');
-    var sidebar = document.getElementById('sidebar');
-    isFullscreen = !isFullscreen;
-
-    if (isFullscreen) {
-        container.style.position = 'fixed';
-        container.style.inset = '0';
-        container.style.zIndex = '8000';
-        container.style.borderRadius = '0';
-        container.style.margin = '0';
-        mapEl.style.height = 'calc(100vh - 60px)';
-        mapEl.style.minHeight = 'unset';
-        document.body.style.overflow = 'hidden';
-        if (sidebar) sidebar.style.display = 'none';
-    } else {
-        container.style.position = '';
-        container.style.inset = '';
-        container.style.zIndex = '';
-        container.style.borderRadius = '';
-        container.style.margin = '';
-        mapEl.style.height = '';
-        mapEl.style.minHeight = '';
-        document.body.style.overflow = '';
-        if (sidebar) sidebar.style.display = '';
-    }
-    setTimeout(function() { map.invalidateSize(); }, 200);
+// ─── FILTER STATUS (sync desktop + mobile buttons) ───────────────
+function toggleStatusFilter(btn){
+    var status=btn.getAttribute('data-status');
+    var idx=activeStatuses.indexOf(status);
+    if(idx!==-1){if(activeStatuses.length<=1)return;activeStatuses.splice(idx,1);}
+    else{activeStatuses.push(status);}
+    // Sync all buttons with same data-status
+    document.querySelectorAll('.status-filter-btn[data-status="'+status+'"]').forEach(function(b){
+        if(activeStatuses.indexOf(status)!==-1){b.classList.remove('inactive');b.classList.add('active');}
+        else{b.classList.remove('active');b.classList.add('inactive');}
+    });
+    renderMapLayers();
 }
 
-// ESC key untuk keluar fullscreen
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && isFullscreen) toggleFullscreen();
+// ─── FILTER PEMILIK + BLOK (sync desktop & mobile) ───────────────
+function handlePemilikChange(pemilik,blokSelect){
+    blokSelect.innerHTML='<option value="">Semua Blok</option>';
+    if(pemilik){
+        blokSelect.disabled=false;
+        mapData.filter(function(b){return b.nama_pemilik===pemilik;}).forEach(function(b){var o=document.createElement('option');o.value=b.id;o.textContent=b.nama_blok;blokSelect.appendChild(o);});
+    }else{blokSelect.disabled=true;}
+    renderMapLayers();
+}
+
+selectEl.addEventListener('change',function(){
+    selectElMobile.value=selectEl.value;
+    handlePemilikChange(selectEl.value,filterBlokEl);
+    filterBlokElMobile.innerHTML=filterBlokEl.innerHTML;
+    filterBlokElMobile.disabled=filterBlokEl.disabled;
 });
+filterBlokEl.addEventListener('change',function(){filterBlokElMobile.value=filterBlokEl.value;renderMapLayers();});
+selectElMobile.addEventListener('change',function(){
+    selectEl.value=selectElMobile.value;
+    handlePemilikChange(selectElMobile.value,filterBlokElMobile);
+    filterBlokEl.innerHTML=filterBlokElMobile.innerHTML;
+    filterBlokEl.disabled=filterBlokElMobile.disabled;
+});
+filterBlokElMobile.addEventListener('change',function(){filterBlokEl.value=filterBlokElMobile.value;renderMapLayers();});
+
+// ─── FULLSCREEN ──────────────────────────────────────────────────
+var isFullscreen=false;
+var btnFsDesktop=document.getElementById('btn-fs-desktop');
+var btnFsDesktopText=document.getElementById('btn-fs-desktop-text');
+var btnFsMobile=document.getElementById('btn-fs-mobile');
+var btnFsMobileText=document.getElementById('btn-fs-mobile-text');
+
+function toggleFullscreen(){
+    var container=document.getElementById('map-container');
+    var mapEl=document.getElementById('map');
+    var sidebar=document.getElementById('sidebar');
+    var header=document.getElementById('map-header');
+    isFullscreen=!isFullscreen;
+
+    if(isFullscreen){
+        container.style.position='fixed';
+        container.style.inset='0';
+        container.style.zIndex='8000';
+        container.style.borderRadius='0';
+        container.style.margin='0';
+        var hH=header.offsetHeight;
+        mapEl.style.height='calc(100vh - '+(hH+8)+'px)';
+        mapEl.style.minHeight='unset';
+        mapEl.style.borderRadius='0';
+        document.body.style.overflow='hidden';
+        if(sidebar)sidebar.style.display='none';
+        // Switch button to "Kecilkan"
+        btnFsDesktop.classList.remove('expand');
+        btnFsDesktop.classList.add('shrink');
+        btnFsDesktopText.textContent='Kecilkan';
+        btnFsMobile.classList.remove('expand');
+        btnFsMobile.classList.add('shrink');
+        btnFsMobileText.textContent='Kecilkan';
+    }else{
+        container.style.position='';
+        container.style.inset='';
+        container.style.zIndex='';
+        container.style.borderRadius='';
+        container.style.margin='';
+        mapEl.style.height='';
+        mapEl.style.minHeight='';
+        mapEl.style.borderRadius='';
+        document.body.style.overflow='';
+        if(sidebar)sidebar.style.display='';
+        // Switch button back to "Perluas Peta"
+        btnFsDesktop.classList.remove('shrink');
+        btnFsDesktop.classList.add('expand');
+        btnFsDesktopText.textContent='Perluas Peta';
+        btnFsMobile.classList.remove('shrink');
+        btnFsMobile.classList.add('expand');
+        btnFsMobileText.textContent='Perluas Peta';
+    }
+    setTimeout(function(){map.invalidateSize();},200);
+}
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&isFullscreen)toggleFullscreen();});
+window.addEventListener('resize',function(){map.invalidateSize();});
+window.addEventListener('orientationchange',function(){setTimeout(function(){map.invalidateSize();},400);});
+document.addEventListener('sidebarToggled',function(){map.invalidateSize();});
 </script>
 @endpush

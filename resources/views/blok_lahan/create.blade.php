@@ -7,8 +7,121 @@
 @push('styles')
 <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
 <style>
-    #draw-map { height: 450px; border-radius: 12px; border: 1px solid #e2e8f0; }
+    /* ─── MAP WRAPPER — Mode Normal ─── */
+    .map-wrapper {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    #draw-map {
+        height: 450px;
+        width: 100%;
+        z-index: 1;
+    }
     @media (max-width: 640px) { #draw-map { height: 300px; } }
+
+    /* Tombol Perluas - centered, prominent */
+    #btn-expand {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        background: rgba(255,255,255,0.92);
+        border: 1.5px solid #d1d5db;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        backdrop-filter: blur(6px);
+        transition: opacity 0.3s ease, transform 0.3s ease, background 0.15s;
+    }
+    #btn-expand:hover { background: #fff; border-color: #059669; color: #059669; }
+    #btn-expand.is-hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.9); }
+    @media (max-width: 640px) { #btn-expand { padding: 6px 12px; font-size: 11px; gap: 4px; } }
+
+    /* Bar atas fullscreen */
+    .map-top-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(4px);
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .map-top-bar.hidden { display: none; }
+    .map-info-luas {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        color: #374151;
+    }
+    .map-info-luas .icon-ha { width: 18px; height: 18px; color: #16a34a; }
+    .map-info-luas strong { font-size: 18px; font-weight: 700; color: #16a34a; }
+    #btn-kecilkan {
+        background: #fee2e2;
+        border: 1px solid #fca5a5;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #dc2626;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.15s;
+        white-space: nowrap;
+    }
+    #btn-kecilkan:hover { background: #fecaca; }
+
+    /* ─── MAP WRAPPER — Mode Fullscreen ─── */
+    .map-wrapper.is-fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9100 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        overflow: visible !important;
+    }
+    .map-wrapper.is-fullscreen #draw-map {
+        height: calc(100vh - 50px) !important;
+        margin-top: 50px;
+    }
+    .map-wrapper.is-fullscreen .leaflet-top {
+        top: 60px !important;
+    }
+    .map-wrapper.is-fullscreen #btn-expand {
+        display: none !important;
+    }
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        .map-wrapper.is-fullscreen #draw-map {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    }
+    @media (max-width: 640px) {
+        .map-top-bar { padding: 6px 10px; }
+        .map-info-luas strong { font-size: 16px; }
+        #btn-kecilkan { font-size: 12px; padding: 5px 9px; }
+    }
 </style>
 @endpush
 
@@ -110,19 +223,79 @@
                 </div>
 
                 <div id="panel-draw" class="space-y-2">
-                    <div class="relative" id="draw-map-wrapper">
+                    <div class="map-wrapper" id="draw-map-wrapper">
+                        {{-- Top bar fullscreen (hidden by default) --}}
+                        <div id="map-top-bar" class="map-top-bar hidden">
+                            <div class="map-info-luas">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon-ha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                                </svg>
+                                <span>Luas: </span>
+                                <strong id="luas-fullscreen">0.00</strong>
+                                <span> ha</span>
+                            </div>
+                            <button type="button" id="btn-kecilkan" onclick="kecilkanPeta()">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
+                                    <line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>
+                                </svg>
+                                Kecilkan Peta
+                            </button>
+                        </div>
+                        {{-- Peta Leaflet --}}
                         <div id="draw-map"></div>
-                        {{-- Tombol fullscreen — di bawah peta (di luar peta agar tidak tertutup) --}}
-                    </div>
-                    <div class="flex items-center justify-between gap-2">
-                        <p class="text-xs text-slate-500 flex-1">
-                            Klik tombol <strong>poligon</strong> di kiri atas peta. Area <span class="text-amber-600 font-semibold">kuning</span> = lahan terdaftar.
-                        </p>
-                        <button type="button" onclick="toggleDrawFullscreen()" id="btn-expand"
-                            class="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-                            <span id="btn-expand-text">Perluas Peta</span>
+                        {{-- Tombol perluas (mode normal) - centered --}}
+                        <button type="button" id="btn-expand" onclick="perluasPeta()">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                            Perluas Peta
                         </button>
+                    </div>
+
+                    {{-- Panduan Interaktif Alat Peta --}}
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mt-2">
+                        <p class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Panduan Alat Peta
+                        </p>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div class="flex items-start gap-2 p-2 bg-white rounded-lg border border-slate-100">
+                                <div class="w-6 h-6 bg-emerald-100 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-semibold text-slate-700">Gambar Polygon</p>
+                                    <p class="text-[10px] text-slate-400 leading-tight">Klik titik-titik batas lahan</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 p-2 bg-white rounded-lg border border-slate-100">
+                                <div class="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <svg class="w-3.5 h-3.5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke-width="2"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-semibold text-slate-700">Kotak (Rectangle)</p>
+                                    <p class="text-[10px] text-slate-400 leading-tight">Drag untuk area persegi</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 p-2 bg-white rounded-lg border border-slate-100">
+                                <div class="w-6 h-6 bg-amber-100 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-semibold text-slate-700">Edit Titik</p>
+                                    <p class="text-[10px] text-slate-400 leading-tight">Geser titik polygon</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 p-2 bg-white rounded-lg border border-slate-100">
+                                <div class="w-6 h-6 bg-red-100 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-semibold text-slate-700">Hapus Polygon</p>
+                                    <p class="text-[10px] text-slate-400 leading-tight">Klik polygon lalu hapus</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-2">💡 Area <span class="text-amber-600 font-semibold">kuning</span> = lahan terdaftar milik anggota lain. Luas otomatis terhitung setelah polygon selesai.</p>
                     </div>
                 </div>
 
@@ -276,6 +449,7 @@ function syncGeoJson() {
         document.getElementById('textarea_geojson').value = '';
         updateLuas({});
     }
+    syncLuasFullscreen();
 }
 
 // ─── TEXTAREA GeoJSON: hitung luas saat blur ─────────────────────
@@ -333,34 +507,68 @@ document.getElementById('tahun_tanam').addEventListener('input', function() {
 });
 
 // ─── FULLSCREEN PETA DRAW ────────────────────────────────────────
-var isDrawFullscreen = false;
-function toggleDrawFullscreen() {
-    var mapEl = document.getElementById('draw-map');
-    var panelDraw = document.getElementById('panel-draw');
-    var mapWrapper = document.getElementById('draw-map-wrapper');
-    var sidebar = document.getElementById('sidebar');
-    var btnText = document.getElementById('btn-expand-text');
-    var btnExpand = document.getElementById('btn-expand');
-    isDrawFullscreen = !isDrawFullscreen;
-    if (isDrawFullscreen) {
-        panelDraw.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:9500;background:#fff;padding:0;margin:0;';
-        mapWrapper.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;';
-        mapEl.style.cssText = 'height:100%!important;width:100%!important;border-radius:0;';
-        document.body.style.overflow = 'hidden';
-        if (sidebar) sidebar.style.display = 'none';
-        btnText.textContent = 'Kecilkan';
-        btnExpand.className = 'flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-lg transition-all fixed top-3 right-3 z-[9600]';
-    } else {
-        panelDraw.style.cssText = '';
-        mapWrapper.style.cssText = '';
-        mapEl.style.cssText = '';
-        document.body.style.overflow = '';
-        if (sidebar) sidebar.style.display = '';
-        btnText.textContent = 'Perluas Peta';
-        btnExpand.className = 'flex-shrink-0 flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all';
-    }
-    setTimeout(function() { drawMap.invalidateSize(); }, 250);
+var expandBtn = document.getElementById('btn-expand');
+var drawDragTimer = null;
+
+function perluasPeta() {
+    var wrapper = document.getElementById('draw-map-wrapper');
+    var topBar = document.getElementById('map-top-bar');
+    wrapper.classList.add('is-fullscreen');
+    topBar.classList.remove('hidden');
+    syncLuasFullscreen();
+    setTimeout(function() { drawMap.invalidateSize(); }, 150);
+    document.body.style.overflow = 'hidden';
 }
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && isDrawFullscreen) toggleDrawFullscreen(); });
+
+function kecilkanPeta() {
+    var wrapper = document.getElementById('draw-map-wrapper');
+    var topBar = document.getElementById('map-top-bar');
+    wrapper.classList.remove('is-fullscreen');
+    topBar.classList.add('hidden');
+    setTimeout(function() { drawMap.invalidateSize(); }, 150);
+    document.body.style.overflow = '';
+}
+
+// Auto-hide perluas button saat drag/zoom peta
+function hideExpandBtn() {
+    if (expandBtn && !document.getElementById('draw-map-wrapper').classList.contains('is-fullscreen')) {
+        expandBtn.classList.add('is-hidden');
+    }
+}
+function showExpandBtn() {
+    if (expandBtn && !document.getElementById('draw-map-wrapper').classList.contains('is-fullscreen')) {
+        expandBtn.classList.remove('is-hidden');
+    }
+}
+
+drawMap.on('movestart', function() { hideExpandBtn(); clearTimeout(drawDragTimer); });
+drawMap.on('zoomstart', function() { hideExpandBtn(); clearTimeout(drawDragTimer); });
+drawMap.on('moveend', function() { clearTimeout(drawDragTimer); drawDragTimer = setTimeout(showExpandBtn, 1200); });
+drawMap.on('zoomend', function() { clearTimeout(drawDragTimer); drawDragTimer = setTimeout(showExpandBtn, 1200); });
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        var wrapper = document.getElementById('draw-map-wrapper');
+        if (wrapper && wrapper.classList.contains('is-fullscreen')) {
+            kecilkanPeta();
+        }
+    }
+});
+
+function syncLuasFullscreen() {
+    var inputLuas = document.getElementById('luas_ha');
+    var luasFullscreen = document.getElementById('luas-fullscreen');
+    if (inputLuas && luasFullscreen) {
+        var nilai = parseFloat(inputLuas.value) || 0;
+        luasFullscreen.textContent = nilai.toFixed(2);
+    }
+}
+
+// Listen for sidebar toggle
+document.addEventListener('sidebarToggled', function() {
+    if (typeof drawMap !== 'undefined') {
+        drawMap.invalidateSize();
+    }
+});
 </script>
 @endpush

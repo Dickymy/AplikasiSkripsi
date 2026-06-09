@@ -6,7 +6,7 @@
 
 @section('content')
 
-<div class="max-w-4xl mx-auto">
+<div class="w-full max-w-4xl mx-auto overflow-hidden">
 
     <form action="{{ route('kondisi-lahan.update', $kondisiLahan) }}" method="POST" class="space-y-6">
         @csrf

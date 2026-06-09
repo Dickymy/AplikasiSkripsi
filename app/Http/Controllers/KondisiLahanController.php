@@ -8,13 +8,28 @@ use Illuminate\Http\Request;
 
 class KondisiLahanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data = KondisiLahan::with('blokLahan')
-            ->latest('tanggal_observasi')
-            ->paginate(15);
+        $query = KondisiLahan::with('blokLahan.anggota')
+            ->latest('tanggal_observasi');
 
-        return view('kondisi_lahan.index', compact('data'));
+        // Filter by blok lahan
+        if ($request->filled('blok_lahan_id')) {
+            $query->where('blok_lahan_id', $request->blok_lahan_id);
+        }
+
+        // Filter by anggota (through blokLahan)
+        if ($request->filled('anggota_id')) {
+            $query->whereHas('blokLahan', function ($q) use ($request) {
+                $q->where('anggota_id', $request->anggota_id);
+            });
+        }
+
+        $data = $query->paginate(15)->withQueryString();
+        $anggotas = \App\Models\Anggota::orderBy('nama')->get();
+        $bloks = \App\Models\BlokLahan::orderBy('nama_blok')->get();
+
+        return view('kondisi_lahan.index', compact('data', 'anggotas', 'bloks'));
     }
 
     public function create(Request $request)

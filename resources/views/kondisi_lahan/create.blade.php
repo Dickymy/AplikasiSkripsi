@@ -6,14 +6,14 @@
 
 @section('content')
 
-<div class="max-w-4xl mx-auto">
+<div class="w-full max-w-4xl mx-auto overflow-hidden">
 
-    <form action="{{ route('kondisi-lahan.store') }}" method="POST" class="space-y-6">
+    <form action="{{ route('kondisi-lahan.store') }}" method="POST" class="space-y-4 sm:space-y-6">
         @csrf
 
         {{-- SEKSI 1: Identifikasi Blok --}}
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-            <h2 class="text-base font-semibold text-slate-800 mb-4 flex items-center gap-2.5">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6">
+            <h2 class="text-sm sm:text-base font-semibold text-slate-800 mb-4 flex items-center gap-2.5">
                 <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</span>
                 Identifikasi Blok Lahan
             </h2>
@@ -57,8 +57,8 @@
                 <span class="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">2</span>
                 Kondisi Tanah
             </h2>
-            <p class="text-xs text-slate-400 mb-4 ml-8">Data keasaman dan kelembaban tanah untuk menentukan efektivitas penyerapan pupuk.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <p class="text-xs text-slate-400 mb-4 ml-0 sm:ml-8">Data keasaman dan kelembaban tanah untuk menentukan efektivitas penyerapan pupuk.</p>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">pH Tanah</label>
                     <input type="number" name="ph_tanah" value="{{ old('ph_tanah') }}"
@@ -77,7 +77,7 @@
                             <option value="{{ $opt }}" {{ old('kelembaban_tanah') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
                         @endforeach
                     </select>
-                    <p class="mt-1 text-xs text-slate-400">Pengaruh: pupuk butuh kelembaban untuk terlarut dan diserap akar</p>
+                    <p class="mt-1 text-xs text-slate-400 break-words">Pengaruh: pupuk butuh kelembaban untuk terlarut dan diserap akar</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Kondisi Drainase</label>
@@ -99,7 +99,7 @@
                 <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-bold">3</span>
                 Kondisi Iklim
             </h2>
-            <p class="text-xs text-slate-400 mb-4 ml-8">Musim dan curah hujan mempengaruhi kapan waktu terbaik aplikasi pupuk.</p>
+            <p class="text-xs text-slate-400 mb-4 ml-0 sm:ml-8">Musim dan curah hujan mempengaruhi kapan waktu terbaik aplikasi pupuk.</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Musim Saat Ini</label>
@@ -129,7 +129,7 @@
                 <span class="w-6 h-6 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold">4</span>
                 Gejala Visual Tanaman
             </h2>
-            <p class="text-xs text-slate-400 mb-4 ml-8">Pengamatan fisik daun, pelepah, dan tandan untuk mendeteksi kekurangan unsur hara.</p>
+            <p class="text-xs text-slate-400 mb-4 ml-0 sm:ml-8">Pengamatan fisik daun, pelepah, dan tandan untuk mendeteksi kekurangan unsur hara.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
                 <div>
@@ -172,7 +172,7 @@
                 </label>
                 <p class="text-xs text-slate-400 mb-3">Pilih unsur hara yang diduga kurang berdasarkan pengamatan visual. Sistem akan mencocokkan dengan rule base untuk menentukan jenis pupuk yang tepat.</p>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2" id="defisiensi-grid">
+                <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1.5 sm:gap-2" id="defisiensi-grid">
                     @foreach(['N','P','K','Mg','B','Fe','Zn'] as $def)
                     @php
                         $defLabel = match($def) {
@@ -244,8 +244,8 @@
         </div>
 
         {{-- SEKSI 5: Catatan --}}
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-            <h2 class="text-base font-semibold text-slate-800 mb-3 flex items-center gap-2.5">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6">
+            <h2 class="text-sm sm:text-base font-semibold text-slate-800 mb-3 flex items-center gap-2.5">
                 <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-xs font-bold">5</span>
                 Catatan Observasi
             </h2>
@@ -255,9 +255,9 @@
         </div>
 
         {{-- Action Buttons --}}
-        <div class="flex items-center justify-end gap-3 pb-2">
+        <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pb-2">
             <a href="{{ route('kondisi-lahan.index') }}"
-               class="px-5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-700 hover:bg-slate-50 transition-colors font-medium">
+               class="px-5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-700 hover:bg-slate-50 transition-colors font-medium text-center">
                 Batal
             </a>
             <button type="submit"
