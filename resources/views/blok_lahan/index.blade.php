@@ -27,12 +27,12 @@
             <table class="w-full text-sm" id="table-blok">
                 <thead>
                     <tr class="border-b border-slate-200 bg-slate-50">
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">No</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">No</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama Blok</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Pemilik</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Luas (Ha)</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">SPH</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Kriteria</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Luas (Ha)</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">SPH</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Kriteria</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -40,12 +40,12 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($blokLahans as $i => $blok)
                     <tr class="hover:bg-slate-50/50 transition-colors" data-search="{{ strtolower($blok->nama_blok . ' ' . ($blok->anggota?->nama ?? '')) }}">
-                        <td class="px-5 py-4 text-slate-400">{{ $i + 1 }}</td>
+                        <td class="px-5 py-4 text-slate-400 hide-mobile">{{ $i + 1 }}</td>
                         <td class="px-5 py-4 font-semibold text-slate-900">{{ $blok->nama_blok }}</td>
                         <td class="px-5 py-4 text-slate-600">{{ $blok->anggota?->nama ?? '—' }}</td>
-                        <td class="px-5 py-4 text-slate-600">{{ number_format($blok->luas_ha, 2) }}</td>
-                        <td class="px-5 py-4 text-slate-600">{{ number_format($blok->sph) }}</td>
-                        <td class="px-5 py-4">
+                        <td class="px-5 py-4 text-slate-600 hide-mobile">{{ number_format($blok->luas_ha, 2) }}</td>
+                        <td class="px-5 py-4 text-slate-600 hide-mobile">{{ number_format($blok->sph) }}</td>
+                        <td class="px-5 py-4 hide-mobile">
                             @if($blok->tahun_tanam)
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-medium">
                                     {{ $blok->umur_tanaman }} thn · {{ $blok->kategori_umur }}

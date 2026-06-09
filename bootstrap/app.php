@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.admin' => \App\Http\Middleware\AdminAuthenticated::class,
         ]);
         $middleware->redirectGuestsTo('/login');
+        // Trust ngrok proxy agar HTTPS/redirect berjalan benar
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

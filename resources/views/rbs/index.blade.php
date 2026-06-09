@@ -91,10 +91,10 @@
             <thead>
                 <tr class="border-b border-slate-100 bg-slate-50/60">
                     <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Blok Lahan</th>
-                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Umur / Kategori</th>
-                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Kondisi Terbaru</th>
+                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Umur / Kategori</th>
+                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Kondisi Terbaru</th>
                     <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status RBS</th>
-                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rule Terpicu</th>
+                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Rule Terpicu</th>
                     <th class="text-right px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
@@ -117,7 +117,7 @@
                         <p class="font-semibold text-slate-800">{{ $blok->nama_blok }}</p>
                         <p class="text-xs text-slate-400">{{ $blok->nama_pemilik }} · {{ $blok->luas_ha }} Ha</p>
                     </td>
-                    <td class="px-4 py-4">
+                    <td class="px-4 py-4 hide-mobile">
                         @if($blok->tahun_tanam)
                             <p class="text-slate-700 font-medium">{{ $blok->umur_tanaman }} tahun</p>
                             <p class="text-xs text-slate-400">{{ $blok->kategori_umur }}</p>
@@ -125,7 +125,7 @@
                             <span class="text-xs text-slate-400">Belum diisi</span>
                         @endif
                     </td>
-                    <td class="px-4 py-4">
+                    <td class="px-4 py-4 hide-mobile">
                         @if($kondisi)
                             <p class="text-slate-700 text-xs">{{ $kondisi->tanggal_observasi->format('d M Y') }}</p>
                             @if($kondisi->warna_daun)
@@ -149,7 +149,7 @@
                             <p class="text-xs text-slate-400 mt-1">{{ $rbs->tanggal_analisis->format('d M Y') }}</p>
                         @endif
                     </td>
-                    <td class="px-4 py-4 text-center">
+                    <td class="px-4 py-4 text-center hide-mobile">
                         @if($rbs)
                             <span class="text-lg font-bold text-slate-700">{{ $rbs->jumlah_rule_terpicu }}</span>
                             <span class="text-xs text-slate-400 ml-1">rule</span>

@@ -11,19 +11,38 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    <style>
+        /* Fix: Leaflet z-index harus di bawah sidebar mobile */
+        .leaflet-pane, .leaflet-control, .leaflet-top, .leaflet-bottom { z-index: 40 !important; }
+        .leaflet-control { z-index: 41 !important; }
+        /* Responsive: popup tidak overflow di mobile */
+        .leaflet-popup-content-wrapper { max-width: 90vw !important; }
+        .leaflet-popup-content { max-width: 100% !important; overflow-x: hidden; }
+        /* KRITIS: Prevent horizontal scroll */
+        html, body { overflow-x: hidden !important; max-width: 100vw; }
+        /* Responsive table */
+        @media (max-width: 640px) {
+            .hide-mobile { display: none !important; }
+            table th, table td { padding: 6px 8px !important; font-size: 11px; }
+        }
+    </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 font-[Inter]">
 
 <div class="flex h-full">
     {{-- SIDEBAR --}}
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 lg:translate-x-0 -translate-x-full shadow-sm">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-[9000] w-64 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 lg:translate-x-0 -translate-x-full shadow-sm">
 
         {{-- Nama Aplikasi --}}
-        <div class="flex items-center px-6 py-5 border-b border-slate-100">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
             <div>
                 <p class="text-sm font-bold text-slate-900 leading-tight">SPK Sawit</p>
                 <p class="text-xs text-slate-500">Kelompok Tani</p>
             </div>
+            {{-- Tombol collapse sidebar (desktop) --}}
+            <button onclick="collapseSidebar()" class="hidden lg:block p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" title="Tutup Sidebar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+            </button>
         </div>
 
         {{-- Navigation --}}
@@ -115,14 +134,19 @@
     </aside>
 
     {{-- MOBILE OVERLAY --}}
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-[8999] lg:hidden hidden" onclick="toggleSidebar()"></div>
 
     {{-- MAIN CONTENT --}}
-    <div class="flex-1 flex flex-col lg:ml-64 min-h-screen">
+    <div class="flex-1 flex flex-col lg:ml-64 min-h-screen transition-all duration-300" data-main-content>
         {{-- Top Bar --}}
         <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <button onclick="collapseSidebar()" class="hidden lg:block p-2 rounded-lg text-slate-500 hover:bg-slate-100" title="Toggle Sidebar">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
@@ -170,6 +194,21 @@
         const overlay = document.getElementById('sidebar-overlay');
         sidebar.classList.toggle('-translate-x-full');
         overlay.classList.toggle('hidden');
+    }
+
+    // Desktop: collapse/expand sidebar
+    var sidebarCollapsed = false;
+    function collapseSidebar() {
+        var sidebar = document.getElementById('sidebar');
+        var mainContent = document.querySelector('[data-main-content]');
+        sidebarCollapsed = !sidebarCollapsed;
+        if (sidebarCollapsed) {
+            sidebar.style.transform = 'translateX(-100%)';
+            if (mainContent) mainContent.style.marginLeft = '0';
+        } else {
+            sidebar.style.transform = '';
+            if (mainContent) mainContent.style.marginLeft = '';
+        }
     }
 
     // ─── Custom Confirm Modal ────────────────────────────────────

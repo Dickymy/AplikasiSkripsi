@@ -6,7 +6,9 @@
 
 @push('styles')
 <style>
-    #map { height: calc(100vh - 280px); min-height: 400px; border-radius: 12px; }
+    #map { height: calc(100vh - 320px); min-height: 300px; border-radius: 12px; }
+    @media (max-width: 640px) { #map { height: 300px; } }
+    .leaflet-tooltip-label { background: transparent !important; border: none !important; box-shadow: none !important; color: #1e293b; font-size: 10px; font-weight: 700; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; padding: 0 !important; }
     .leaflet-popup-content-wrapper { background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .leaflet-popup-tip { background: #ffffff; }
     .leaflet-popup-content { margin: 14px 16px; }
@@ -19,7 +21,7 @@
     .badge-normal { background: #dcfce7; color: #166534; }
     .badge-tunda { background: #fef9c3; color: #854d0e; }
     .badge-belum { background: #f1f5f9; color: #475569; }
-    .map-legend { position: absolute; bottom: 30px; right: 10px; z-index: 1000; background: rgba(255,255,255,0.95); border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .map-legend { position: absolute; bottom: 30px; right: 10px; z-index: 42; background: rgba(255,255,255,0.95); border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #64748b; padding: 2px 0; }
     .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
 </style>
@@ -57,34 +59,40 @@
 </div>
 
 {{-- Map Container --}}
-<div class="bg-white border border-slate-200 rounded-2xl overflow-hidden relative shadow-sm">
-    <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
+<div class="bg-white border border-slate-200 rounded-2xl overflow-hidden relative shadow-sm" id="map-container">
+    <div class="px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-1">
             <div class="flex items-center gap-2">
                 <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span class="text-sm font-semibold text-slate-800">Peta Interaktif Blok Lahan</span>
+                <span class="text-xs sm:text-sm font-semibold text-slate-800">Peta Interaktif</span>
             </div>
-            {{-- Dropdown Filter Pemilik --}}
-            <div class="relative min-w-[220px]">
-                <select id="filter-pemilik" class="w-full pl-3 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors cursor-pointer appearance-none">
-                    <option value="">Semua Pemilik Lahan</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </div>
-            </div>
+            {{-- Filter Pemilik --}}
+            <select id="filter-pemilik" class="pl-3 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors cursor-pointer appearance-none min-w-[150px]">
+                <option value="">Semua Pemilik</option>
+            </select>
+            {{-- Filter Blok (muncul setelah pilih pemilik) --}}
+            <select id="filter-blok" class="pl-3 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors cursor-pointer appearance-none min-w-[140px] hidden">
+                <option value="">Semua Blok</option>
+            </select>
         </div>
-        <a href="{{ route('blok-lahan.create') }}" class="text-xs px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1.5 font-medium shadow-sm self-start sm:self-auto">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Tambah Blok
-        </a>
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+            {{-- Tombol Fullscreen Peta --}}
+            <button type="button" onclick="toggleFullscreen()" title="Perluas Peta"
+                class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors border border-slate-200" id="btn-fullscreen">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+            </button>
+            <a href="{{ route('blok-lahan.create') }}" class="text-xs px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1.5 font-medium shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span class="hidden sm:inline">Tambah Blok</span>
+            </a>
+        </div>
     </div>
-    <div class="p-4 relative">
+    <div class="p-2 sm:p-4 relative">
         <div id="map"></div>
 
-        {{-- Legend --}}
-        <div class="map-legend">
-            <p class="text-xs font-semibold text-slate-700 mb-2">Status RBS</p>
+        {{-- Legend (hidden di mobile kecil) --}}
+        <div class="map-legend hidden sm:block">
+            <p class="text-xs font-semibold text-slate-700 mb-2">Status Lahan</p>
             <div class="legend-item"><div class="legend-dot" style="background:#dc2626;"></div>Darurat</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f97316;"></div>Segera</div>
             <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>Normal</div>
@@ -268,6 +276,7 @@ function renderMapLayers(selectedPemilik = '') {
         });
 
         layer.bindPopup(buildPopupContent(blok), { maxWidth: 300 });
+        layer.bindTooltip(blok.nama_blok, { permanent: true, direction: 'center', className: 'leaflet-tooltip-label' });
 
         layer.on('mouseover', function(e) {
             e.target.setStyle({ fillOpacity: 0.7, weight: 3 });
@@ -290,9 +299,89 @@ function renderMapLayers(selectedPemilik = '') {
 // Render awal
 renderMapLayers();
 
-// Filter pemilik
+// ─── FILTER: Pemilik + Blok ──────────────────────────────────────
+var filterBlokEl = document.getElementById('filter-blok');
+
 selectEl.addEventListener('change', function(e) {
-    renderMapLayers(e.target.value);
+    var pemilik = e.target.value;
+    renderMapLayers(pemilik);
+
+    // Populate filter blok berdasarkan pemilik yang dipilih
+    filterBlokEl.innerHTML = '<option value="">Semua Blok</option>';
+    if (pemilik) {
+        var bloks = mapData.filter(function(b) { return b.nama_pemilik === pemilik; });
+        bloks.forEach(function(b) {
+            var opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = b.nama_blok;
+            filterBlokEl.appendChild(opt);
+        });
+        filterBlokEl.classList.remove('hidden');
+    } else {
+        filterBlokEl.classList.add('hidden');
+    }
+});
+
+filterBlokEl.addEventListener('change', function(e) {
+    var blokId = e.target.value;
+    var pemilik = selectEl.value;
+
+    if (blokId) {
+        // Filter ke satu blok spesifik
+        var filtered = mapData.filter(function(b) { return b.id == blokId; });
+        mapLayers.forEach(function(item) { map.removeLayer(item.layer); });
+        mapLayers = [];
+        updateStats(filtered);
+
+        filtered.forEach(function(blok) {
+            if (!blok.geojson) return;
+            var color = getColorRbs(blok.status_rbs || 'Belum Dianalisis');
+            var layer = L.geoJSON(blok.geojson, { style: { fillColor: color, fillOpacity: 0.45, color: color, weight: 2, opacity: 0.9 } });
+            layer.bindPopup(buildPopupContent(blok), { maxWidth: 300 });
+            layer.addTo(map);
+            mapLayers.push({ id: blok.id, layer: layer });
+        });
+        if (mapLayers.length > 0) map.fitBounds(L.featureGroup(mapLayers.map(function(m){return m.layer;})).getBounds().pad(0.2));
+    } else {
+        renderMapLayers(pemilik);
+    }
+});
+
+// ─── FULLSCREEN PETA ─────────────────────────────────────────────
+var isFullscreen = false;
+function toggleFullscreen() {
+    var container = document.getElementById('map-container');
+    var mapEl = document.getElementById('map');
+    var sidebar = document.getElementById('sidebar');
+    isFullscreen = !isFullscreen;
+
+    if (isFullscreen) {
+        container.style.position = 'fixed';
+        container.style.inset = '0';
+        container.style.zIndex = '8000';
+        container.style.borderRadius = '0';
+        container.style.margin = '0';
+        mapEl.style.height = 'calc(100vh - 60px)';
+        mapEl.style.minHeight = 'unset';
+        document.body.style.overflow = 'hidden';
+        if (sidebar) sidebar.style.display = 'none';
+    } else {
+        container.style.position = '';
+        container.style.inset = '';
+        container.style.zIndex = '';
+        container.style.borderRadius = '';
+        container.style.margin = '';
+        mapEl.style.height = '';
+        mapEl.style.minHeight = '';
+        document.body.style.overflow = '';
+        if (sidebar) sidebar.style.display = '';
+    }
+    setTimeout(function() { map.invalidateSize(); }, 200);
+}
+
+// ESC key untuk keluar fullscreen
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && isFullscreen) toggleFullscreen();
 });
 </script>
 @endpush

@@ -24,10 +24,10 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b border-slate-200 bg-slate-50">
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">No</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">No</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama Anggota</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">No. HP</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Alamat</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">No. HP</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Alamat</th>
                         <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Jumlah Blok</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -35,10 +35,10 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($anggotas as $i => $anggota)
                     <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td class="px-5 py-4 text-slate-400">{{ $i + 1 }}</td>
+                        <td class="px-5 py-4 text-slate-400 hide-mobile">{{ $i + 1 }}</td>
                         <td class="px-5 py-4 font-semibold text-slate-900">{{ $anggota->nama }}</td>
-                        <td class="px-5 py-4 text-slate-600">{{ $anggota->no_hp ?? '—' }}</td>
-                        <td class="px-5 py-4 text-slate-600 text-xs max-w-[200px] truncate">{{ $anggota->alamat ?? '—' }}</td>
+                        <td class="px-5 py-4 text-slate-600 hide-mobile">{{ $anggota->no_hp ?? '—' }}</td>
+                        <td class="px-5 py-4 text-slate-600 text-xs max-w-[200px] truncate hide-mobile">{{ $anggota->alamat ?? '—' }}</td>
                         <td class="px-5 py-4 text-center">
                             <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-bold">
                                 {{ $anggota->blok_lahans_count }}

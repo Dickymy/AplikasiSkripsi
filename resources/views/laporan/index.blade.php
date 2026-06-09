@@ -102,44 +102,44 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b border-slate-200 bg-slate-50">
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">No</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">No</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Blok Lahan</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Tgl Analisis</th>
-                        <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Dosis Urea</th>
-                        <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Dosis KCl</th>
-                        <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Urea</th>
-                        <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Total KCl</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Tgl Analisis</th>
+                        <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Dosis Urea</th>
+                        <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Dosis KCl</th>
+                        <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Total Urea</th>
+                        <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Total KCl</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Masalah</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Masalah</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($rekap as $i => $r)
                     <tr class="hover:bg-slate-50/60 transition-colors">
-                        <td class="px-5 py-4 text-slate-400 font-medium">{{ $i + 1 }}</td>
+                        <td class="px-5 py-4 text-slate-400 font-medium hide-mobile">{{ $i + 1 }}</td>
                         <td class="px-5 py-4">
                             <div class="font-bold text-slate-800">{{ $r->blokLahan->nama_blok }}</div>
                             <div class="text-[10px] text-slate-500 font-medium mt-0.5">{{ $r->blokLahan->nama_pemilik }}</div>
                             <div class="text-[10px] text-slate-400">{{ number_format($r->blokLahan->luas_ha, 2) }} Ha · {{ number_format($r->blokLahan->sph) }} ph/Ha</div>
                         </td>
-                        <td class="px-5 py-4 text-slate-600 text-xs font-medium">{{ $r->tanggal_analisis->format('d/m/Y') }}</td>
-                        <td class="px-5 py-4 text-center">
+                        <td class="px-5 py-4 text-slate-600 text-xs font-medium hide-mobile">{{ $r->tanggal_analisis->format('d/m/Y') }}</td>
+                        <td class="px-5 py-4 text-center hide-mobile">
                             @if($r->dosis_urea)
                             <span class="text-amber-800 font-bold bg-amber-50 border border-amber-200/50 px-2 py-0.5 rounded text-xs">{{ $r->dosis_urea }} kg/pk</span>
                             @else
                             <span class="text-slate-400 text-xs">—</span>
                             @endif
                         </td>
-                        <td class="px-5 py-4 text-center">
+                        <td class="px-5 py-4 text-center hide-mobile">
                             @if($r->dosis_kcl)
                             <span class="text-cyan-800 font-bold bg-cyan-50 border border-cyan-100 px-2 py-0.5 rounded text-xs">{{ $r->dosis_kcl }} kg/pk</span>
                             @else
                             <span class="text-slate-400 text-xs">—</span>
                             @endif
                         </td>
-                        <td class="px-5 py-4 text-center text-slate-700 font-medium text-xs">{{ $r->total_urea ? number_format($r->total_urea, 1) : '—' }}</td>
-                        <td class="px-5 py-4 text-center text-slate-700 font-medium text-xs">{{ $r->total_kcl ? number_format($r->total_kcl, 1) : '—' }}</td>
+                        <td class="px-5 py-4 text-center text-slate-700 font-medium text-xs hide-mobile">{{ $r->total_urea ? number_format($r->total_urea, 1) : '—' }}</td>
+                        <td class="px-5 py-4 text-center text-slate-700 font-medium text-xs hide-mobile">{{ $r->total_kcl ? number_format($r->total_kcl, 1) : '—' }}</td>
                         <td class="px-5 py-4 text-xs">
                             @php $sc = match($r->status_kebutuhan_dominan) {
                                 'Darurat' => 'bg-red-50 text-red-700 border border-red-100',
@@ -150,7 +150,7 @@
                             }; @endphp
                             <span class="inline-flex px-2.5 py-0.5 border rounded-lg font-medium {{ $sc }}">{{ $r->status_kebutuhan_dominan }}</span>
                         </td>
-                        <td class="px-5 py-4 text-xs text-slate-600 max-w-[200px]">
+                        <td class="px-5 py-4 text-xs text-slate-600 max-w-[200px] hide-mobile">
                             @if($r->masalah_teridentifikasi)
                                 {{ implode(', ', array_slice($r->masalah_teridentifikasi, 0, 2)) }}
                                 @if(count($r->masalah_teridentifikasi) > 2)

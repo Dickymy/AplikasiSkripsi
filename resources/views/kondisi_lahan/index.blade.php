@@ -6,18 +6,19 @@
 
 @section('content')
 
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
     <div class="flex items-center gap-3">
         <p class="text-sm text-slate-500">Total <span class="font-semibold text-slate-800">{{ $data->total() }}</span> data</p>
         <input type="text" id="search-kondisi" placeholder="Cari blok / pemilik..."
-            class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 w-48">
+            class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 w-44 sm:w-48">
     </div>
     <a href="{{ route('kondisi-lahan.create') }}"
-       class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
+       class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
-        Input Kondisi Baru
+        <span class="hidden sm:inline">Input Kondisi Baru</span>
+        <span class="sm:hidden">Input</span>
     </a>
 </div>
 
@@ -40,11 +41,11 @@
                 <thead>
                     <tr class="border-b border-slate-100 bg-slate-50/60">
                         <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Blok Lahan</th>
-                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tgl Observasi</th>
-                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Warna Daun</th>
-                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">pH Tanah</th>
-                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Musim</th>
-                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Gejala</th>
+                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Tgl Observasi</th>
+                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Warna Daun</th>
+                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">pH Tanah</th>
+                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Musim</th>
+                        <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hide-mobile">Gejala</th>
                         <th class="text-right px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -55,10 +56,10 @@
                             <p class="font-semibold text-slate-800">{{ $kondisi->blokLahan->nama_blok ?? '-' }}</p>
                             <p class="text-xs text-slate-400">{{ $kondisi->blokLahan->nama_pemilik ?? '-' }}</p>
                         </td>
-                        <td class="px-4 py-4 text-slate-600">
+                        <td class="px-4 py-4 text-slate-600 hide-mobile">
                             {{ $kondisi->tanggal_observasi->format('d M Y') }}
                         </td>
-                        <td class="px-4 py-4">
+                        <td class="px-4 py-4 hide-mobile">
                             @if($kondisi->warna_daun)
                                 @php
                                     $warnaColor = match($kondisi->warna_daun) {
@@ -80,7 +81,7 @@
                                 <span class="text-slate-400 text-xs">—</span>
                             @endif
                         </td>
-                        <td class="px-4 py-4">
+                        <td class="px-4 py-4 hide-mobile">
                             @if($kondisi->ph_tanah)
                                 <span class="font-semibold text-slate-800">{{ $kondisi->ph_tanah }}</span>
                                 <span class="text-xs text-slate-400 ml-1">({{ $kondisi->label_ph }})</span>
@@ -88,10 +89,10 @@
                                 <span class="text-slate-400 text-xs">—</span>
                             @endif
                         </td>
-                        <td class="px-4 py-4 text-slate-600 text-xs">
+                        <td class="px-4 py-4 text-slate-600 text-xs hide-mobile">
                             {{ $kondisi->musim_saat_ini ?? '—' }}
                         </td>
-                        <td class="px-4 py-4">
+                        <td class="px-4 py-4 hide-mobile">
                             <div class="flex flex-wrap gap-1">
                                 @if(!empty($kondisi->gejala_defisiensi))
                                     @foreach($kondisi->gejala_defisiensi as $def)

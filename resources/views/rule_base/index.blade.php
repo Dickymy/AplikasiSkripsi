@@ -19,17 +19,17 @@
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead><tr class="border-b border-slate-200 bg-slate-50">
-                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase">No</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase">Parameter Kondisi (IF)</th>
-                    <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase">Urea (kg/pk)</th>
-                    <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase">KCl (kg/pk)</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase">Status (THEN)</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase hide-mobile">No</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase">Parameter Kondisi</th>
+                    <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase hide-mobile">Urea</th>
+                    <th class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase hide-mobile">KCl</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase">Status</th>
                     <th class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase">Aksi</th>
                 </tr></thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($ruleBases as $i => $rule)
                     <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td class="px-5 py-4 text-slate-400">{{ $i + 1 }}</td>
+                        <td class="px-5 py-4 text-slate-400 hide-mobile">{{ $i + 1 }}</td>
                         <td class="px-5 py-4">
                             @php $parts = explode('|', $rule->parameter_kondisi); @endphp
                             <div class="flex flex-wrap gap-1">
@@ -38,8 +38,8 @@
                                 @endforeach
                             </div>
                         </td>
-                        <td class="px-5 py-4 text-center font-semibold text-amber-600">{{ $rule->takaran_urea }}</td>
-                        <td class="px-5 py-4 text-center font-semibold text-cyan-600">{{ $rule->takaran_kcl }}</td>
+                        <td class="px-5 py-4 text-center font-semibold text-amber-600 hide-mobile">{{ $rule->takaran_urea }}</td>
+                        <td class="px-5 py-4 text-center font-semibold text-cyan-600 hide-mobile">{{ $rule->takaran_kcl }}</td>
                         <td class="px-5 py-4">
                             @php $sc = match($rule->status_pemupukan) {
                                 'Segera Pupuk' => 'bg-rose-50 text-rose-700 border border-rose-100',
