@@ -162,6 +162,7 @@
                         class="w-full px-4 py-3 bg-white border {{ $errors->has('sph') ? 'border-red-400' : 'border-slate-300' }} rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
                     @error('sph') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
                     <p class="mt-1 text-xs text-slate-400">Umumnya 136 pohon/Ha untuk jarak tanam 9×9m</p>
+                    <p class="mt-0.5 text-xs text-amber-600">⚠️ Nilai normal: 136–148 pohon/Ha</p>
                 </div>
                 <div></div>
             </div>

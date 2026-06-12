@@ -52,7 +52,7 @@
 
     {{-- Filter --}}
     <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm no-print">
-        <form method="GET" action="{{ route('laporan.index') }}" id="laporan-filter-form" class="flex flex-col sm:flex-row flex-wrap items-start sm:items-end gap-2 sm:gap-3">
+        <form method="GET" action="{{ route('laporan.index') }}" id="laporan-filter-form" data-no-prevent-double="true" class="flex flex-col sm:flex-row flex-wrap items-start sm:items-end gap-2 sm:gap-3">
             <div class="w-full sm:w-auto sm:min-w-[180px]">
                 <label class="block text-xs text-slate-500 font-semibold mb-1">Pemilik</label>
                 @include('components.filter-searchable', [
@@ -144,6 +144,7 @@
                         <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-400 uppercase">Urea (kg)</th>
                         <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-400 uppercase">KCl (kg)</th>
                         <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Tanggal</th>
+                        <th class="px-4 py-2.5 text-center text-[10px] font-semibold text-slate-400 uppercase">Realisasi</th>
                         <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-400 uppercase">Aksi</th>
                     </tr>
                 </thead>
@@ -171,6 +172,13 @@
                             {{ $layak && $r->total_kcl ? number_format($r->total_kcl, 1) : '—' }}
                         </td>
                         <td class="px-4 py-2.5 text-xs text-slate-500">{{ $r->tanggal_analisis->format('d/m/Y') }}</td>
+                        <td class="px-4 py-2.5 text-center">
+                            @if($r->realisasi)
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">Sudah</span>
+                            @else
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">Belum</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-2.5 text-right">
                             <div class="flex items-center gap-1 justify-end">
                                 <a href="{{ route('laporan.show', $r) }}" class="p-1 rounded-md bg-slate-50 border border-slate-200 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition-all" title="Detail">
@@ -191,7 +199,7 @@
                         <td colspan="3" class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase">Subtotal ({{ $group['blok_layak'] }} blok layak)</td>
                         <td class="px-4 py-2 text-right text-xs font-bold text-amber-700">{{ number_format($group['subtotal_urea'], 1) }}</td>
                         <td class="px-4 py-2 text-right text-xs font-bold text-cyan-700">{{ number_format($group['subtotal_kcl'], 1) }}</td>
-                        <td colspan="2"></td>
+                        <td colspan="3"></td>
                     </tr>
                 </tfoot>
                 @endif

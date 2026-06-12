@@ -70,21 +70,22 @@ class KondisiLahanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'blok_lahan_id'        => ['required', 'exists:blok_lahans,id'],
-            'tanggal_observasi'    => ['required', 'date'],
-            'ph_tanah'             => ['nullable', 'numeric', 'min:3', 'max:8'],
-            'kelembaban_tanah'     => ['nullable', 'string'],
-            'curah_hujan_kategori' => ['nullable', 'string'],
-            'musim_saat_ini'       => ['nullable', 'string'],
-            'warna_daun'           => ['nullable', 'string'],
-            'kondisi_pelepah'      => ['nullable', 'string'],
-            'gejala_defisiensi'    => ['nullable', 'array'],
-            'gejala_defisiensi.*'  => ['string'],
-            'kondisi_tandan'       => ['nullable', 'string'],
-            'kondisi_drainase'     => ['nullable', 'string'],
-            'ada_gulma_dominan'    => ['nullable', 'boolean'],
-            'ada_serangan_hama'    => ['nullable', 'boolean'],
-            'catatan_observasi'    => ['nullable', 'string', 'max:1000'],
+            'blok_lahan_id'              => ['required', 'exists:blok_lahans,id'],
+            'tanggal_observasi'          => ['required', 'date'],
+            'tanggal_pemupukan_terakhir' => ['nullable', 'date', 'before_or_equal:today'],
+            'ph_tanah'                   => ['nullable', 'numeric', 'min:3', 'max:8'],
+            'kelembaban_tanah'           => ['nullable', 'string'],
+            'curah_hujan_kategori'       => ['nullable', 'string'],
+            'musim_saat_ini'             => ['nullable', 'string'],
+            'warna_daun'                 => ['nullable', 'string'],
+            'kondisi_pelepah'            => ['nullable', 'string'],
+            'gejala_defisiensi'          => ['nullable', 'array'],
+            'gejala_defisiensi.*'        => ['string'],
+            'kondisi_tandan'             => ['nullable', 'string'],
+            'kondisi_drainase'           => ['nullable', 'string'],
+            'ada_gulma_dominan'          => ['nullable', 'boolean'],
+            'ada_serangan_hama'          => ['nullable', 'boolean'],
+            'catatan_observasi'          => ['nullable', 'string', 'max:1000'],
         ], [
             'blok_lahan_id.required'     => 'Blok lahan wajib dipilih.',
             'tanggal_observasi.required' => 'Tanggal observasi wajib diisi.',
@@ -93,17 +94,24 @@ class KondisiLahanController extends Controller
             'ph_tanah.max'               => 'pH tanah maksimal 8.0.',
         ]);
 
-        // Checkbox boolean: jika tidak dicentang maka tidak ada di request, set ke false
+        // Checkbox boolean
         $validated['ada_gulma_dominan'] = $request->boolean('ada_gulma_dominan');
         $validated['ada_serangan_hama'] = $request->boolean('ada_serangan_hama');
-
-        // Jika gejala_defisiensi tidak dipilih sama sekali
         $validated['gejala_defisiensi'] = $validated['gejala_defisiensi'] ?? [];
+
+        // Validasi konsistensi logis lintas-field (A4)
+        $warnings = $this->validasiKonsistensi($validated);
 
         KondisiLahan::create($validated);
 
-        return redirect()->route('kondisi-lahan.index')
+        $redirect = redirect()->route('kondisi-lahan.index')
             ->with('success', 'Data kondisi lahan berhasil disimpan.');
+
+        if (!empty($warnings)) {
+            $redirect = $redirect->with('warning', implode(' | ', $warnings));
+        }
+
+        return $redirect;
     }
 
     public function show(KondisiLahan $kondisiLahan)
@@ -121,21 +129,22 @@ class KondisiLahanController extends Controller
     public function update(Request $request, KondisiLahan $kondisiLahan)
     {
         $validated = $request->validate([
-            'blok_lahan_id'        => ['required', 'exists:blok_lahans,id'],
-            'tanggal_observasi'    => ['required', 'date'],
-            'ph_tanah'             => ['nullable', 'numeric', 'min:3', 'max:8'],
-            'kelembaban_tanah'     => ['nullable', 'string'],
-            'curah_hujan_kategori' => ['nullable', 'string'],
-            'musim_saat_ini'       => ['nullable', 'string'],
-            'warna_daun'           => ['nullable', 'string'],
-            'kondisi_pelepah'      => ['nullable', 'string'],
-            'gejala_defisiensi'    => ['nullable', 'array'],
-            'gejala_defisiensi.*'  => ['string'],
-            'kondisi_tandan'       => ['nullable', 'string'],
-            'kondisi_drainase'     => ['nullable', 'string'],
-            'ada_gulma_dominan'    => ['nullable', 'boolean'],
-            'ada_serangan_hama'    => ['nullable', 'boolean'],
-            'catatan_observasi'    => ['nullable', 'string', 'max:1000'],
+            'blok_lahan_id'              => ['required', 'exists:blok_lahans,id'],
+            'tanggal_observasi'          => ['required', 'date'],
+            'tanggal_pemupukan_terakhir' => ['nullable', 'date', 'before_or_equal:today'],
+            'ph_tanah'                   => ['nullable', 'numeric', 'min:3', 'max:8'],
+            'kelembaban_tanah'           => ['nullable', 'string'],
+            'curah_hujan_kategori'       => ['nullable', 'string'],
+            'musim_saat_ini'             => ['nullable', 'string'],
+            'warna_daun'                 => ['nullable', 'string'],
+            'kondisi_pelepah'            => ['nullable', 'string'],
+            'gejala_defisiensi'          => ['nullable', 'array'],
+            'gejala_defisiensi.*'        => ['string'],
+            'kondisi_tandan'             => ['nullable', 'string'],
+            'kondisi_drainase'           => ['nullable', 'string'],
+            'ada_gulma_dominan'          => ['nullable', 'boolean'],
+            'ada_serangan_hama'          => ['nullable', 'boolean'],
+            'catatan_observasi'          => ['nullable', 'string', 'max:1000'],
         ], [
             'blok_lahan_id.required'     => 'Blok lahan wajib dipilih.',
             'tanggal_observasi.required' => 'Tanggal observasi wajib diisi.',
@@ -145,10 +154,19 @@ class KondisiLahanController extends Controller
         $validated['ada_serangan_hama'] = $request->boolean('ada_serangan_hama');
         $validated['gejala_defisiensi'] = $validated['gejala_defisiensi'] ?? [];
 
+        // Validasi konsistensi logis lintas-field (A4)
+        $warnings = $this->validasiKonsistensi($validated);
+
         $kondisiLahan->update($validated);
 
-        return redirect()->route('kondisi-lahan.index')
+        $redirect = redirect()->route('kondisi-lahan.index')
             ->with('success', 'Data kondisi lahan berhasil diperbarui.');
+
+        if (!empty($warnings)) {
+            $redirect = $redirect->with('warning', implode(' | ', $warnings));
+        }
+
+        return $redirect;
     }
 
     public function destroy(KondisiLahan $kondisiLahan)
@@ -157,5 +175,36 @@ class KondisiLahanController extends Controller
 
         return redirect()->route('kondisi-lahan.index')
             ->with('success', 'Data kondisi lahan berhasil dihapus.');
+    }
+
+    /**
+     * Validasi konsistensi logis lintas-field (A4).
+     * Tidak menggagalkan simpan, hanya return array warning.
+     */
+    private function validasiKonsistensi(array $data): array
+    {
+        $warnings = [];
+
+        $musim = $data['musim_saat_ini'] ?? null;
+        $kelembaban = $data['kelembaban_tanah'] ?? null;
+        $warnaDaun = $data['warna_daun'] ?? null;
+        $defisiensi = $data['gejala_defisiensi'] ?? [];
+
+        // Musim kemarau tapi kelembaban tinggi
+        if ($musim === 'Musim Kemarau' && in_array($kelembaban, ['Lembab', 'Sangat Lembab'])) {
+            $warnings[] = 'Musim kemarau tapi kelembaban tinggi — mohon verifikasi data.';
+        }
+
+        // Musim hujan tapi kelembaban rendah
+        if ($musim === 'Musim Hujan' && in_array($kelembaban, ['Kering', 'Sangat Kering'])) {
+            $warnings[] = 'Musim hujan tapi kelembaban rendah — mohon verifikasi data.';
+        }
+
+        // Daun hijau normal tapi ada gejala defisiensi
+        if ($warnaDaun === 'Hijau Normal' && !empty($defisiensi)) {
+            $warnings[] = 'Warna daun normal tapi ada gejala defisiensi terpilih — mohon verifikasi.';
+        }
+
+        return $warnings;
     }
 }

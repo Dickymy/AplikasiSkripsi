@@ -8,12 +8,19 @@
 <div class="space-y-4">
     <div class="flex items-center justify-between gap-2">
         <p class="text-xs text-slate-400"><span class="font-semibold text-slate-700">{{ $ruleBases->count() }}</span> rule terdaftar</p>
-        <a href="{{ route('rule-base.create') }}"
-           class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-600/20 flex-shrink-0">
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            <span class="hidden sm:inline">Tambah Rule</span>
-            <span class="sm:hidden">Tambah</span>
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('rule-base.info') }}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-medium rounded-lg transition-colors flex-shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Tentang Rule
+            </a>
+            <a href="{{ route('rule-base.create') }}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-600/20 flex-shrink-0">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span class="hidden sm:inline">Tambah Rule</span>
+                <span class="sm:hidden">Tambah</span>
+            </a>
+        </div>
     </div>
 
     <div class="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">

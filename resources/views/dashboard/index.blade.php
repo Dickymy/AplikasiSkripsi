@@ -94,14 +94,57 @@
     <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-red-500">
         <p class="stat-label text-xs text-slate-500 mb-0.5">Kritis</p>
         <p class="stat-value text-xl sm:text-2xl font-bold text-red-600" id="stat-darurat">{{ $stats['darurat'] }}</p>
-        <p class="stat-sub text-xs text-slate-400">penanganan segera</p>
+        @php $deltaDarurat = $stats['darurat'] - ($statsBulanLalu['darurat'] ?? 0); @endphp
+        @if($deltaDarurat > 0)
+        <p class="stat-sub text-xs text-red-500">↑ {{ $deltaDarurat }} dari bulan lalu</p>
+        @elseif($deltaDarurat < 0)
+        <p class="stat-sub text-xs text-green-600">↓ {{ abs($deltaDarurat) }} dari bulan lalu</p>
+        @else
+        <p class="stat-sub text-xs text-slate-400">= sama dengan bulan lalu</p>
+        @endif
     </div>
     <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-orange-400">
         <p class="stat-label text-xs text-slate-500 mb-0.5">Perlu Pupuk</p>
         <p class="stat-value text-xl sm:text-2xl font-bold text-orange-500" id="stat-segera">{{ $stats['segera'] }}</p>
-        <p class="stat-sub text-xs text-slate-400">kurang hara</p>
+        @php $deltaSegera = $stats['segera'] - ($statsBulanLalu['segera'] ?? 0); @endphp
+        @if($deltaSegera > 0)
+        <p class="stat-sub text-xs text-red-500">↑ {{ $deltaSegera }} dari bulan lalu</p>
+        @elseif($deltaSegera < 0)
+        <p class="stat-sub text-xs text-green-600">↓ {{ abs($deltaSegera) }} dari bulan lalu</p>
+        @else
+        <p class="stat-sub text-xs text-slate-400">= sama dengan bulan lalu</p>
+        @endif
     </div>
 </div>
+
+{{-- Blok Perlu Perhatian (E1) --}}
+@if($blokPerluPerhatian->isNotEmpty())
+<div class="mb-3 sm:mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4">
+    <p class="text-xs font-bold text-amber-800 mb-2 flex items-center gap-1.5">
+        <span>⚠️</span> Perlu Perhatian — {{ $blokPerluPerhatian->count() }} Blok
+    </p>
+    <div class="flex flex-wrap gap-2">
+        @foreach($blokPerluPerhatian->take(6) as $bp)
+        @php
+            $keterangan = $bp->rekomendasiRbsTerbaru
+                ? 'Terakhir ' . $bp->rekomendasiRbsTerbaru->tanggal_analisis->diffInDays(now()) . ' hari lalu'
+                : 'Belum dianalisis';
+        @endphp
+        <a href="{{ route('rbs.detail', $bp) }}" class="flex items-center gap-2 px-3 py-2 bg-white border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors">
+            <div>
+                <p class="text-xs font-semibold text-slate-800">{{ $bp->nama_blok }}</p>
+                <p class="text-[10px] text-amber-700">{{ $bp->nama_pemilik }} · {{ $keterangan }}</p>
+            </div>
+        </a>
+        @endforeach
+        @if($blokPerluPerhatian->count() > 6)
+        <a href="{{ route('rbs.index') }}" class="flex items-center px-3 py-2 text-[10px] text-amber-700 font-semibold hover:underline">
+            +{{ $blokPerluPerhatian->count() - 6 }} lainnya →
+        </a>
+        @endif
+    </div>
+</div>
+@endif
 
 {{-- Luas per Status --}}
 <div class="mb-3 sm:mb-4">

@@ -145,4 +145,21 @@ class RbsController extends Controller
             'jumlah_rule'  => $rbs->jumlah_rule_terpicu,
         ]);
     }
+
+    /**
+     * API: daftar blok yang belum dianalisis (untuk AJAX progress bar B3).
+     */
+    public function daftarBlokBelumAnalisis()
+    {
+        $bloks = BlokLahan::whereHas('kondisiLahans')
+            ->with('anggota')
+            ->get()
+            ->map(fn($b) => [
+                'id'        => $b->id,
+                'nama_blok' => $b->nama_blok,
+                'pemilik'   => $b->nama_pemilik,
+            ]);
+
+        return response()->json($bloks->values());
+    }
 }

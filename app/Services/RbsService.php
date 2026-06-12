@@ -34,11 +34,23 @@ class RbsService
         // 4. Ambil semua rule aktif, urutkan dari prioritas tertinggi (nilai terkecil = lebih penting)
         $rules = RuleBaseLanjutan::aktif()->orderBy('prioritas')->get();
 
-        // 5. Evaluasi setiap rule (Forward Chaining)
+        // 5. Evaluasi setiap rule (Forward Chaining dengan Rule Chaining)
         $rulesTerpicu = [];
+        $intermediateFlags = []; // Konteks intermediate untuk rule chaining
+
         foreach ($rules as $rule) {
+            // Cek prasyarat intermediate (rule chaining A2)
+            if (!$this->cekPrasyaratIntermediate($rule, $intermediateFlags)) {
+                continue;
+            }
+
             if ($this->evaluasiRule($rule, $kondisi, $kategoriUmur)) {
                 $rulesTerpicu[] = $rule;
+
+                // Tambahkan flag intermediate yang dihasilkan rule ini (A2)
+                if (!empty($rule->kondisi_intermediate) && is_array($rule->kondisi_intermediate)) {
+                    $intermediateFlags = array_merge($intermediateFlags, $rule->kondisi_intermediate);
+                }
             }
         }
 
@@ -77,24 +89,38 @@ class RbsService
     }
 
     /**
+     * Cek apakah prasyarat intermediate terpenuhi (Rule Chaining - A2).
+     */
+    private function cekPrasyaratIntermediate(RuleBaseLanjutan $rule, array $intermediateFlags): bool
+    {
+        if (empty($rule->prasyarat_intermediate) || !is_array($rule->prasyarat_intermediate)) {
+            return true; // Tidak ada prasyarat, rule boleh dievaluasi
+        }
+
+        foreach ($rule->prasyarat_intermediate as $key => $value) {
+            if (!isset($intermediateFlags[$key]) || $intermediateFlags[$key] !== $value) {
+                return false; // Prasyarat tidak terpenuhi
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Evaluasi apakah sebuah rule cocok dengan kondisi saat ini.
      * Semua kondisi yang diisi di rule harus terpenuhi (AND logic).
      * Kondisi NULL di rule = tidak relevan / diabaikan.
-     *
-     * PENTING: Rule hanya terpicu jika minimal ada 1 kondisi dari rule
-     * yang benar-benar dicocokkan dengan data input yang TERSEDIA (bukan NULL).
-     * Ini mencegah rule terpicu hanya karena data input kosong.
      */
     private function evaluasiRule(RuleBaseLanjutan $rule, KondisiLahan $kondisi, ?string $kategoriUmur): bool
     {
-        $jumlahKondisiDiRule = 0;   // Berapa banyak kondisi non-null di rule
-        $jumlahKondisiCocok = 0;    // Berapa yang benar-benar cocok dengan data input yang ada
+        $jumlahKondisiDiRule = 0;
+        $jumlahKondisiCocok = 0;
 
         // Cek warna daun
         if ($rule->kondisi_warna_daun !== null) {
             $jumlahKondisiDiRule++;
             if ($kondisi->warna_daun === null) {
-                return false; // Data input tidak tersedia, rule tidak bisa dinilai
+                return false;
             }
             if ($rule->kondisi_warna_daun !== $kondisi->warna_daun) {
                 return false;
@@ -106,7 +132,7 @@ class RbsService
         if ($rule->kondisi_ph_min !== null || $rule->kondisi_ph_max !== null) {
             $jumlahKondisiDiRule++;
             if ($kondisi->ph_tanah === null) {
-                return false; // Data pH tidak tersedia, rule pH tidak bisa dinilai
+                return false;
             }
             if ($rule->kondisi_ph_min !== null && (float) $kondisi->ph_tanah < (float) $rule->kondisi_ph_min) {
                 return false;
@@ -158,7 +184,7 @@ class RbsService
             $jumlahKondisiDiRule++;
             $defisiensiInput = $kondisi->gejala_defisiensi ?? [];
             if (empty($defisiensiInput)) {
-                return false; // Tidak ada data defisiensi diinput
+                return false;
             }
             if (!in_array($rule->kondisi_defisiensi, $defisiensiInput)) {
                 return false;
@@ -199,7 +225,7 @@ class RbsService
             $jumlahKondisiCocok++;
         }
 
-        // Cek kategori umur (ini dari blok, bukan dari kondisi input)
+        // Cek kategori umur
         if ($rule->kondisi_kategori_umur !== null) {
             $jumlahKondisiDiRule++;
             if ($rule->kondisi_kategori_umur !== $kategoriUmur) {
@@ -208,8 +234,7 @@ class RbsService
             $jumlahKondisiCocok++;
         }
 
-        // SAFETY: Rule harus punya minimal 1 kondisi yang dicocokkan
-        // DAN minimal 1 kondisi yang benar-benar cocok dengan data TERSEDIA
+        // Safety: minimal 1 kondisi yang benar-benar cocok
         if ($jumlahKondisiDiRule === 0 || $jumlahKondisiCocok === 0) {
             return false;
         }
@@ -253,12 +278,13 @@ class RbsService
             ->implode(' | ');
 
         // Hitung dosis numerik berdasarkan kriteria lahan (integrasi Forward Chaining)
-        $dosis = $this->hitungDosisStandar($blok);
+        // Dengan multiplier koreksi jarak waktu pemupukan terakhir (A3)
+        $dosis = $this->hitungDosisStandar($blok, $kondisi);
 
         // Tentukan catatan dosis berdasarkan status
-        $catatanDosis = $this->tentukanCatatanDosis($statusDominan, $masalah);
+        $catatanDosis = $this->tentukanCatatanDosis($statusDominan, $masalah, $dosis);
 
-        // Simpan ke database (satu record aktif per blok)
+        // Simpan ke database (satu record aktif per blok) — A1: semua rules terpicu disimpan
         $hasil = RekomendasiRbs::updateOrCreate(
             ['blok_lahan_id' => $blok->id],
             [
@@ -290,11 +316,9 @@ class RbsService
 
     /**
      * Cek apakah data kondisi cukup untuk dianalisis.
-     * Minimal harus ada 1 field observasi visual/tanah yang terisi.
      */
     private function kondisiCukup(KondisiLahan $kondisi): bool
     {
-        // Field-field yang dianggap sebagai data observasi penting
         return $kondisi->warna_daun !== null
             || $kondisi->ph_tanah !== null
             || $kondisi->kelembaban_tanah !== null
@@ -311,7 +335,7 @@ class RbsService
      */
     private function hasilDataTidakCukup(BlokLahan $blok, KondisiLahan $kondisi): array
     {
-        $dosis = $this->hitungDosisStandar($blok);
+        $dosis = $this->hitungDosisStandar($blok, $kondisi);
 
         $hasil = RekomendasiRbs::updateOrCreate(
             ['blok_lahan_id' => $blok->id],
@@ -341,7 +365,7 @@ class RbsService
      */
     private function hasilNormal(BlokLahan $blok, KondisiLahan $kondisi): array
     {
-        $dosis = $this->hitungDosisStandar($blok);
+        $dosis = $this->hitungDosisStandar($blok, $kondisi);
 
         $hasil = RekomendasiRbs::updateOrCreate(
             ['blok_lahan_id' => $blok->id],
@@ -369,48 +393,55 @@ class RbsService
     /**
      * Tentukan catatan kontekstual untuk dosis berdasarkan status dan masalah.
      */
-    private function tentukanCatatanDosis(string $statusDominan, array $masalah): string
+    private function tentukanCatatanDosis(string $statusDominan, array $masalah, array $dosis): string
     {
         $masalahStr = implode(' ', $masalah);
+        $multiplierInfo = $dosis['multiplier_waktu_info'] ?? '';
 
         if ($statusDominan === 'Tunda') {
-            // Cek alasan spesifik tunda
             if (str_contains($masalahStr, 'Tergenang') || str_contains($masalahStr, 'Waterlogging')) {
-                return 'TUNDA APLIKASI PUPUK TANAH. Lahan tergenang menyebabkan leaching. Perbaiki drainase terlebih dahulu, baru aplikasikan dosis ini setelah kondisi normal.';
+                $catatan = 'TUNDA APLIKASI PUPUK TANAH. Lahan tergenang menyebabkan leaching. Perbaiki drainase terlebih dahulu, baru aplikasikan dosis ini setelah kondisi normal.';
+            } elseif (str_contains($masalahStr, 'Kekeringan') || str_contains($masalahStr, 'Kemarau')) {
+                $catatan = 'TUNDA PUPUK KIMIA. Kondisi terlalu kering — pupuk tidak akan terlarut dan berisiko membakar akar. Tunggu hujan turun, baru aplikasikan dosis ini.';
+            } elseif (str_contains($masalahStr, 'Tua Renta')) {
+                $catatan = 'Efisiensi penyerapan hara sangat rendah pada tanaman tua. Pertimbangkan pengurangan dosis 40-50% atau evaluasi replanting.';
+            } else {
+                $catatan = 'Pemupukan ditunda sampai kondisi lahan diperbaiki. Dosis ini dapat diaplikasikan setelah masalah teratasi.';
             }
-            if (str_contains($masalahStr, 'Kekeringan') || str_contains($masalahStr, 'Kemarau')) {
-                return 'TUNDA PUPUK KIMIA. Kondisi terlalu kering — pupuk tidak akan terlarut dan berisiko membakar akar. Tunggu hujan turun, baru aplikasikan dosis ini.';
-            }
-            if (str_contains($masalahStr, 'Tua Renta')) {
-                return 'Efisiensi penyerapan hara sangat rendah pada tanaman tua. Pertimbangkan pengurangan dosis 40-50% atau evaluasi replanting.';
-            }
-            return 'Pemupukan ditunda sampai kondisi lahan diperbaiki. Dosis ini dapat diaplikasikan setelah masalah teratasi.';
-        }
-
-        if ($statusDominan === 'Darurat') {
+        } elseif ($statusDominan === 'Darurat') {
             if (str_contains($masalahStr, 'pH') || str_contains($masalahStr, 'Masam')) {
-                return 'PERHATIAN: Jangan aplikasikan Urea/KCl sebelum pH tanah dinaikkan ke 5.0+. Lakukan pengapuran (Dolomit) terlebih dahulu. Dosis ini berlaku setelah pH normal.';
+                $catatan = 'PERHATIAN: Jangan aplikasikan Urea/KCl sebelum pH tanah dinaikkan ke 5.0+. Lakukan pengapuran (Dolomit) terlebih dahulu. Dosis ini berlaku setelah pH normal.';
+            } elseif (str_contains($masalahStr, 'Busuk') || str_contains($masalahStr, 'Ganoderma')) {
+                $catatan = 'PRIORITASKAN penanganan penyakit terlebih dahulu. Dosis pupuk standar ini berlaku setelah kondisi tanaman membaik.';
+            } else {
+                $catatan = 'Status DARURAT — atasi masalah utama terlebih dahulu. Dosis ini adalah kebutuhan standar yang berlaku setelah kondisi diperbaiki.';
             }
-            if (str_contains($masalahStr, 'Busuk') || str_contains($masalahStr, 'Ganoderma')) {
-                return 'PRIORITASKAN penanganan penyakit terlebih dahulu. Dosis pupuk standar ini berlaku setelah kondisi tanaman membaik.';
-            }
-            return 'Status DARURAT — atasi masalah utama terlebih dahulu. Dosis ini adalah kebutuhan standar yang berlaku setelah kondisi diperbaiki.';
+        } elseif ($statusDominan === 'Segera') {
+            $catatan = 'Segera aplikasikan dosis pupuk standar ini bersamaan dengan penanganan masalah yang teridentifikasi.';
+        } else {
+            $catatan = 'Kondisi lahan normal. Dosis dapat diaplikasikan sesuai jadwal pemupukan standar.';
         }
 
-        if ($statusDominan === 'Segera') {
-            return 'Segera aplikasikan dosis pupuk standar ini bersamaan dengan penanganan masalah yang teridentifikasi.';
+        // Tambahkan info multiplier waktu jika ada (A3)
+        if ($multiplierInfo) {
+            $catatan .= ' ' . $multiplierInfo;
         }
 
-        return 'Kondisi lahan normal. Dosis dapat diaplikasikan sesuai jadwal pemupukan standar.';
+        return $catatan;
     }
 
     /**
      * Hitung dosis standar Urea & KCl berdasarkan kriteria lahan (umur, tanah, topografi).
+     * Termasuk multiplier koreksi jarak waktu pemupukan terakhir (A3).
      */
-    private function hitungDosisStandar(BlokLahan $blok): array
+    private function hitungDosisStandar(BlokLahan $blok, ?KondisiLahan $kondisi = null): array
     {
         if (!$blok->tahun_tanam || !$blok->jenis_tanah || !$blok->topografi) {
-            return ['dosis_urea' => null, 'dosis_kcl' => null, 'total_urea' => null, 'total_kcl' => null];
+            return [
+                'dosis_urea' => null, 'dosis_kcl' => null,
+                'total_urea' => null, 'total_kcl' => null,
+                'multiplier_waktu_info' => '',
+            ];
         }
 
         $umur = now()->year - $blok->tahun_tanam;
@@ -448,19 +479,39 @@ class RbsService
             default               => ['urea' => 1.0, 'kcl' => 1.0],
         };
 
+        // Multiplier koreksi jarak waktu pemupukan terakhir (A3)
+        $multiplierWaktu = 1.0;
+        $multiplierWaktuInfo = '';
+
+        if ($kondisi && $kondisi->tanggal_pemupukan_terakhir) {
+            $jarakHari = $kondisi->tanggal_pemupukan_terakhir->diffInDays(now());
+
+            if ($jarakHari < 60) {
+                $multiplierWaktu = 0.75;
+                $multiplierWaktuInfo = "[Koreksi waktu: ×0.75 — terakhir dipupuk {$jarakHari} hari lalu, masih baru]";
+            } elseif ($jarakHari <= 120) {
+                $multiplierWaktu = 1.0;
+                $multiplierWaktuInfo = "[Koreksi waktu: ×1.0 — jadwal pemupukan normal ({$jarakHari} hari)]";
+            } else {
+                $multiplierWaktu = 1.25;
+                $multiplierWaktuInfo = "[Koreksi waktu: ×1.25 — terlambat pupuk {$jarakHari} hari, dosis ditingkatkan]";
+            }
+        }
+
         // Hitung dosis akhir (bulatkan ke 0.25 terdekat)
-        $dosisUrea = round($baseDosis['urea'] * $multiplierTanah['urea'] * $multiplierTopo['urea'] * 4) / 4;
-        $dosisKcl  = round($baseDosis['kcl']  * $multiplierTanah['kcl']  * $multiplierTopo['kcl'] * 4) / 4;
+        $dosisUrea = round($baseDosis['urea'] * $multiplierTanah['urea'] * $multiplierTopo['urea'] * $multiplierWaktu * 4) / 4;
+        $dosisKcl  = round($baseDosis['kcl']  * $multiplierTanah['kcl']  * $multiplierTopo['kcl'] * $multiplierWaktu * 4) / 4;
 
         // Hitung total kebutuhan
         $totalUrea = $dosisUrea * $blok->sph * $blok->luas_ha;
         $totalKcl  = $dosisKcl  * $blok->sph * $blok->luas_ha;
 
         return [
-            'dosis_urea' => $dosisUrea,
-            'dosis_kcl'  => $dosisKcl,
-            'total_urea' => $totalUrea,
-            'total_kcl'  => $totalKcl,
+            'dosis_urea'           => $dosisUrea,
+            'dosis_kcl'            => $dosisKcl,
+            'total_urea'           => $totalUrea,
+            'total_kcl'            => $totalKcl,
+            'multiplier_waktu_info' => $multiplierWaktuInfo,
         ];
     }
 

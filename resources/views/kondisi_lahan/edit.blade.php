@@ -47,6 +47,19 @@
                         required>
                 </div>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                        Tanggal Pemupukan Terakhir <span class="text-xs text-slate-400 font-normal">(opsional)</span>
+                    </label>
+                    <input type="date" name="tanggal_pemupukan_terakhir"
+                        value="{{ old('tanggal_pemupukan_terakhir', $kondisiLahan->tanggal_pemupukan_terakhir?->format('Y-m-d')) }}"
+                        max="{{ now()->format('Y-m-d') }}"
+                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
+                    <p class="mt-1 text-xs text-slate-400">Koreksi dosis: &lt;60 hari → ×0.75, &gt;120 hari → ×1.25</p>
+                </div>
+                <div></div>
+            </div>
         </div>
 
         {{-- SEKSI 2: Kondisi Tanah --}}

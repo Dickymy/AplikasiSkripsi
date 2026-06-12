@@ -11,6 +11,7 @@ class KondisiLahan extends Model
     protected $fillable = [
         'blok_lahan_id',
         'tanggal_observasi',
+        'tanggal_pemupukan_terakhir',
         'ph_tanah',
         'kelembaban_tanah',
         'curah_hujan_kategori',
@@ -28,11 +29,12 @@ class KondisiLahan extends Model
     protected function casts(): array
     {
         return [
-            'tanggal_observasi' => 'date',
-            'gejala_defisiensi' => 'array',
-            'ada_gulma_dominan' => 'boolean',
-            'ada_serangan_hama' => 'boolean',
-            'ph_tanah'          => 'decimal:2',
+            'tanggal_observasi'          => 'date',
+            'tanggal_pemupukan_terakhir' => 'date',
+            'gejala_defisiensi'          => 'array',
+            'ada_gulma_dominan'          => 'boolean',
+            'ada_serangan_hama'          => 'boolean',
+            'ph_tanah'                   => 'decimal:2',
         ];
     }
 

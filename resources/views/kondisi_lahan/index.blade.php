@@ -18,7 +18,7 @@
     </div>
 
     {{-- Filter --}}
-    <form method="GET" action="{{ route('kondisi-lahan.index') }}" id="kondisi-filter-form" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+    <form method="GET" action="{{ route('kondisi-lahan.index') }}" id="kondisi-filter-form" data-no-prevent-double="true" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <div class="flex-1 sm:max-w-[220px]">
             @include('components.filter-searchable', [
                 'name' => 'anggota_id',

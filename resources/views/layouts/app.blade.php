@@ -44,7 +44,7 @@
         /* Fix: semua child element tidak boleh exceed parent */
         *, *::before, *::after { max-width: 100%; }
         /* Exclude elements that need to overflow (tables, maps, pagination, etc) */
-        table, table *, .leaflet-container, .leaflet-container *, svg, canvas, video, iframe, nav, nav * { max-width: none; }
+        table, table *, .leaflet-container, .leaflet-container *, svg, canvas, video, iframe, nav, nav *, [id$="-dropdown"], [id$="-dropdown"] *, .notif-dropdown-panel, .notif-dropdown-panel * { max-width: none; }
         /* Print styles */
         @media print {
             .no-print, nav, aside, .sidebar, button, .filter-bar, header { display: none !important; }
@@ -52,6 +52,16 @@
             main, .main-content, .container { max-width: 100% !important; padding: 0 !important; }
             table { width: 100% !important; font-size: 11px; }
             .shadow-sm, .shadow-lg { box-shadow: none !important; }
+        }
+        /* Notification dropdown: override max-width constraint */
+        .notif-dropdown-panel,
+        .notif-dropdown-panel * {
+            max-width: none !important;
+        }
+        /* Dropdown panels (absolute positioned) harus bebas dari max-width */
+        [id$="-dropdown"],
+        [id$="-drop"] {
+            max-width: none !important;
         }
     </style>
 </head>
@@ -184,9 +194,44 @@
                     <p class="text-[11px] sm:text-xs text-slate-500 truncate">@yield('page-subtitle', 'SPK Pemupukan Kelapa Sawit')</p>
                 </div>
             </div>
-            <div class="text-[10px] sm:text-xs text-slate-500 flex-shrink-0 text-right leading-tight">
-                <span class="hidden sm:inline">{{ now()->translatedFormat('l, d F Y') }}</span>
-                <span class="sm:hidden">{{ now()->translatedFormat('d M Y') }}</span>
+            <div class="flex items-center gap-3">
+                {{-- Notification Bell (E3) --}}
+                <div class="relative" id="notif-wrapper">
+                    <button onclick="toggleNotifDropdown()" class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors" type="button">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        @if(($jumlahNotifDarurat ?? 0) > 0)
+                        <span class="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center" style="min-width:18px;height:18px;">{{ $jumlahNotifDarurat }}</span>
+                        @endif
+                    </button>
+                    {{-- Dropdown --}}
+                    <div id="notif-dropdown" class="notif-dropdown-panel absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 hidden overflow-hidden" style="width:280px;max-width:calc(100vw - 32px);">
+                        <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100">
+                            <p class="text-xs font-bold text-slate-700 whitespace-nowrap">Blok Kritis</p>
+                        </div>
+                        @if(($notifBlokDarurat ?? collect())->isEmpty())
+                        <div class="px-4 py-4 text-center">
+                            <p class="text-xs text-slate-400 whitespace-nowrap">Tidak ada blok berstatus kritis 🎉</p>
+                        </div>
+                        @else
+                        <div class="max-h-52 overflow-y-auto divide-y divide-slate-50">
+                            @foreach($notifBlokDarurat ?? [] as $nb)
+                            <a href="{{ route('rbs.detail', $nb) }}" class="block px-4 py-2.5 hover:bg-red-50 transition-colors">
+                                <p class="text-xs font-semibold text-slate-800 truncate">{{ $nb->nama_blok }}</p>
+                                <p class="text-[10px] text-slate-500 truncate">{{ $nb->anggota?->nama ?? '-' }}</p>
+                            </a>
+                            @endforeach
+                        </div>
+                        <div class="px-4 py-2 border-t border-slate-100 bg-slate-50">
+                            <a href="{{ route('rbs.index') }}" class="text-[10px] text-emerald-600 font-semibold hover:underline">Lihat semua →</a>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="text-[10px] sm:text-xs text-slate-500 flex-shrink-0 text-right leading-tight">
+                    <span class="hidden sm:inline">{{ now()->translatedFormat('l, d F Y') }}</span>
+                    <span class="sm:hidden">{{ now()->translatedFormat('d M Y') }}</span>
+                </div>
             </div>
         </header>
 
@@ -253,12 +298,24 @@
         msgEl.textContent = message;
         modal.classList.remove('hidden');
         modal._onConfirm = onConfirm;
+        // Re-enable confirm button
+        var confirmBtn = document.getElementById('confirm-btn-yes');
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = '';
+        }
     }
     function closeConfirm() {
         document.getElementById('confirm-modal').classList.add('hidden');
     }
     function doConfirm() {
         var modal = document.getElementById('confirm-modal');
+        // Disable confirm button to prevent double click
+        var confirmBtn = document.getElementById('confirm-btn-yes');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.style.opacity = '0.6';
+        }
         if (modal._onConfirm) modal._onConfirm();
         closeConfirm();
     }
@@ -286,6 +343,18 @@
             btnBackTop.style.pointerEvents = 'none';
         }
     });
+
+    // Notification dropdown toggle (E3)
+    function toggleNotifDropdown() {
+        var dd = document.getElementById('notif-dropdown');
+        dd.classList.toggle('hidden');
+    }
+    document.addEventListener('click', function(e) {
+        var wrapper = document.getElementById('notif-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            document.getElementById('notif-dropdown').classList.add('hidden');
+        }
+    });
 </script>
 
 {{-- Global Confirm Modal --}}
@@ -302,7 +371,7 @@
         </div>
         <div class="flex gap-2 justify-end">
             <button onclick="closeConfirm()" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Batal</button>
-            <button onclick="doConfirm()" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-sm">Ya, Lanjutkan</button>
+            <button id="confirm-btn-yes" onclick="doConfirm()" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-sm">Ya, Lanjutkan</button>
         </div>
     </div>
 </div>
@@ -315,6 +384,56 @@
 </button>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+{{-- Global: Prevent Double Submit pada SEMUA form --}}
+<script>
+(function() {
+    document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (!form || form.tagName !== 'FORM') return;
+
+        // Skip form yang ditandai no-prevent (filter forms, search, etc)
+        if (form.dataset.noPreventDouble === 'true') return;
+
+        // Skip jika form sudah ditandai submitting
+        if (form.dataset.submitting === 'true') {
+            e.preventDefault();
+            return;
+        }
+
+        // Tandai form sedang di-submit
+        form.dataset.submitting = 'true';
+
+        // Disable semua submit button di form ini
+        var buttons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+        buttons.forEach(function(btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.style.cursor = 'not-allowed';
+
+            // Simpan teks asli dan ganti dengan loading
+            if (btn.tagName === 'BUTTON') {
+                btn.dataset.originalHtml = btn.innerHTML;
+                btn.innerHTML = '<svg class="animate-spin h-4 w-4 inline-block mr-1.5 align-middle" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="align-middle">Menyimpan...</span>';
+            }
+        });
+
+        // Safety: re-enable setelah 10 detik (timeout/error jaringan)
+        setTimeout(function() {
+            form.dataset.submitting = 'false';
+            buttons.forEach(function(btn) {
+                btn.disabled = false;
+                btn.style.opacity = '';
+                btn.style.cursor = '';
+                if (btn.tagName === 'BUTTON' && btn.dataset.originalHtml) {
+                    btn.innerHTML = btn.dataset.originalHtml;
+                }
+            });
+        }, 10000);
+    });
+})();
+</script>
+
 @stack('scripts')
 </body>
 </html>

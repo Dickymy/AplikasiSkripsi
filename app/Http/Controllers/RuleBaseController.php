@@ -13,6 +13,11 @@ class RuleBaseController extends Controller
         return view('rule_base.index', compact('ruleBases'));
     }
 
+    public function info()
+    {
+        return view('rule_base.info');
+    }
+
     public function create()
     {
         return view('rule_base.create');

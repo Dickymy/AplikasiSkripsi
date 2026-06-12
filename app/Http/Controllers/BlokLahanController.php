@@ -84,7 +84,15 @@ class BlokLahanController extends Controller
         }
 
         BlokLahan::create($validated);
-        return redirect()->route('blok-lahan.index')->with('success', 'Blok lahan berhasil ditambahkan.');
+
+        $redirect = redirect()->route('blok-lahan.index')->with('success', 'Blok lahan berhasil ditambahkan.');
+
+        // Validasi SPH terhadap standar agronomis (C1)
+        if ($validated['sph'] < 100 || $validated['sph'] > 160) {
+            $redirect = $redirect->with('warning', "SPH yang dimasukkan ({$validated['sph']} pohon/ha) di luar rentang normal kelapa sawit (136–148 pohon/ha). Pastikan data sudah benar.");
+        }
+
+        return $redirect;
     }
 
     public function show(BlokLahan $blokLahan)
@@ -123,7 +131,15 @@ class BlokLahanController extends Controller
         }
 
         $blokLahan->update($validated);
-        return redirect()->route('blok-lahan.index')->with('success', 'Blok lahan berhasil diperbarui.');
+
+        $redirect = redirect()->route('blok-lahan.index')->with('success', 'Blok lahan berhasil diperbarui.');
+
+        // Validasi SPH terhadap standar agronomis (C1)
+        if ($validated['sph'] < 100 || $validated['sph'] > 160) {
+            $redirect = $redirect->with('warning', "SPH yang dimasukkan ({$validated['sph']} pohon/ha) di luar rentang normal kelapa sawit (136–148 pohon/ha). Pastikan data sudah benar.");
+        }
+
+        return $redirect;
     }
 
     public function destroy(BlokLahan $blokLahan)

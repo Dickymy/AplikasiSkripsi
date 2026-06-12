@@ -44,7 +44,7 @@
 
 {{-- Filter & Action --}}
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-    <form method="GET" action="{{ route('rbs.index') }}" id="rbs-filter-form" class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+    <form method="GET" action="{{ route('rbs.index') }}" id="rbs-filter-form" data-no-prevent-double="true" class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
         <div class="sm:min-w-[180px]">
             @include('components.filter-searchable', [
                 'name' => 'anggota_id',

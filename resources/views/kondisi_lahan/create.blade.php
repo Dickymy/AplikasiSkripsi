@@ -50,6 +50,21 @@
                     </div>
                 </div>
 
+                {{-- Row: Tanggal Pemupukan Terakhir --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                            Tanggal Pemupukan Terakhir <span class="text-xs text-slate-400 font-normal">(opsional)</span>
+                        </label>
+                        <input type="date" name="tanggal_pemupukan_terakhir"
+                            value="{{ old('tanggal_pemupukan_terakhir') }}"
+                            max="{{ now()->format('Y-m-d') }}"
+                            class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
+                        <p class="mt-1 text-xs text-slate-400">Mempengaruhi koreksi dosis: &lt;60 hari → kurangi 25%, &gt;120 hari → tambah 25%</p>
+                    </div>
+                    <div></div>
+                </div>
+
                 {{-- Row 2: Pilih Blok (muncul setelah pilih pemilik) --}}
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">

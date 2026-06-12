@@ -20,6 +20,8 @@ class RuleBaseLanjutan extends Model
         'kondisi_pelepah',
         'kondisi_tandan',
         'ada_serangan_hama',
+        'kondisi_intermediate',
+        'prasyarat_intermediate',
         'indikasi_masalah',
         'jenis_pupuk_utama',
         'jenis_pupuk_pendukung',
@@ -36,11 +38,13 @@ class RuleBaseLanjutan extends Model
     protected function casts(): array
     {
         return [
-            'aktif'              => 'boolean',
-            'ada_serangan_hama'  => 'boolean',
-            'kondisi_ph_min'     => 'decimal:2',
-            'kondisi_ph_max'     => 'decimal:2',
-            'prioritas'          => 'integer',
+            'aktif'                    => 'boolean',
+            'ada_serangan_hama'        => 'boolean',
+            'kondisi_ph_min'           => 'decimal:2',
+            'kondisi_ph_max'           => 'decimal:2',
+            'prioritas'                => 'integer',
+            'kondisi_intermediate'     => 'array',
+            'prasyarat_intermediate'   => 'array',
         ];
     }
 

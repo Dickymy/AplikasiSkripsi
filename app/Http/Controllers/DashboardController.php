@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlokLahan;
+use App\Models\RekomendasiRbs;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -27,7 +28,6 @@ class DashboardController extends Controller
                 'sph'              => $blok->sph,
                 'umur_tanaman'     => $blok->umur_tanaman,
                 'geojson'          => json_decode($blok->koordinat_geojson, true),
-                // Status & data RBS
                 'status_rbs'       => $statusDb,
                 'status_label'     => \App\Models\RekomendasiRbs::labelStatus($statusDb),
                 'masalah_rbs'      => $rbs?->masalah_teridentifikasi ?? [],
@@ -35,7 +35,6 @@ class DashboardController extends Controller
                 'saran_rbs'        => $rbs?->saran_tindakan_utama ?? '',
                 'tgl_analisis_rbs' => $rbs?->tanggal_analisis?->format('d/m/Y') ?? '-',
                 'jumlah_rule'      => $rbs?->jumlah_rule_terpicu ?? 0,
-                // Dosis numerik
                 'dosis_urea'       => $rbs?->dosis_urea,
                 'dosis_kcl'        => $rbs?->dosis_kcl,
                 'total_urea'       => $rbs?->total_urea,
@@ -43,6 +42,7 @@ class DashboardController extends Controller
             ];
         });
 
+        // Stats saat ini
         $stats = [
             'total_blok'     => $blokLahans->count(),
             'total_luas'     => $blokLahans->sum('luas_ha'),
@@ -52,6 +52,30 @@ class DashboardController extends Controller
             'belum_kondisi'  => $blokLahans->filter(fn($b) => !$b->kondisiTerbaru)->count(),
         ];
 
-        return view('dashboard.index', compact('mapData', 'stats'));
+        // Delta stats bulan lalu (D1)
+        $bulanLalu = now()->subMonth();
+        $rbsBulanLalu = RekomendasiRbs::where('tanggal_analisis', '>=', $bulanLalu->startOfMonth()->toDateString())
+            ->where('tanggal_analisis', '<=', $bulanLalu->endOfMonth()->toDateString())
+            ->get();
+
+        $statsBulanLalu = [
+            'darurat' => $rbsBulanLalu->where('status_kebutuhan_dominan', 'Darurat')->count(),
+            'segera'  => $rbsBulanLalu->where('status_kebutuhan_dominan', 'Segera')->count(),
+        ];
+
+        // Blok perlu perhatian (E1): belum dianalisis atau > 90 hari
+        $blokPerluPerhatian = $blokLahans->filter(function ($blok) {
+            // Punya kondisi tapi belum pernah dianalisis
+            if ($blok->kondisiTerbaru && !$blok->rekomendasiRbsTerbaru) {
+                return true;
+            }
+            // Analisis terakhir > 90 hari
+            if ($blok->rekomendasiRbsTerbaru && $blok->rekomendasiRbsTerbaru->tanggal_analisis->diffInDays(now()) > 90) {
+                return true;
+            }
+            return false;
+        })->values();
+
+        return view('dashboard.index', compact('mapData', 'stats', 'statsBulanLalu', 'blokPerluPerhatian'));
     }
 }

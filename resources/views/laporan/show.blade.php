@@ -11,10 +11,16 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             Kembali
         </a>
-        <a href="{{ route('laporan.pdf', $rekomendasiRbs) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Download PDF
-        </a>
+        <div class="flex items-center gap-2">
+            <button type="button" onclick="salinRingkasan()" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                Salin Ringkasan
+            </button>
+            <a href="{{ route('laporan.pdf', $rekomendasiRbs) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Download PDF
+            </a>
+        </div>
     </div>
 
     {{-- Status Banner --}}
@@ -171,5 +177,94 @@
     <div class="text-xs text-slate-400 text-right">
         {{ $rekomendasiRbs->jumlah_rule_terpicu }} rule terpicu · Dianalisis {{ $rekomendasiRbs->tanggal_analisis->diffForHumans() }}
     </div>
+
+    {{-- Form Realisasi Pemupukan (B2) --}}
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+        <h3 class="text-sm font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Realisasi Pemupukan
+        </h3>
+
+        @if($rekomendasiRbs->realisasi)
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-xs font-bold text-emerald-800 mb-1">✅ Sudah Dilaksanakan</p>
+                    <p class="text-xs text-emerald-700">Tanggal: {{ $rekomendasiRbs->realisasi->tanggal_realisasi->format('d/m/Y') }}</p>
+                    <p class="text-xs text-emerald-700">Urea: {{ number_format($rekomendasiRbs->realisasi->jumlah_urea_realisasi, 1) }} kg · KCl: {{ number_format($rekomendasiRbs->realisasi->jumlah_kcl_realisasi, 1) }} kg</p>
+                    @if($rekomendasiRbs->realisasi->catatan_pelaksana)
+                    <p class="text-xs text-emerald-600 mt-1 italic">{{ $rekomendasiRbs->realisasi->catatan_pelaksana }}</p>
+                    @endif
+                </div>
+                <form action="{{ route('realisasi.destroy', $rekomendasiRbs->realisasi) }}" method="POST">
+                    @csrf @method('DELETE')
+                    <button type="button" onclick="confirmDelete(this.closest('form'), 'realisasi ini')" class="p-1 rounded text-red-400 hover:text-red-600 hover:bg-red-50" title="Hapus">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endif
+
+        <form action="{{ route('realisasi.store') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            @csrf
+            <input type="hidden" name="rekomendasi_rbs_id" value="{{ $rekomendasiRbs->id }}">
+
+            <div>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Tanggal Realisasi *</label>
+                <input type="date" name="tanggal_realisasi" value="{{ $rekomendasiRbs->realisasi?->tanggal_realisasi?->format('Y-m-d') ?? now()->format('Y-m-d') }}" required
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+            </div>
+            <div></div>
+            <div>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Jumlah Urea Aktual (kg) *</label>
+                <input type="number" name="jumlah_urea_realisasi" step="0.1" min="0" required
+                    value="{{ $rekomendasiRbs->realisasi?->jumlah_urea_realisasi ?? ($rekomendasiRbs->total_urea ? number_format($rekomendasiRbs->total_urea, 1, '.', '') : '0') }}"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Jumlah KCl Aktual (kg) *</label>
+                <input type="number" name="jumlah_kcl_realisasi" step="0.1" min="0" required
+                    value="{{ $rekomendasiRbs->realisasi?->jumlah_kcl_realisasi ?? ($rekomendasiRbs->total_kcl ? number_format($rekomendasiRbs->total_kcl, 1, '.', '') : '0') }}"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-slate-700 mb-1">Catatan Pelaksana</label>
+                <textarea name="catatan_pelaksana" rows="2" placeholder="Catatan tambahan..."
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 resize-none">{{ $rekomendasiRbs->realisasi?->catatan_pelaksana }}</textarea>
+            </div>
+            <div class="sm:col-span-2">
+                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm">
+                    {{ $rekomendasiRbs->realisasi ? 'Perbarui Realisasi' : 'Catat Realisasi' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Toast notification --}}
+<div id="toast-salin" class="fixed bottom-6 right-6 z-[9999] bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    ✓ Teks berhasil disalin!
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function salinRingkasan() {
+    fetch('{{ route("laporan.ringkasan", $rekomendasiRbs) }}?format=json')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            navigator.clipboard.writeText(data.teks).then(function() {
+                var toast = document.getElementById('toast-salin');
+                toast.style.transform = 'translateY(0)';
+                toast.style.opacity = '1';
+                setTimeout(function() {
+                    toast.style.transform = 'translateY(20px)';
+                    toast.style.opacity = '0';
+                }, 2000);
+            });
+        })
+        .catch(function() { alert('Gagal menyalin teks.'); });
+}
+</script>
+@endpush
