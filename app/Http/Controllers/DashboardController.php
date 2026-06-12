@@ -17,6 +17,7 @@ class DashboardController extends Controller
 
         $mapData = $blokLahans->map(function ($blok) {
             $rbs = $blok->rekomendasiRbsTerbaru;
+            $statusDb = $rbs?->status_kebutuhan_dominan ?? 'Belum Dianalisis';
 
             return [
                 'id'               => $blok->id,
@@ -27,7 +28,8 @@ class DashboardController extends Controller
                 'umur_tanaman'     => $blok->umur_tanaman,
                 'geojson'          => json_decode($blok->koordinat_geojson, true),
                 // Status & data RBS
-                'status_rbs'       => $rbs?->status_kebutuhan_dominan ?? 'Belum Dianalisis',
+                'status_rbs'       => $statusDb,
+                'status_label'     => \App\Models\RekomendasiRbs::labelStatus($statusDb),
                 'masalah_rbs'      => $rbs?->masalah_teridentifikasi ?? [],
                 'pupuk_rbs'        => $rbs?->rekomendasi_pupuk ?? [],
                 'saran_rbs'        => $rbs?->saran_tindakan_utama ?? '',

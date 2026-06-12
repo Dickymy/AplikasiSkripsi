@@ -86,7 +86,7 @@
     @endphp
     <div class="status-banner {{ $statusClass }}">
         <div class="label">Status Kebutuhan Pemupukan</div>
-        <div class="value">{{ $rekomendasiRbs->status_kebutuhan_dominan }}</div>
+        <div class="value">{{ \App\Models\RekomendasiRbs::labelStatus($rekomendasiRbs->status_kebutuhan_dominan) }}</div>
     </div>
 
     {{-- Info Lahan --}}
@@ -225,7 +225,7 @@
                             'Normal' => 'badge-normal',
                             default => 'badge-tunda',
                         }; @endphp
-                        <span class="badge {{ $badgeClass }}">{{ $rule['status'] ?? '-' }}</span>
+                        <span class="badge {{ $badgeClass }}">{{ \App\Models\RekomendasiRbs::labelStatus($rule['status'] ?? '') }}</span>
                     </td>
                     <td>{{ $rule['prioritas'] ?? '-' }}</td>
                 </tr>

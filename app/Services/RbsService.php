@@ -23,13 +23,18 @@ class RbsService
             throw new \Exception("Data kondisi lahan belum tersedia untuk blok '{$blok->nama_blok}'.");
         }
 
-        // 2. Ambil kategori umur langsung dari blok (kriteria terintegrasi)
+        // 2. Cek apakah data kondisi cukup untuk analisis (minimal 1 field terisi)
+        if (!$this->kondisiCukup($kondisi)) {
+            return $this->hasilDataTidakCukup($blok, $kondisi);
+        }
+
+        // 3. Ambil kategori umur langsung dari blok (kriteria terintegrasi)
         $kategoriUmur = $blok->kategori_umur;
 
-        // 3. Ambil semua rule aktif, urutkan dari prioritas tertinggi (nilai terkecil = lebih penting)
+        // 4. Ambil semua rule aktif, urutkan dari prioritas tertinggi (nilai terkecil = lebih penting)
         $rules = RuleBaseLanjutan::aktif()->orderBy('prioritas')->get();
 
-        // 4. Evaluasi setiap rule (Forward Chaining)
+        // 5. Evaluasi setiap rule (Forward Chaining)
         $rulesTerpicu = [];
         foreach ($rules as $rule) {
             if ($this->evaluasiRule($rule, $kondisi, $kategoriUmur)) {
@@ -37,12 +42,12 @@ class RbsService
             }
         }
 
-        // 5. Jika tidak ada rule terpicu, return status normal
+        // 6. Jika tidak ada rule terpicu, return status normal
         if (empty($rulesTerpicu)) {
             return $this->hasilNormal($blok, $kondisi);
         }
 
-        // 6. Susun output dari semua rule terpicu
+        // 7. Susun output dari semua rule terpicu
         return $this->susunHasil($blok, $kondisi, $rulesTerpicu);
     }
 
@@ -75,68 +80,137 @@ class RbsService
      * Evaluasi apakah sebuah rule cocok dengan kondisi saat ini.
      * Semua kondisi yang diisi di rule harus terpenuhi (AND logic).
      * Kondisi NULL di rule = tidak relevan / diabaikan.
+     *
+     * PENTING: Rule hanya terpicu jika minimal ada 1 kondisi dari rule
+     * yang benar-benar dicocokkan dengan data input yang TERSEDIA (bukan NULL).
+     * Ini mencegah rule terpicu hanya karena data input kosong.
      */
     private function evaluasiRule(RuleBaseLanjutan $rule, KondisiLahan $kondisi, ?string $kategoriUmur): bool
     {
+        $jumlahKondisiDiRule = 0;   // Berapa banyak kondisi non-null di rule
+        $jumlahKondisiCocok = 0;    // Berapa yang benar-benar cocok dengan data input yang ada
+
         // Cek warna daun
-        if ($rule->kondisi_warna_daun !== null && $rule->kondisi_warna_daun !== $kondisi->warna_daun) {
-            return false;
+        if ($rule->kondisi_warna_daun !== null) {
+            $jumlahKondisiDiRule++;
+            if ($kondisi->warna_daun === null) {
+                return false; // Data input tidak tersedia, rule tidak bisa dinilai
+            }
+            if ($rule->kondisi_warna_daun !== $kondisi->warna_daun) {
+                return false;
+            }
+            $jumlahKondisiCocok++;
         }
 
-        // Cek range pH (hanya evaluasi jika kondisi punya data pH)
-        if ($rule->kondisi_ph_min !== null && $kondisi->ph_tanah !== null) {
-            if ((float) $kondisi->ph_tanah < (float) $rule->kondisi_ph_min) {
+        // Cek range pH
+        if ($rule->kondisi_ph_min !== null || $rule->kondisi_ph_max !== null) {
+            $jumlahKondisiDiRule++;
+            if ($kondisi->ph_tanah === null) {
+                return false; // Data pH tidak tersedia, rule pH tidak bisa dinilai
+            }
+            if ($rule->kondisi_ph_min !== null && (float) $kondisi->ph_tanah < (float) $rule->kondisi_ph_min) {
                 return false;
             }
-        }
-        if ($rule->kondisi_ph_max !== null && $kondisi->ph_tanah !== null) {
-            if ((float) $kondisi->ph_tanah > (float) $rule->kondisi_ph_max) {
+            if ($rule->kondisi_ph_max !== null && (float) $kondisi->ph_tanah > (float) $rule->kondisi_ph_max) {
                 return false;
             }
+            $jumlahKondisiCocok++;
         }
 
         // Cek kelembaban
-        if ($rule->kondisi_kelembaban !== null && $rule->kondisi_kelembaban !== $kondisi->kelembaban_tanah) {
-            return false;
+        if ($rule->kondisi_kelembaban !== null) {
+            $jumlahKondisiDiRule++;
+            if ($kondisi->kelembaban_tanah === null) {
+                return false;
+            }
+            if ($rule->kondisi_kelembaban !== $kondisi->kelembaban_tanah) {
+                return false;
+            }
+            $jumlahKondisiCocok++;
         }
 
         // Cek musim
-        if ($rule->kondisi_musim !== null && $rule->kondisi_musim !== $kondisi->musim_saat_ini) {
-            return false;
+        if ($rule->kondisi_musim !== null) {
+            $jumlahKondisiDiRule++;
+            if ($kondisi->musim_saat_ini === null) {
+                return false;
+            }
+            if ($rule->kondisi_musim !== $kondisi->musim_saat_ini) {
+                return false;
+            }
+            $jumlahKondisiCocok++;
         }
 
         // Cek drainase
-        if ($rule->kondisi_drainase !== null && $rule->kondisi_drainase !== $kondisi->kondisi_drainase) {
-            return false;
+        if ($rule->kondisi_drainase !== null) {
+            $jumlahKondisiDiRule++;
+            if ($kondisi->kondisi_drainase === null) {
+                return false;
+            }
+            if ($rule->kondisi_drainase !== $kondisi->kondisi_drainase) {
+                return false;
+            }
+            $jumlahKondisiCocok++;
         }
 
         // Cek defisiensi (array contains check)
         if ($rule->kondisi_defisiensi !== null) {
+            $jumlahKondisiDiRule++;
             $defisiensiInput = $kondisi->gejala_defisiensi ?? [];
+            if (empty($defisiensiInput)) {
+                return false; // Tidak ada data defisiensi diinput
+            }
             if (!in_array($rule->kondisi_defisiensi, $defisiensiInput)) {
                 return false;
             }
+            $jumlahKondisiCocok++;
         }
 
         // Cek kondisi pelepah
-        if ($rule->kondisi_pelepah !== null && $rule->kondisi_pelepah !== $kondisi->kondisi_pelepah) {
-            return false;
+        if ($rule->kondisi_pelepah !== null) {
+            $jumlahKondisiDiRule++;
+            if ($kondisi->kondisi_pelepah === null) {
+                return false;
+            }
+            if ($rule->kondisi_pelepah !== $kondisi->kondisi_pelepah) {
+                return false;
+            }
+            $jumlahKondisiCocok++;
         }
 
-        // Cek serangan hama (hanya cek jika rule menentukan harus ada hama)
+        // Cek serangan hama
         if ($rule->ada_serangan_hama === true) {
+            $jumlahKondisiDiRule++;
             if (!$kondisi->ada_serangan_hama) {
                 return false;
             }
+            $jumlahKondisiCocok++;
         }
 
         // Cek kondisi tandan
-        if ($rule->kondisi_tandan !== null && $rule->kondisi_tandan !== $kondisi->kondisi_tandan) {
-            return false;
+        if ($rule->kondisi_tandan !== null) {
+            $jumlahKondisiDiRule++;
+            if ($kondisi->kondisi_tandan === null) {
+                return false;
+            }
+            if ($rule->kondisi_tandan !== $kondisi->kondisi_tandan) {
+                return false;
+            }
+            $jumlahKondisiCocok++;
         }
 
-        // Cek kategori umur (opsional)
-        if ($rule->kondisi_kategori_umur !== null && $rule->kondisi_kategori_umur !== $kategoriUmur) {
+        // Cek kategori umur (ini dari blok, bukan dari kondisi input)
+        if ($rule->kondisi_kategori_umur !== null) {
+            $jumlahKondisiDiRule++;
+            if ($rule->kondisi_kategori_umur !== $kategoriUmur) {
+                return false;
+            }
+            $jumlahKondisiCocok++;
+        }
+
+        // SAFETY: Rule harus punya minimal 1 kondisi yang dicocokkan
+        // DAN minimal 1 kondisi yang benar-benar cocok dengan data TERSEDIA
+        if ($jumlahKondisiDiRule === 0 || $jumlahKondisiCocok === 0) {
             return false;
         }
 
@@ -208,6 +282,54 @@ class RbsService
                 'total_urea'              => $dosis['total_urea'],
                 'total_kcl'               => $dosis['total_kcl'],
                 'catatan_dosis'           => $catatanDosis,
+            ]
+        );
+
+        return ['sukses' => true, 'rekomendasi' => $hasil];
+    }
+
+    /**
+     * Cek apakah data kondisi cukup untuk dianalisis.
+     * Minimal harus ada 1 field observasi visual/tanah yang terisi.
+     */
+    private function kondisiCukup(KondisiLahan $kondisi): bool
+    {
+        // Field-field yang dianggap sebagai data observasi penting
+        return $kondisi->warna_daun !== null
+            || $kondisi->ph_tanah !== null
+            || $kondisi->kelembaban_tanah !== null
+            || $kondisi->musim_saat_ini !== null
+            || $kondisi->kondisi_drainase !== null
+            || $kondisi->kondisi_pelepah !== null
+            || $kondisi->kondisi_tandan !== null
+            || !empty($kondisi->gejala_defisiensi)
+            || $kondisi->ada_serangan_hama === true;
+    }
+
+    /**
+     * Return hasil ketika data kondisi tidak cukup untuk analisis.
+     */
+    private function hasilDataTidakCukup(BlokLahan $blok, KondisiLahan $kondisi): array
+    {
+        $dosis = $this->hitungDosisStandar($blok);
+
+        $hasil = RekomendasiRbs::updateOrCreate(
+            ['blok_lahan_id' => $blok->id],
+            [
+                'kondisi_lahan_id'        => $kondisi->id,
+                'admin_id'                => Auth::guard('admin')->id(),
+                'tanggal_analisis'        => now()->toDateString(),
+                'rules_terpicu'           => [],
+                'masalah_teridentifikasi' => ['Data kondisi lahan belum lengkap untuk analisis'],
+                'rekomendasi_pupuk'       => [['jenis_utama' => 'Pupuk Standar Rutin', 'dosis' => 'Sesuai jadwal pemupukan reguler — lengkapi data kondisi untuk rekomendasi spesifik']],
+                'saran_tindakan_utama'    => 'Data observasi kondisi lahan belum cukup untuk memberikan rekomendasi spesifik. Silakan lengkapi data kondisi (warna daun, pH tanah, kelembaban, kondisi drainase, dll) lalu jalankan analisis ulang.',
+                'status_kebutuhan_dominan' => 'Normal',
+                'jumlah_rule_terpicu'     => 0,
+                'dosis_urea'              => $dosis['dosis_urea'],
+                'dosis_kcl'               => $dosis['dosis_kcl'],
+                'total_urea'              => $dosis['total_urea'],
+                'total_kcl'               => $dosis['total_kcl'],
+                'catatan_dosis'           => 'Dosis standar berdasarkan umur tanaman, jenis tanah, dan topografi. Lengkapi data kondisi lahan untuk mendapat rekomendasi yang lebih akurat.',
             ]
         );
 

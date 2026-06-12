@@ -13,7 +13,7 @@ class RbsController extends Controller
     public function __construct(private RbsService $rbsService) {}
 
     /**
-     * Daftar blok + status analisis RBS (dengan filter anggota).
+     * Daftar blok + status analisis RBS (grouped by anggota, dengan filter).
      */
     public function index(Request $request)
     {
@@ -33,25 +33,42 @@ class RbsController extends Controller
             $query->where('id', $request->blok_lahan_id);
         }
 
-        $bloks = $query->latest()->paginate(10)->withQueryString();
+        $allFiltered = $query->orderBy('anggota_id')->orderBy('nama_blok')->get();
+
+        // Group by anggota — sort: anggota yang baru input/update blok di atas
+        $grouped = $allFiltered->groupBy('anggota_id')->map(function ($bloks) {
+            $anggota = $bloks->first()->anggota;
+            // Timestamp terbaru dari blok atau kondisi lahan
+            $latestActivity = $bloks->max(function ($b) {
+                $blokTime = $b->updated_at?->timestamp ?? 0;
+                $kondisiTime = $b->kondisiTerbaru?->created_at?->timestamp ?? 0;
+                return max($blokTime, $kondisiTime);
+            });
+            return [
+                'anggota'         => $anggota,
+                'bloks'           => $bloks,
+                'latest_activity' => $latestActivity,
+            ];
+        })->sortByDesc('latest_activity')->values();
+
         $anggotas = \App\Models\Anggota::orderBy('nama')->get();
 
-        // Stats (dari semua data, bukan hanya halaman ini)
+        // Stats (global)
         $allBloks = BlokLahan::with('rekomendasiRbsTerbaru', 'kondisiTerbaru')->get();
         $stats = [
-            'total' => $allBloks->count(),
+            'total'          => $allBloks->count(),
             'sudah_analisis' => $allBloks->filter(fn($b) => $b->rekomendasiRbsTerbaru)->count(),
-            'darurat' => $allBloks->filter(fn($b) => $b->rekomendasiRbsTerbaru?->status_kebutuhan_dominan === 'Darurat')->count(),
-            'segera' => $allBloks->filter(fn($b) => $b->rekomendasiRbsTerbaru?->status_kebutuhan_dominan === 'Segera')->count(),
-            'belum_kondisi' => $allBloks->filter(fn($b) => !$b->kondisiTerbaru)->count(),
+            'darurat'        => $allBloks->filter(fn($b) => $b->rekomendasiRbsTerbaru?->status_kebutuhan_dominan === 'Darurat')->count(),
+            'segera'         => $allBloks->filter(fn($b) => $b->rekomendasiRbsTerbaru?->status_kebutuhan_dominan === 'Segera')->count(),
+            'belum_kondisi'  => $allBloks->filter(fn($b) => !$b->kondisiTerbaru)->count(),
         ];
 
-        // Blok options for filter (scoped by anggota if selected)
+        // Blok options for filter
         $blokFilter = $request->filled('anggota_id')
             ? BlokLahan::where('anggota_id', $request->anggota_id)->orderBy('nama_blok')->get()
             : collect();
 
-        return view('rbs.index', compact('bloks', 'anggotas', 'blokFilter', 'stats'));
+        return view('rbs.index', compact('grouped', 'anggotas', 'blokFilter', 'stats'));
     }
 
     /**

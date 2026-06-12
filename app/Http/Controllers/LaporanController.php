@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Anggota;
+use App\Models\BlokLahan;
 use App\Models\RekomendasiRbs;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -19,36 +20,67 @@ class LaporanController extends Controller
             $query->where('status_kebutuhan_dominan', $request->status_kebutuhan_dominan);
         }
 
-        // Filter by anggota/pemilik lahan
+        // Filter by anggota
         if ($request->filled('anggota_id')) {
             $query->whereHas('blokLahan', function ($q) use ($request) {
                 $q->where('anggota_id', $request->anggota_id);
             });
         }
 
-        // Filter by specific blok lahan
+        // Filter by blok lahan
         if ($request->filled('blok_lahan_id')) {
             $query->where('blok_lahan_id', $request->blok_lahan_id);
         }
 
         $rekap = $query->get();
 
-        // Summary stats
-        $totalUrea  = $rekap->sum('total_urea');
-        $totalKcl   = $rekap->sum('total_kcl');
-        $karungUrea = $totalUrea > 0 ? (int) ceil($totalUrea / 50) : 0;
-        $karungKcl  = $totalKcl > 0 ? (int) ceil($totalKcl / 50) : 0;
+        // Group by anggota
+        $grouped = $rekap->groupBy(function ($r) {
+            return $r->blokLahan->anggota_id ?? 0;
+        });
 
-        // Daftar anggota untuk dropdown filter
+        // Build structured data per anggota — sort: yang baru dianalisis di atas
+        $laporanPerAnggota = $grouped->map(function ($items, $anggotaId) {
+            $anggota = $items->first()->blokLahan->anggota;
+
+            // Hanya hitung total dari blok yang layak dipupuk (Normal/Segera)
+            $blokLayak = $items->filter(function ($r) {
+                return in_array($r->status_kebutuhan_dominan, ['Normal', 'Segera']);
+            });
+
+            $latestAnalisis = $items->max(fn($r) => $r->tanggal_analisis?->timestamp ?? 0);
+
+            return [
+                'anggota'          => $anggota,
+                'items'            => $items,
+                'jumlah_blok'      => $items->count(),
+                'total_luas'       => $items->sum(fn($r) => $r->blokLahan->luas_ha),
+                'subtotal_urea'    => $blokLayak->sum('total_urea'),
+                'subtotal_kcl'     => $blokLayak->sum('total_kcl'),
+                'blok_layak'       => $blokLayak->count(),
+                'latest_analisis'  => $latestAnalisis,
+            ];
+        })->sortByDesc('latest_analisis')->values();
+
+        // Grand total — hanya dari blok layak pupuk (status Normal + Segera)
+        $rekapLayak = $rekap->filter(function ($r) {
+            return in_array($r->status_kebutuhan_dominan, ['Normal', 'Segera']);
+        });
+        $totalUrea    = $rekapLayak->sum('total_urea');
+        $totalKcl     = $rekapLayak->sum('total_kcl');
+        $karungUrea   = $totalUrea > 0 ? (int) ceil($totalUrea / 50) : 0;
+        $karungKcl    = $totalKcl > 0 ? (int) ceil($totalKcl / 50) : 0;
+        $blokLayakTotal = $rekapLayak->count();
+
+        // Dropdown data
         $anggotas = Anggota::orderBy('nama')->get();
-
-        // Blok options for filter (scoped by anggota if selected)
         $blokFilter = $request->filled('anggota_id')
-            ? \App\Models\BlokLahan::where('anggota_id', $request->anggota_id)->orderBy('nama_blok')->get()
+            ? BlokLahan::where('anggota_id', $request->anggota_id)->orderBy('nama_blok')->get()
             : collect();
 
         return view('laporan.index', compact(
-            'rekap', 'totalUrea', 'totalKcl', 'karungUrea', 'karungKcl', 'anggotas', 'blokFilter'
+            'rekap', 'laporanPerAnggota', 'totalUrea', 'totalKcl',
+            'karungUrea', 'karungKcl', 'blokLayakTotal', 'anggotas', 'blokFilter'
         ));
     }
 

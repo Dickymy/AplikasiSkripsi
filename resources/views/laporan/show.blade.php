@@ -27,7 +27,7 @@
     }; @endphp
     <div class="bg-gradient-to-r {{ $sc }} border rounded-2xl p-5 shadow-sm">
         <p class="text-xs text-slate-500 font-semibold tracking-wider uppercase">Rekomendasi Rule-Based System</p>
-        <p class="text-xl font-extrabold mt-0.5">{{ $rekomendasiRbs->status_kebutuhan_dominan }}</p>
+        <p class="text-xl font-extrabold mt-0.5">{{ \App\Models\RekomendasiRbs::labelStatus($rekomendasiRbs->status_kebutuhan_dominan) }}</p>
         <p class="text-xs text-slate-500 mt-1 font-medium">
             {{ $rekomendasiRbs->blokLahan->nama_blok }} · {{ $rekomendasiRbs->blokLahan->nama_pemilik }}
             · {{ $rekomendasiRbs->tanggal_analisis->format('d F Y') }}

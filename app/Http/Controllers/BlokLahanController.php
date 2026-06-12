@@ -28,10 +28,22 @@ class BlokLahanController extends Controller
             }
         }
 
-        $blokLahans = $query->latest()->paginate(10)->withQueryString();
-        $anggotas = \App\Models\Anggota::orderBy('nama')->get();
+        $allFiltered = $query->latest()->get();
 
-        return view('blok_lahan.index', compact('blokLahans', 'anggotas'));
+        // Group by anggota — sort: terbaru diupdate di atas
+        $grouped = $allFiltered->groupBy('anggota_id')->map(function ($bloks) {
+            $anggota = $bloks->first()->anggota;
+            return [
+                'anggota'         => $anggota,
+                'bloks'           => $bloks,
+                'latest_activity' => $bloks->max(fn($b) => $b->updated_at?->timestamp ?? 0),
+            ];
+        })->sortByDesc('latest_activity')->values();
+
+        $anggotas = \App\Models\Anggota::orderBy('nama')->get();
+        $totalBlok = BlokLahan::count();
+
+        return view('blok_lahan.index', compact('grouped', 'anggotas', 'totalBlok'));
     }
 
     public function create()

@@ -190,6 +190,7 @@
                         'Tunda'   => 'bg-slate-100 text-slate-700',
                         default   => 'bg-blue-100 text-blue-800',
                     };
+                    $ruleStatusLabel = \App\Models\RekomendasiRbs::labelStatus($rule['status']);
                 @endphp
                 <div class="px-5 py-3.5 flex items-start gap-3">
                     <span class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold flex items-center justify-center mt-0.5">
@@ -199,7 +200,7 @@
                         <div class="flex items-center gap-2 flex-wrap">
                             <p class="text-sm font-medium text-slate-800">{{ $rule['indikasi'] }}</p>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ $ruleStatusConfig }}">
-                                {{ $rule['status'] }}
+                                {{ $ruleStatusLabel }}
                             </span>
                         </div>
                         <p class="text-xs text-slate-500 mt-0.5">

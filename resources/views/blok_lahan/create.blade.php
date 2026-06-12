@@ -54,14 +54,14 @@
         left: 0;
         right: 0;
         z-index: 1000;
-        background: rgba(255,255,255,0.95);
-        backdrop-filter: blur(4px);
-        padding: 8px 12px;
+        background: rgba(255,255,255,0.97);
+        backdrop-filter: blur(6px);
+        padding: 6px 12px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         border-bottom: 1px solid #e5e7eb;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
     .map-top-bar.hidden { display: none; }
     .map-info-luas {
@@ -100,14 +100,14 @@
         z-index: 9100 !important;
         border-radius: 0 !important;
         border: none !important;
-        overflow: visible !important;
+        overflow: hidden !important;
     }
     .map-wrapper.is-fullscreen #draw-map {
-        height: calc(100vh - 50px) !important;
-        margin-top: 50px;
+        height: 100vh !important;
+        margin-top: 0 !important;
     }
     .map-wrapper.is-fullscreen .leaflet-top {
-        top: 60px !important;
+        top: 54px !important;
     }
     .map-wrapper.is-fullscreen #btn-expand {
         display: none !important;

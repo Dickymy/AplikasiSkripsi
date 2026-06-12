@@ -69,6 +69,29 @@ class RekomendasiRbs extends Model
     }
 
     /**
+     * Accessor: label status yang ditampilkan ke user.
+     * Data di DB tetap Darurat/Segera/Normal/Tunda, tapi tampilan lebih mudah dipahami.
+     */
+    public function getLabelStatusAttribute(): string
+    {
+        return self::labelStatus($this->status_kebutuhan_dominan);
+    }
+
+    /**
+     * Static helper: konversi status DB ke label tampilan.
+     */
+    public static function labelStatus(?string $status): string
+    {
+        return match($status) {
+            'Darurat' => 'Kritis',
+            'Segera'  => 'Perlu Pupuk',
+            'Normal'  => 'Sehat',
+            'Tunda'   => 'Tunda Pupuk',
+            default   => 'Belum Dicek',
+        };
+    }
+
+    /**
      * Hitung kebutuhan karung Urea (1 karung = 50 kg)
      */
     public function getKarungUreaAttribute(): int

@@ -55,7 +55,7 @@ $warna = match($rbs->status_kebutuhan_dominan) {
         </h3>
         <div class="flex items-center gap-2 flex-shrink-0">
             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $warna['badge'] }}">
-                {{ $rbs->status_kebutuhan_dominan }}
+                {{ $rbs->label_status }}
             </span>
             <span class="text-xs text-slate-400">{{ $rbs->tanggal_analisis->format('d M Y') }}</span>
         </div>

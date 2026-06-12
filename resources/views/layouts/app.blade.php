@@ -2,7 +2,7 @@
 <html lang="id" class="min-h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Sistem Pendukung Keputusan Pemupukan Kelapa Sawit - Kelompok Tani">
     <title>@yield('title', 'Dashboard') — SPK Sawit</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,6 +25,17 @@
         @media (max-width: 640px) {
             .hide-mobile { display: none !important; }
             table th, table td { padding: 6px 8px !important; font-size: 11px; }
+            /* Fix: prevent iOS auto-zoom on input focus */
+            input[type="text"],
+            input[type="number"],
+            input[type="email"],
+            input[type="password"],
+            input[type="tel"],
+            input[type="url"],
+            input[type="search"],
+            input[type="date"],
+            textarea,
+            select { font-size: 16px !important; }
         }
         /* Gambar tidak meluber */
         img { max-width: 100%; height: auto; }

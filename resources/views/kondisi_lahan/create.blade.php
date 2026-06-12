@@ -17,35 +17,52 @@
                 <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</span>
                 Identifikasi Blok Lahan
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    @php
-                        $blokOptions = $bloks->map(function($b) {
-                            $b->display_label = $b->nama_blok . ' — ' . ($b->anggota?->nama ?? '-');
-                            return $b;
-                        });
-                    @endphp
-                    @include('components.searchable-select', [
-                        'name' => 'blok_lahan_id',
-                        'label' => 'Blok Lahan',
-                        'placeholder' => 'Cari blok lahan atau pemilik...',
-                        'options' => $blokOptions,
-                        'displayField' => 'display_label',
-                        'selected' => old('blok_lahan_id', $selectedBlokId),
-                        'required' => true,
-                        'error' => $errors->first('blok_lahan_id'),
-                    ])
+            <div class="grid grid-cols-1 gap-4">
+                {{-- Row 1: Pemilik + Blok --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {{-- Pilih Pemilik (searchable) --}}
+                    <div>
+                        @include('components.searchable-select', [
+                            'name' => '_anggota_filter',
+                            'label' => 'Pemilik Lahan',
+                            'placeholder' => 'Cari nama pemilik...',
+                            'options' => $anggotas,
+                            'displayField' => 'nama',
+                            'selected' => old('_anggota_filter', $selectedBlokId ? ($bloks->firstWhere('id', $selectedBlokId)?->anggota_id) : ''),
+                            'required' => false,
+                            'error' => null,
+                            'helpText' => 'Pilih pemilik untuk memfilter blok lahan di bawah',
+                        ])
+                    </div>
+
+                    {{-- Tanggal Observasi --}}
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                            Tanggal Observasi <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" name="tanggal_observasi"
+                            value="{{ old('tanggal_observasi', now()->format('Y-m-d')) }}"
+                            class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors @error('tanggal_observasi') border-red-400 @enderror"
+                            required>
+                        @error('tanggal_observasi')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
+
+                {{-- Row 2: Pilih Blok (muncul setelah pilih pemilik) --}}
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        Tanggal Observasi <span class="text-red-500">*</span>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Blok Lahan <span class="text-red-500">*</span>
                     </label>
-                    <input type="date" name="tanggal_observasi"
-                        value="{{ old('tanggal_observasi', now()->format('Y-m-d')) }}"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors @error('tanggal_observasi') border-red-400 @enderror"
-                        required>
-                    @error('tanggal_observasi')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    <input type="hidden" name="blok_lahan_id" id="blok-lahan-id-value" value="{{ old('blok_lahan_id', $selectedBlokId) }}">
+
+                    <div id="blok-list-container">
+                        <p id="blok-hint" class="text-xs text-slate-400 py-2">Pilih pemilik lahan terlebih dahulu untuk menampilkan daftar blok.</p>
+                        <div id="blok-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 hidden"></div>
+                    </div>
+                    @error('blok_lahan_id')
+                        <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -344,5 +361,79 @@ function updateCurahOptions() {
 musimEl.addEventListener('change', updateCurahOptions);
 // Init on load (kalau ada old value)
 if (musimEl.value) updateCurahOptions();
+
+// ─── CASCADING: PEMILIK → BLOK LAHAN ─────────────────────────────
+var bloksData = @json($bloksJson);
+var blokListEl = document.getElementById('blok-list');
+var blokHintEl = document.getElementById('blok-hint');
+var blokValueEl = document.getElementById('blok-lahan-id-value');
+var selectedBlokId = '{{ old("blok_lahan_id", $selectedBlokId) }}';
+
+// Listen for pemilik selection (from searchable-select component)
+var anggotaHidden = document.querySelector('input[name="_anggota_filter"]');
+if (anggotaHidden) {
+    // Use MutationObserver to detect value changes on hidden input
+    var observer = new MutationObserver(function() { renderBlokList(anggotaHidden.value); });
+    observer.observe(anggotaHidden, { attributes: true, attributeFilter: ['value'] });
+
+    // Also poll for changes (backup since hidden input value change doesn't trigger mutation)
+    var lastAnggotaVal = anggotaHidden.value;
+    setInterval(function() {
+        if (anggotaHidden.value !== lastAnggotaVal) {
+            lastAnggotaVal = anggotaHidden.value;
+            renderBlokList(anggotaHidden.value);
+        }
+    }, 200);
+
+    // Initial render if already selected
+    if (anggotaHidden.value) renderBlokList(anggotaHidden.value);
+}
+
+function renderBlokList(anggotaId) {
+    if (!anggotaId) {
+        blokListEl.classList.add('hidden');
+        blokHintEl.classList.remove('hidden');
+        blokHintEl.textContent = 'Pilih pemilik lahan terlebih dahulu untuk menampilkan daftar blok.';
+        return;
+    }
+
+    var filtered = bloksData.filter(function(b) { return b.anggota_id == anggotaId; });
+    // Sort: terbaru dulu
+    filtered.sort(function(a, b) { return b.updated_at - a.updated_at; });
+
+    if (filtered.length === 0) {
+        blokListEl.classList.add('hidden');
+        blokHintEl.classList.remove('hidden');
+        blokHintEl.textContent = 'Pemilik ini belum memiliki blok lahan.';
+        return;
+    }
+
+    blokHintEl.classList.add('hidden');
+    blokListEl.classList.remove('hidden');
+    blokListEl.innerHTML = '';
+
+    filtered.forEach(function(blok, idx) {
+        var isSelected = blokValueEl.value == blok.id;
+        var isNew = idx === 0; // terbaru
+        var card = document.createElement('div');
+        card.className = 'blok-card relative flex items-center gap-3 p-3 border rounded-xl cursor-pointer transition-all '
+            + (isSelected ? 'bg-emerald-50 border-emerald-500 ring-1 ring-emerald-500' : 'bg-white border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/30');
+        card.dataset.blokId = blok.id;
+
+        card.innerHTML = '<div class="flex-1 min-w-0">'
+            + '<p class="font-semibold text-slate-800 text-sm">' + blok.nama_blok + '</p>'
+            + '<p class="text-[10px] text-slate-500">' + blok.luas_ha + ' Ha · ' + blok.kategori + '</p>'
+            + '</div>'
+            + (isNew ? '<span class="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0">Terbaru</span>' : '')
+            + (isSelected ? '<svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : '');
+
+        card.addEventListener('click', function() {
+            blokValueEl.value = blok.id;
+            renderBlokList(anggotaId); // re-render to update selection
+        });
+
+        blokListEl.appendChild(card);
+    });
+}
 </script>
 @endpush

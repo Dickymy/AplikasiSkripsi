@@ -2,11 +2,9 @@
 
 @section('title', 'Analisis RBS')
 @section('page-title', 'Analisis Rule-Based System')
-@section('page-subtitle', 'Diagnostik kondisi tanaman & rekomendasi pemupukan berbasis gejala visual')
+@section('page-subtitle', 'Evaluasi kondisi lahan & rekomendasi pemupukan')
 
 @section('content')
-
-{{-- Stats Cards --}}
 @php
     $totalBlok     = $stats['total'];
     $sudahAnalisis = $stats['sudah_analisis'];
@@ -15,261 +13,235 @@
     $belumKondisi  = $stats['belum_kondisi'];
 @endphp
 
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-5 sm:mb-6">
-    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm min-w-0">
-        <p class="text-[11px] text-slate-500 mb-0.5 truncate">Total Blok</p>
+{{-- Stats --}}
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
+    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <p class="text-[11px] text-slate-500 mb-0.5">Total Blok</p>
         <p class="text-xl sm:text-2xl font-bold text-slate-900">{{ $totalBlok }}</p>
         <p class="text-[10px] text-slate-400">terdaftar</p>
     </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm min-w-0">
-        <p class="text-[11px] text-slate-500 mb-0.5 truncate">Dianalisis</p>
+    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <p class="text-[11px] text-slate-500 mb-0.5">Sudah Dianalisis</p>
         <p class="text-xl sm:text-2xl font-bold text-blue-600">{{ $sudahAnalisis }}</p>
         <p class="text-[10px] text-slate-400">dari {{ $totalBlok }}</p>
     </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm border-l-4 border-l-red-500 min-w-0">
-        <p class="text-[11px] text-slate-500 mb-0.5 truncate">Darurat</p>
+    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm border-l-4 border-l-red-500">
+        <p class="text-[11px] text-slate-500 mb-0.5">Kritis</p>
         <p class="text-xl sm:text-2xl font-bold text-red-600">{{ $darurat }}</p>
-        <p class="text-[10px] text-slate-400">segera</p>
+        <p class="text-[10px] text-slate-400">penanganan</p>
     </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm border-l-4 border-l-orange-400 min-w-0">
-        <p class="text-[11px] text-slate-500 mb-0.5 truncate">Segera</p>
+    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm border-l-4 border-l-orange-400">
+        <p class="text-[11px] text-slate-500 mb-0.5">Perlu Pupuk</p>
         <p class="text-xl sm:text-2xl font-bold text-orange-500">{{ $segera }}</p>
-        <p class="text-[10px] text-slate-400">tindakan</p>
+        <p class="text-[10px] text-slate-400">kurang hara</p>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <p class="text-[11px] text-slate-500 mb-0.5">Belum Ada Kondisi</p>
+        <p class="text-xl sm:text-2xl font-bold text-slate-400">{{ $belumKondisi }}</p>
+        <p class="text-[10px] text-slate-400">perlu input</p>
     </div>
 </div>
 
-{{-- Action Bar --}}
-<div class="space-y-3 mb-4 sm:mb-5">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {{-- Filter --}}
-        <form method="GET" action="{{ route('rbs.index') }}" id="filter-form" class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-            <select name="anggota_id" onchange="this.form.submit()"
-                class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors w-full sm:w-auto sm:min-w-[180px]">
-                <option value="">Semua Anggota</option>
-                @foreach($anggotas as $anggota)
-                    <option value="{{ $anggota->id }}" {{ request('anggota_id') == $anggota->id ? 'selected' : '' }}>{{ $anggota->nama }}</option>
-                @endforeach
-            </select>
+{{-- Filter & Action --}}
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+    <form method="GET" action="{{ route('rbs.index') }}" id="rbs-filter-form" class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+        <div class="sm:min-w-[180px]">
+            @include('components.filter-searchable', [
+                'name' => 'anggota_id',
+                'placeholder' => 'Cari anggota...',
+                'options' => $anggotas,
+                'displayField' => 'nama',
+                'selected' => request('anggota_id'),
+                'formId' => 'rbs-filter-form',
+            ])
+        </div>
 
-            @if($blokFilter->isNotEmpty())
-            <select name="blok_lahan_id" onchange="this.form.submit()"
-                class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors w-full sm:w-auto sm:min-w-[160px]">
-                <option value="">Semua Blok</option>
-                @foreach($blokFilter as $bf)
-                    <option value="{{ $bf->id }}" {{ request('blok_lahan_id') == $bf->id ? 'selected' : '' }}>{{ $bf->nama_blok }}</option>
-                @endforeach
-            </select>
-            @endif
+        @if($blokFilter->isNotEmpty())
+        <select name="blok_lahan_id" onchange="this.form.submit()"
+            class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 w-full sm:w-auto sm:min-w-[150px]">
+            <option value="">Semua Blok</option>
+            @foreach($blokFilter as $bf)
+                <option value="{{ $bf->id }}" {{ request('blok_lahan_id') == $bf->id ? 'selected' : '' }}>{{ $bf->nama_blok }}</option>
+            @endforeach
+        </select>
+        @endif
 
-            @if(request()->hasAny(['anggota_id', 'blok_lahan_id']))
-                <a href="{{ route('rbs.index') }}" class="text-xs text-slate-500 hover:text-slate-700 font-medium self-start">Reset</a>
-            @endif
-        </form>
+        @if(request()->hasAny(['anggota_id', 'blok_lahan_id']))
+            <a href="{{ route('rbs.index') }}" class="text-xs text-slate-500 hover:text-slate-700 font-medium">Reset</a>
+        @endif
+    </form>
 
-        {{-- Analisis Semua --}}
-        <form action="{{ route('rbs.analisisSemua') }}" method="POST" id="form-analisis-semua" class="w-full sm:w-auto">
-            @csrf
-            <button type="button" onclick="showConfirm('Jalankan analisis RBS untuk semua blok yang memiliki data kondisi?', function(){ document.getElementById('form-analisis-semua').submit(); })"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl transition-colors shadow-sm w-full sm:w-auto justify-center">
-                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-                <span class="hidden sm:inline">Analisis Semua Blok</span>
-                <span class="sm:hidden">Analisis Semua</span>
-            </button>
-        </form>
-    </div>
-
-    @if($belumKondisi > 0)
-    <p class="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded-lg">
-        ⚠ {{ $belumKondisi }} blok belum memiliki data kondisi lahan. <a href="{{ route('kondisi-lahan.create') }}" class="font-semibold underline">Input sekarang →</a>
-    </p>
-    @endif
+    <form action="{{ route('rbs.analisisSemua') }}" method="POST" id="form-analisis-semua" class="w-full sm:w-auto">
+        @csrf
+        <button type="button" onclick="showConfirm('Jalankan analisis RBS untuk semua blok yang memiliki data kondisi?', function(){ document.getElementById('form-analisis-semua').submit(); })"
+            class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors shadow-sm w-full sm:w-auto justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Analisis Semua Blok
+        </button>
+    </form>
 </div>
 
-{{-- Table --}}
-<div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+@if($belumKondisi > 0)
+<div class="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-700 mb-4">
+    ⚠ {{ $belumKondisi }} blok belum memiliki data kondisi lahan. <a href="{{ route('kondisi-lahan.create') }}" class="font-semibold underline">Input sekarang →</a>
+</div>
+@endif
+
+{{-- Grouped by Anggota --}}
+@forelse($grouped as $group)
+@php
+    $anggota = $group['anggota'];
+    $bloks = $group['bloks'];
+@endphp
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-4">
+    {{-- Header anggota --}}
+    <div class="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+            {{ strtoupper(substr($anggota->nama ?? '?', 0, 1)) }}
+        </div>
+        <div>
+            <p class="font-bold text-slate-800 text-sm">{{ $anggota->nama ?? 'Tidak Diketahui' }}</p>
+            <p class="text-[10px] text-slate-500">{{ $bloks->count() }} blok</p>
+        </div>
+    </div>
+
     {{-- Desktop Table --}}
-    <div class="overflow-x-auto hidden sm:block rounded-t-2xl">
+    <div class="hidden sm:block overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
-                <tr class="border-b border-slate-100 bg-slate-50/60">
-                    <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Blok Lahan</th>
-                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Umur / Kategori</th>
-                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Kondisi Terbaru</th>
-                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status RBS</th>
-                    <th class="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rule Terpicu</th>
-                    <th class="text-right px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
+                <tr class="border-b border-slate-100">
+                    <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Blok Lahan</th>
+                    <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Umur</th>
+                    <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Kondisi Terakhir</th>
+                    <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Status</th>
+                    <th class="px-4 py-2.5 text-center text-[10px] font-semibold text-slate-400 uppercase">Rule</th>
+                    <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-400 uppercase">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-                @forelse($bloks as $blok)
+            <tbody class="divide-y divide-slate-50">
+                @foreach($bloks as $blok)
                 @php
-                    $rbs     = $blok->rekomendasiRbsTerbaru;
+                    $rbs = $blok->rekomendasiRbsTerbaru;
                     $kondisi = $blok->kondisiTerbaru;
-
                     $statusConfig = match($rbs?->status_kebutuhan_dominan) {
-                        'Darurat' => ['bg' => 'bg-red-100',    'text' => 'text-red-800',    'label' => 'Darurat'],
-                        'Segera'  => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'label' => 'Segera'],
-                        'Normal'  => ['bg' => 'bg-emerald-100','text' => 'text-emerald-800','label' => 'Normal'],
-                        'Tunda'   => ['bg' => 'bg-slate-100',  'text' => 'text-slate-700',  'label' => 'Tunda'],
-                        default   => ['bg' => 'bg-blue-50',    'text' => 'text-blue-700',   'label' => 'Belum Dianalisis'],
+                        'Darurat' => ['bg' => 'bg-red-50 text-red-700', 'label' => 'Kritis'],
+                        'Segera'  => ['bg' => 'bg-orange-50 text-orange-700', 'label' => 'Perlu Pupuk'],
+                        'Normal'  => ['bg' => 'bg-emerald-50 text-emerald-700', 'label' => 'Sehat'],
+                        'Tunda'   => ['bg' => 'bg-slate-100 text-slate-600', 'label' => 'Tunda Pupuk'],
+                        default   => ['bg' => 'bg-blue-50 text-blue-700', 'label' => 'Belum Dicek'],
                     };
                 @endphp
-                <tr class="hover:bg-slate-50/50 transition-colors">
-                    <td class="px-5 py-4">
-                        <p class="font-semibold text-slate-800">{{ $blok->nama_blok }}</p>
-                        <p class="text-xs text-slate-400">{{ $blok->nama_pemilik }} · {{ $blok->luas_ha }} Ha</p>
+                <tr class="hover:bg-slate-50/50">
+                    <td class="px-4 py-2.5">
+                        <p class="font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }}</p>
+                        <p class="text-[10px] text-slate-400">{{ number_format($blok->luas_ha, 2) }} Ha · SPH {{ $blok->sph }}</p>
                     </td>
-                    <td class="px-4 py-4">
-                        @if($blok->tahun_tanam)
-                            <p class="text-slate-700 font-medium">{{ $blok->umur_tanaman }} tahun</p>
-                            <p class="text-xs text-slate-400">{{ $blok->kategori_umur }}</p>
+                    <td class="px-4 py-2.5 text-xs text-slate-600">
+                        @if($blok->umur_tanaman !== null)
+                            {{ $blok->umur_tanaman }} thn
+                            <span class="text-[10px] text-slate-400 block">{{ $blok->kategori_umur }}</span>
                         @else
-                            <span class="text-xs text-slate-400">Belum diisi</span>
+                            <span class="text-slate-300">—</span>
                         @endif
                     </td>
-                    <td class="px-4 py-4">
+                    <td class="px-4 py-2.5 text-xs">
                         @if($kondisi)
-                            <p class="text-slate-700 text-xs">{{ $kondisi->tanggal_observasi->format('d M Y') }}</p>
-                            @if($kondisi->warna_daun)
-                                <p class="text-xs text-slate-500">{{ $kondisi->warna_daun }}</p>
-                            @endif
-                            @if($kondisi->ph_tanah)
-                                <p class="text-xs text-slate-400">pH: {{ $kondisi->ph_tanah }}</p>
-                            @endif
+                            <span class="text-slate-700">{{ $kondisi->tanggal_observasi->format('d/m/Y') }}</span>
                         @else
-                            <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blok->id]) }}"
-                               class="text-xs text-amber-600 font-medium hover:underline">
-                                + Input kondisi
-                            </a>
+                            <span class="text-amber-600 font-medium">Belum ada</span>
                         @endif
                     </td>
-                    <td class="px-4 py-4">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }}">
-                            {{ $statusConfig['label'] }}
-                        </span>
-                        @if($rbs)
-                            <p class="text-xs text-slate-400 mt-1">{{ $rbs->tanggal_analisis->format('d M Y') }}</p>
-                        @endif
+                    <td class="px-4 py-2.5">
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $statusConfig['bg'] }}">{{ $statusConfig['label'] }}</span>
                     </td>
-                    <td class="px-4 py-4 text-center">
-                        @if($rbs)
-                            <span class="text-lg font-bold text-slate-700">{{ $rbs->jumlah_rule_terpicu }}</span>
-                            <span class="text-xs text-slate-400 ml-1">rule</span>
-                        @else
-                            <span class="text-slate-300 text-xs">—</span>
-                        @endif
+                    <td class="px-4 py-2.5 text-center text-xs text-slate-600">
+                        {{ $rbs ? $rbs->jumlah_rule_terpicu : '—' }}
                     </td>
-                    <td class="px-5 py-4">
-                        <div class="flex items-center justify-end gap-2">
-                            @if($kondisi)
-                            <form method="POST" action="{{ route('rbs.analisis', $blok) }}">
-                                @csrf
-                                <button type="submit" title="Jalankan Analisis"
-                                    class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                    </svg>
-                                </button>
-                            </form>
-                            @endif
-                            @if($rbs)
-                            <a href="{{ route('rbs.detail', $blok) }}" title="Lihat Detail"
-                               class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                            </a>
+                    <td class="px-4 py-2.5 text-right">
+                        <div class="flex items-center gap-1.5 justify-end">
+                            @if(!$kondisi)
+                                <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blok->id]) }}" class="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-medium rounded-md hover:bg-amber-100 transition-colors">
+                                    Input Kondisi
+                                </a>
+                            @else
+                                <form action="{{ route('rbs.analisis', $blok) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-medium rounded-md hover:bg-emerald-100 transition-colors">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                        Analisis
+                                    </button>
+                                </form>
+                                @if($rbs)
+                                <a href="{{ route('rbs.detail', $blok) }}" class="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 text-slate-600 border border-slate-200 text-[10px] font-medium rounded-md hover:bg-slate-100 transition-colors">
+                                    Detail
+                                </a>
+                                @endif
                             @endif
                         </div>
                     </td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="px-5 py-16 text-center">
-                        <p class="text-slate-400 text-sm">Belum ada data blok lahan.</p>
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
 
-    {{-- Mobile Card Layout --}}
+    {{-- Mobile Cards --}}
     <div class="sm:hidden divide-y divide-slate-100">
-        @forelse($bloks as $blok)
+        @foreach($bloks as $blok)
         @php
-            $rbs     = $blok->rekomendasiRbsTerbaru;
+            $rbs = $blok->rekomendasiRbsTerbaru;
             $kondisi = $blok->kondisiTerbaru;
             $statusConfig = match($rbs?->status_kebutuhan_dominan) {
-                'Darurat' => ['bg' => 'bg-red-100',    'text' => 'text-red-800',    'label' => 'Darurat'],
-                'Segera'  => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'label' => 'Segera'],
-                'Normal'  => ['bg' => 'bg-emerald-100','text' => 'text-emerald-800','label' => 'Normal'],
-                'Tunda'   => ['bg' => 'bg-slate-100',  'text' => 'text-slate-700',  'label' => 'Tunda'],
-                default   => ['bg' => 'bg-blue-50',    'text' => 'text-blue-700',   'label' => 'Belum Dianalisis'],
+                'Darurat' => ['bg' => 'bg-red-100 text-red-800', 'label' => 'Kritis'],
+                'Segera'  => ['bg' => 'bg-orange-100 text-orange-800', 'label' => 'Perlu Pupuk'],
+                'Normal'  => ['bg' => 'bg-emerald-100 text-emerald-800', 'label' => 'Sehat'],
+                'Tunda'   => ['bg' => 'bg-slate-100 text-slate-700', 'label' => 'Tunda Pupuk'],
+                default   => ['bg' => 'bg-blue-50 text-blue-700', 'label' => 'Belum Dicek'],
             };
         @endphp
-        <div class="p-4 space-y-2">
-            <div class="flex items-start justify-between gap-2">
+        <div class="px-4 py-3">
+            {{-- Row 1: Nama blok + Status --}}
+            <div class="flex items-center justify-between gap-2 mb-1.5">
                 <div>
-                    <p class="font-semibold text-slate-800 text-sm">{{ $blok->nama_blok }}</p>
-                    <p class="text-xs text-slate-400">{{ $blok->nama_pemilik }} · {{ $blok->luas_ha }} Ha</p>
+                    <p class="font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }}</p>
+                    <p class="text-[10px] text-slate-400">{{ number_format($blok->luas_ha, 2) }} Ha · {{ $blok->umur_tanaman !== null ? $blok->umur_tanaman.' thn' : '—' }}</p>
                 </div>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} flex-shrink-0">
-                    {{ $statusConfig['label'] }}
-                </span>
+                <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold {{ $statusConfig['bg'] }} flex-shrink-0">{{ $statusConfig['label'] }}</span>
             </div>
-            <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-                @if($blok->tahun_tanam)
-                    <span>🌴 {{ $blok->umur_tanaman }} thn · {{ $blok->kategori_umur }}</span>
-                @endif
-                @if($kondisi)
-                    <span>📋 {{ $kondisi->tanggal_observasi->format('d/m/Y') }}</span>
-                    @if($kondisi->warna_daun)<span>🍃 {{ $kondisi->warna_daun }}</span>@endif
-                @endif
-                @if($rbs)
-                    <span>⚡ {{ $rbs->jumlah_rule_terpicu }} rule terpicu</span>
-                @endif
-            </div>
-            <div class="flex items-center gap-2 pt-1">
-                @if($kondisi)
-                <form method="POST" action="{{ route('rbs.analisis', $blok) }}">
-                    @csrf
-                    <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium rounded-lg hover:bg-emerald-100 transition-colors">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        Analisis
-                    </button>
-                </form>
-                @else
-                <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blok->id]) }}"
-                   class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium rounded-lg hover:bg-amber-100 transition-colors">
-                    + Input Kondisi
-                </a>
-                @endif
-                @if($rbs)
-                <a href="{{ route('rbs.detail', $blok) }}"
-                   class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium rounded-lg hover:bg-blue-100 transition-colors">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    Detail
-                </a>
-                @endif
-            </div>
-        </div>
-        @empty
-        <div class="px-5 py-16 text-center">
-            <p class="text-slate-400 text-sm">Belum ada data blok lahan.</p>
-        </div>
-        @endforelse
-    </div>
 
-    {{-- Pagination --}}
-    @if($bloks->hasPages())
-    <div class="px-4 py-3 border-t border-slate-100">
-        {{ $bloks->links() }}
+            {{-- Row 2: Info + Aksi --}}
+            <div class="flex items-center justify-between gap-2">
+                <div class="text-[10px] text-slate-500">
+                    @if($kondisi)
+                        Kondisi: {{ $kondisi->tanggal_observasi->format('d/m/Y') }}
+                        @if($rbs) · {{ $rbs->jumlah_rule_terpicu }} rule @endif
+                    @else
+                        <span class="text-amber-600">Belum ada data kondisi</span>
+                    @endif
+                </div>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                    @if(!$kondisi)
+                        <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blok->id]) }}" class="px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-medium rounded-md">Input</a>
+                    @else
+                        <form action="{{ route('rbs.analisis', $blok) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-medium rounded-md">Analisis</button>
+                        </form>
+                        @if($rbs)
+                        <a href="{{ route('rbs.detail', $blok) }}" class="px-2 py-1 bg-slate-50 text-slate-600 border border-slate-200 text-[9px] font-medium rounded-md">Detail</a>
+                        @endif
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endforeach
     </div>
-    @endif
 </div>
+@empty
+<div class="bg-white border border-slate-200 rounded-xl p-8 sm:p-12 text-center shadow-sm">
+    <p class="text-slate-400 text-sm mb-2">Tidak ada data blok lahan yang sesuai filter.</p>
+    <a href="{{ route('blok-lahan.create') }}" class="text-emerald-600 text-sm font-semibold hover:underline">Tambah blok lahan →</a>
+</div>
+@endforelse
 
 @endsection

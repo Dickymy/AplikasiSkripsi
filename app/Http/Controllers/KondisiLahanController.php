@@ -25,19 +25,46 @@ class KondisiLahanController extends Controller
             });
         }
 
-        $data = $query->paginate(15)->withQueryString();
+        $allData = $query->get();
+
+        // Group by anggota — sort: terbaru di atas
+        $grouped = $allData->groupBy(function ($k) {
+            return $k->blokLahan->anggota_id ?? 0;
+        })->map(function ($items) {
+            $anggota = $items->first()->blokLahan->anggota;
+            return [
+                'anggota'         => $anggota,
+                'items'           => $items,
+                'latest_activity' => $items->max(fn($k) => $k->created_at?->timestamp ?? 0),
+            ];
+        })->sortByDesc('latest_activity')->values();
+
         $anggotas = \App\Models\Anggota::orderBy('nama')->get();
         $bloks = \App\Models\BlokLahan::orderBy('nama_blok')->get();
 
-        return view('kondisi_lahan.index', compact('data', 'anggotas', 'bloks'));
+        return view('kondisi_lahan.index', compact('grouped', 'anggotas', 'bloks'));
     }
 
     public function create(Request $request)
     {
-        $bloks = BlokLahan::with('anggota')->orderBy('nama_blok')->get();
+        $bloks = BlokLahan::with('anggota')->latest()->get();
+        $anggotas = \App\Models\Anggota::orderBy('nama')->get();
         $selectedBlokId = $request->query('blok_lahan_id');
 
-        return view('kondisi_lahan.create', compact('bloks', 'selectedBlokId'));
+        // Build bloks data as JSON for cascading filter JS
+        $bloksJson = $bloks->map(function ($b) {
+            return [
+                'id'          => $b->id,
+                'nama_blok'   => $b->nama_blok,
+                'anggota_id'  => $b->anggota_id,
+                'anggota_nama'=> $b->anggota?->nama ?? '-',
+                'luas_ha'     => $b->luas_ha,
+                'kategori'    => $b->kategori_umur ?? '-',
+                'updated_at'  => $b->updated_at?->timestamp ?? 0,
+            ];
+        })->values();
+
+        return view('kondisi_lahan.create', compact('bloks', 'anggotas', 'selectedBlokId', 'bloksJson'));
     }
 
     public function store(Request $request)
