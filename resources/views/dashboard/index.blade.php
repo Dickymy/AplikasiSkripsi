@@ -42,9 +42,6 @@
     .status-filter-btn[data-status="Belum Dianalisis"].active { background: #475569; color: #fff; border-color: #475569; }
 
     /* Luas per status */
-    .luas-status-grid { display: grid; gap: 6px; }
-    @media (max-width: 640px) { .luas-status-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; } }
-    @media (min-width: 641px) { .luas-status-grid { grid-template-columns: repeat(5, 1fr); } }
     .luas-status-item { display: flex; align-items: center; gap: 5px; padding: 5px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 10px; }
     .luas-status-item .luas-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
     .luas-status-item .luas-label { color: #64748b; white-space: nowrap; }
@@ -92,7 +89,7 @@
         <p class="stat-sub text-xs text-slate-400">dari {{ $stats['total_blok'] }} blok</p>
     </div>
     <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-red-500">
-        <p class="stat-label text-xs text-slate-500 mb-0.5">Kritis</p>
+        <p class="stat-label text-xs text-slate-500 mb-0.5">Defisiensi Berat</p>
         <p class="stat-value text-xl sm:text-2xl font-bold text-red-600" id="stat-darurat">{{ $stats['darurat'] }}</p>
         @php $deltaDarurat = $stats['darurat'] - ($statsBulanLalu['darurat'] ?? 0); @endphp
         @if($deltaDarurat > 0)
@@ -149,11 +146,11 @@
 {{-- Luas per Status --}}
 <div class="mb-3 sm:mb-4">
     <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Luas Lahan per Status</p>
-    <div class="luas-status-grid">
-        <div class="luas-status-item"><div class="luas-dot" style="background:#dc2626;"></div><span class="luas-label">Kritis</span><span class="luas-value" id="luas-darurat">0 Ha</span></div>
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        <div class="luas-status-item"><div class="luas-dot" style="background:#dc2626;"></div><span class="luas-label">Def. Berat</span><span class="luas-value" id="luas-darurat">0 Ha</span></div>
         <div class="luas-status-item"><div class="luas-dot" style="background:#f97316;"></div><span class="luas-label">Perlu Pupuk</span><span class="luas-value" id="luas-segera">0 Ha</span></div>
         <div class="luas-status-item"><div class="luas-dot" style="background:#22c55e;"></div><span class="luas-label">Sehat</span><span class="luas-value" id="luas-normal">0 Ha</span></div>
-        <div class="luas-status-item"><div class="luas-dot" style="background:#94a3b8;"></div><span class="luas-label">Tunda Pupuk</span><span class="luas-value" id="luas-tunda">0 Ha</span></div>
+        <div class="luas-status-item"><div class="luas-dot" style="background:#94a3b8;"></div><span class="luas-label">Tunda</span><span class="luas-value" id="luas-tunda">0 Ha</span></div>
         <div class="luas-status-item"><div class="luas-dot" style="background:#475569;"></div><span class="luas-label">Belum Dicek</span><span class="luas-value" id="luas-belum">0 Ha</span></div>
     </div>
 </div>
@@ -168,7 +165,7 @@
         <div class="hidden sm:flex items-center gap-2 flex-wrap">
             {{-- Filter status --}}
             <div class="flex items-center gap-1.5" id="status-filter-buttons-desktop">
-                <button type="button" class="status-filter-btn active" data-status="Darurat" onclick="toggleStatusFilter(this)">Kritis</button>
+                <button type="button" class="status-filter-btn active" data-status="Darurat" onclick="toggleStatusFilter(this)">Def. Berat</button>
                 <button type="button" class="status-filter-btn active" data-status="Segera" onclick="toggleStatusFilter(this)">Perlu Pupuk</button>
                 <button type="button" class="status-filter-btn active" data-status="Normal" onclick="toggleStatusFilter(this)">Sehat</button>
                 <button type="button" class="status-filter-btn active" data-status="Tunda" onclick="toggleStatusFilter(this)">Tunda Pupuk</button>
@@ -198,7 +195,7 @@
         <div class="sm:hidden space-y-2">
             {{-- Baris 1: Filter status --}}
             <div class="flex flex-wrap items-center gap-1" id="status-filter-buttons-mobile">
-                <button type="button" class="status-filter-btn active" data-status="Darurat" onclick="toggleStatusFilter(this)">Kritis</button>
+                <button type="button" class="status-filter-btn active" data-status="Darurat" onclick="toggleStatusFilter(this)">Def. Berat</button>
                 <button type="button" class="status-filter-btn active" data-status="Segera" onclick="toggleStatusFilter(this)">Perlu Pupuk</button>
                 <button type="button" class="status-filter-btn active" data-status="Normal" onclick="toggleStatusFilter(this)">Sehat</button>
                 <button type="button" class="status-filter-btn active" data-status="Tunda" onclick="toggleStatusFilter(this)">Tunda Pupuk</button>
@@ -234,7 +231,7 @@
         <div class="map-legend">
             <p class="text-[9px] sm:text-[10px] font-semibold text-slate-600 mb-1">Status Lahan</p>
             <div class="legend-items">
-                <div class="legend-item"><div class="legend-dot" style="background:#dc2626;"></div>Kritis</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#dc2626;"></div>Def. Berat</div>
                 <div class="legend-item"><div class="legend-dot" style="background:#f97316;"></div>Perlu Pupuk</div>
                 <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>Sehat</div>
                 <div class="legend-item"><div class="legend-dot" style="background:#94a3b8;"></div>Tunda Pupuk</div>
@@ -268,7 +265,7 @@ function getColorRbs(s){return{'Darurat':'#dc2626','Segera':'#f97316','Normal':'
 function getBadgeStyleRbs(s){return{'Darurat':'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;','Segera':'background:#ffedd5;color:#9a3412;border:1px solid #fdba74;','Normal':'background:#dcfce7;color:#166534;border:1px solid #86efac;','Tunda':'background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;','Belum Dianalisis':'background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;'}[s]||'background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;';}
 
 // Mapping status DB ke label tampilan
-function getStatusLabel(s){return{'Darurat':'Kritis','Segera':'Perlu Pupuk','Normal':'Sehat','Tunda':'Tunda Pupuk','Belum Dianalisis':'Belum Dicek'}[s]||'Belum Dicek';}
+function getStatusLabel(s){return{'Darurat':'Defisiensi Berat','Segera':'Perlu Pupuk','Normal':'Sehat','Tunda':'Tunda Pupuk','Belum Dianalisis':'Belum Dicek'}[s]||'Belum Dicek';}
 
 // Populate filters
 var selectEl = document.getElementById('filter-pemilik');

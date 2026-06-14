@@ -194,10 +194,10 @@
                     <p class="text-[11px] sm:text-xs text-slate-500 truncate">@yield('page-subtitle', 'SPK Pemupukan Kelapa Sawit')</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 flex-shrink-0">
                 {{-- Notification Bell (E3) --}}
                 <div class="relative" id="notif-wrapper">
-                    <button onclick="toggleNotifDropdown()" class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors" type="button">
+                    <button onclick="toggleNotifDropdown()" class="relative p-1.5 sm:p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors" type="button">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                         @if(($jumlahNotifDarurat ?? 0) > 0)
                         <span class="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center" style="min-width:18px;height:18px;">{{ $jumlahNotifDarurat }}</span>
@@ -206,11 +206,11 @@
                     {{-- Dropdown --}}
                     <div id="notif-dropdown" class="notif-dropdown-panel absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 hidden overflow-hidden" style="width:280px;max-width:calc(100vw - 32px);">
                         <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100">
-                            <p class="text-xs font-bold text-slate-700 whitespace-nowrap">Blok Kritis</p>
+                            <p class="text-xs font-bold text-slate-700 whitespace-nowrap">Blok Defisiensi Berat</p>
                         </div>
                         @if(($notifBlokDarurat ?? collect())->isEmpty())
                         <div class="px-4 py-4 text-center">
-                            <p class="text-xs text-slate-400 whitespace-nowrap">Tidak ada blok berstatus kritis 🎉</p>
+                            <p class="text-xs text-slate-400 whitespace-nowrap">Tidak ada blok defisiensi berat 🎉</p>
                         </div>
                         @else
                         <div class="max-h-52 overflow-y-auto divide-y divide-slate-50">
@@ -228,9 +228,8 @@
                     </div>
                 </div>
 
-                <div class="text-[10px] sm:text-xs text-slate-500 flex-shrink-0 text-right leading-tight">
-                    <span class="hidden sm:inline">{{ now()->translatedFormat('l, d F Y') }}</span>
-                    <span class="sm:hidden">{{ now()->translatedFormat('d M Y') }}</span>
+                <div class="text-[10px] sm:text-xs text-slate-500 text-right leading-tight hidden sm:block">
+                    {{ now()->setTimezone('Asia/Makassar')->translatedFormat('l, d F Y') }}
                 </div>
             </div>
         </header>

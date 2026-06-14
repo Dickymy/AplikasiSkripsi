@@ -238,7 +238,7 @@
     {{-- Footer --}}
     <div class="footer">
         Dokumen ini dihasilkan secara otomatis oleh Sistem Pendukung Keputusan Pemupukan Kelapa Sawit (SPK Sawit)<br>
-        Dicetak pada: {{ now()->translatedFormat('d F Y, H:i') }} WIB
+        Dicetak pada: {{ now()->translatedFormat('d F Y, H:i') }} WITA
     </div>
 </body>
 </html>

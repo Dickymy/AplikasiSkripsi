@@ -47,7 +47,7 @@
 
     {{-- Keterangan --}}
     <div class="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-800">
-        <span class="font-semibold">ℹ Catatan:</span> Total kebutuhan pupuk hanya dihitung dari blok berstatus <strong>Sehat</strong> dan <strong>Perlu Pupuk</strong>. Blok berstatus Kritis (perlu penanganan masalah dulu) dan Tunda Pupuk tidak dihitung.
+        <span class="font-semibold">ℹ Catatan:</span> Total kebutuhan pupuk hanya dihitung dari blok berstatus <strong>Sehat</strong> dan <strong>Perlu Pupuk</strong>. Blok berstatus Defisiensi Berat (perlu penanganan masalah dulu) dan Tunda Pupuk tidak dihitung.
     </div>
 
     {{-- Filter --}}
@@ -83,7 +83,7 @@
                 <select name="status_kebutuhan_dominan" onchange="this.form.submit()"
                     class="w-full sm:w-auto px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 sm:min-w-[130px]">
                     <option value="">Semua Status</option>
-                    @foreach(['Darurat' => 'Kritis', 'Segera' => 'Perlu Pupuk', 'Normal' => 'Sehat', 'Tunda' => 'Tunda Pupuk'] as $val => $label)
+                    @foreach(['Darurat' => 'Defisiensi Berat', 'Segera' => 'Perlu Pupuk', 'Normal' => 'Sehat', 'Tunda' => 'Tunda Pupuk'] as $val => $label)
                         <option value="{{ $val }}" {{ request('status_kebutuhan_dominan') == $val ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>

@@ -32,7 +32,7 @@
         <select name="status" onchange="this.form.submit()"
             class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 sm:min-w-[120px]">
             <option value="">Semua Status</option>
-            @foreach(['Darurat' => 'Kritis', 'Segera' => 'Perlu Pupuk', 'Normal' => 'Sehat', 'Tunda' => 'Tunda Pupuk', 'Belum' => 'Belum Dicek'] as $val => $label)
+            @foreach(['Darurat' => 'Defisiensi Berat', 'Segera' => 'Perlu Pupuk', 'Normal' => 'Sehat', 'Tunda' => 'Tunda Pupuk', 'Belum' => 'Belum Dicek'] as $val => $label)
                 <option value="{{ $val }}" {{ request('status') == $val ? 'selected' : '' }}>{{ $label }}</option>
             @endforeach
         </select>

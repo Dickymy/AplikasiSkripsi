@@ -14,7 +14,7 @@
     $statusConfig = match($status ?? null) {
         'Darurat' => [
             'bg' => 'bg-red-50 text-red-700 ring-1 ring-red-200',
-            'label' => 'Kritis',
+            'label' => 'Defisiensi Berat',
         ],
         'Segera' => [
             'bg' => 'bg-orange-50 text-orange-700 ring-1 ring-orange-200',

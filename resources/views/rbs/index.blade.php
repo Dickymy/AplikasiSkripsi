@@ -26,7 +26,7 @@
         <p class="text-[10px] text-slate-400">dari {{ $totalBlok }}</p>
     </div>
     <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm border-l-4 border-l-red-500">
-        <p class="text-[11px] text-slate-500 mb-0.5">Kritis</p>
+        <p class="text-[11px] text-slate-500 mb-0.5">Def. Berat</p>
         <p class="text-xl sm:text-2xl font-bold text-red-600">{{ $darurat }}</p>
         <p class="text-[10px] text-slate-400">penanganan</p>
     </div>
@@ -124,7 +124,7 @@
                     $rbs = $blok->rekomendasiRbsTerbaru;
                     $kondisi = $blok->kondisiTerbaru;
                     $statusConfig = match($rbs?->status_kebutuhan_dominan) {
-                        'Darurat' => ['bg' => 'bg-red-50 text-red-700', 'label' => 'Kritis'],
+                        'Darurat' => ['bg' => 'bg-red-50 text-red-700', 'label' => 'Defisiensi Berat'],
                         'Segera'  => ['bg' => 'bg-orange-50 text-orange-700', 'label' => 'Perlu Pupuk'],
                         'Normal'  => ['bg' => 'bg-emerald-50 text-emerald-700', 'label' => 'Sehat'],
                         'Tunda'   => ['bg' => 'bg-slate-100 text-slate-600', 'label' => 'Tunda Pupuk'],
@@ -192,7 +192,7 @@
             $rbs = $blok->rekomendasiRbsTerbaru;
             $kondisi = $blok->kondisiTerbaru;
             $statusConfig = match($rbs?->status_kebutuhan_dominan) {
-                'Darurat' => ['bg' => 'bg-red-100 text-red-800', 'label' => 'Kritis'],
+                'Darurat' => ['bg' => 'bg-red-100 text-red-800', 'label' => 'Defisiensi Berat'],
                 'Segera'  => ['bg' => 'bg-orange-100 text-orange-800', 'label' => 'Perlu Pupuk'],
                 'Normal'  => ['bg' => 'bg-emerald-100 text-emerald-800', 'label' => 'Sehat'],
                 'Tunda'   => ['bg' => 'bg-slate-100 text-slate-700', 'label' => 'Tunda Pupuk'],

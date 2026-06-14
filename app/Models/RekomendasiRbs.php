@@ -89,7 +89,7 @@ class RekomendasiRbs extends Model
     public static function labelStatus(?string $status): string
     {
         return match($status) {
-            'Darurat' => 'Kritis',
+            'Darurat' => 'Defisiensi Berat',
             'Segera'  => 'Perlu Pupuk',
             'Normal'  => 'Sehat',
             'Tunda'   => 'Tunda Pupuk',
