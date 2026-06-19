@@ -12,10 +12,6 @@
             Kembali
         </a>
         <div class="flex items-center gap-2">
-            <button type="button" onclick="salinRingkasan()" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-                Salin Ringkasan
-            </button>
             <a href="{{ route('laporan.pdf', $rekomendasiRbs) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 Download PDF
@@ -39,7 +35,35 @@
             · {{ $rekomendasiRbs->tanggal_analisis->format('d F Y') }}
             · Oleh: <span class="font-semibold text-slate-700">{{ $rekomendasiRbs->admin->nama_lengkap }}</span>
         </p>
+        {{-- Badges Validitas + Confidence --}}
+        <div class="flex flex-wrap items-center gap-2 mt-3">
+            @php
+                $validitasColor = match($rekomendasiRbs->validitas_rekomendasi) {
+                    'Cukup Kuat'    => 'bg-blue-100 text-blue-800',
+                    'Terverifikasi' => 'bg-green-100 text-green-800',
+                    default         => 'bg-amber-100 text-amber-800',
+                };
+                $confColor = match($rekomendasiRbs->confidence_label) {
+                    'Tinggi' => 'bg-green-100 text-green-800',
+                    'Sedang' => 'bg-blue-100 text-blue-800',
+                    default  => 'bg-amber-100 text-amber-800',
+                };
+            @endphp
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $validitasColor }}">{{ $rekomendasiRbs->validitas_rekomendasi }}</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $confColor }}">Keyakinan: {{ $rekomendasiRbs->confidence_label }} ({{ $rekomendasiRbs->confidence_score }}%)</span>
+            @if(!$rekomendasiRbs->data_cukup)
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-800">⚠ Data Belum Cukup</span>
+            @endif
+        </div>
     </div>
+
+    {{-- Notifikasi Data (Fitur 7) --}}
+    @if(!$rekomendasiRbs->data_cukup && $rekomendasiRbs->notifikasi_data)
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+        <p class="font-semibold mb-1">⚠️ Data Observasi Belum Cukup</p>
+        <p>{{ $rekomendasiRbs->notifikasi_data }}</p>
+    </div>
+    @endif
 
     {{-- Info Cards --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -131,6 +155,41 @@
             Catatan Aplikasi Dosis
         </h3>
         <p class="text-sm leading-relaxed">{{ $rekomendasiRbs->catatan_dosis }}</p>
+    </div>
+    @endif
+
+    {{-- Jadwal Pemupukan Per Tahap (Fitur 2) --}}
+    @if($rekomendasiRbs->jadwal_pemupukan && count($rekomendasiRbs->jadwal_pemupukan) > 0)
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+        <h3 class="text-sm font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+            📅 Jadwal Pemupukan Per Tahap
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-200 bg-slate-50">
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Tahap</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Estimasi Waktu</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-slate-600">Urea (kg)</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-slate-600">KCl (kg)</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Metode</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Catatan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($rekomendasiRbs->jadwal_pemupukan as $jadwal)
+                    <tr>
+                        <td class="px-3 py-2.5 font-semibold text-slate-800 text-xs">{{ $jadwal['nama_tahap'] }}</td>
+                        <td class="px-3 py-2.5 text-xs text-slate-600">{{ $jadwal['estimasi_waktu'] }}</td>
+                        <td class="px-3 py-2.5 text-right text-xs font-bold text-amber-700">{{ number_format($jadwal['urea_kg'], 2) }}</td>
+                        <td class="px-3 py-2.5 text-right text-xs font-bold text-cyan-700">{{ number_format($jadwal['kcl_kg'], 2) }}</td>
+                        <td class="px-3 py-2.5 text-xs text-slate-600">{{ $jadwal['metode_aplikasi'] }}</td>
+                        <td class="px-3 py-2.5 text-xs text-slate-500 italic">{{ $jadwal['catatan'] }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
     @endif
 
@@ -240,31 +299,13 @@
             </div>
         </form>
     </div>
-</div>
 
-{{-- Toast notification --}}
-<div id="toast-salin" class="fixed bottom-6 right-6 z-[9999] bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-    ✓ Teks berhasil disalin!
+    {{-- Button Kembali di bawah --}}
+    <div class="pt-2 pb-4">
+        <a href="{{ route('laporan.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Kembali ke Laporan
+        </a>
+    </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-function salinRingkasan() {
-    fetch('{{ route("laporan.ringkasan", $rekomendasiRbs) }}?format=json')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            navigator.clipboard.writeText(data.teks).then(function() {
-                var toast = document.getElementById('toast-salin');
-                toast.style.transform = 'translateY(0)';
-                toast.style.opacity = '1';
-                setTimeout(function() {
-                    toast.style.transform = 'translateY(20px)';
-                    toast.style.opacity = '0';
-                }, 2000);
-            });
-        })
-        .catch(function() { alert('Gagal menyalin teks.'); });
-}
-</script>
-@endpush

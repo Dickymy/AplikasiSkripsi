@@ -58,17 +58,19 @@ class RuleBaseController extends Controller
     {
         $validated = $request->validate([
             // Kondisi (IF) — semua nullable
-            'kondisi_warna_daun'    => ['nullable', 'string', 'max:100'],
-            'kondisi_ph_min'        => ['nullable', 'numeric', 'min:3', 'max:8'],
-            'kondisi_ph_max'        => ['nullable', 'numeric', 'min:3', 'max:8'],
-            'kondisi_kelembaban'    => ['nullable', 'string', 'max:50'],
-            'kondisi_musim'         => ['nullable', 'string', 'max:50'],
-            'kondisi_drainase'      => ['nullable', 'string', 'max:50'],
-            'kondisi_defisiensi'    => ['nullable', 'string', 'max:50'],
-            'kondisi_kategori_umur' => ['nullable', 'string', 'max:50'],
-            'kondisi_pelepah'       => ['nullable', 'string', 'max:100'],
-            'kondisi_tandan'        => ['nullable', 'string', 'max:100'],
-            'ada_serangan_hama'     => ['nullable'],
+            'kondisi_warna_daun'           => ['nullable', 'string', 'max:100'],
+            'kondisi_ph_min'               => ['nullable', 'numeric', 'min:3', 'max:8'],
+            'kondisi_ph_max'               => ['nullable', 'numeric', 'min:3', 'max:8'],
+            'kondisi_kelembaban'           => ['nullable', 'string', 'max:50'],
+            'kondisi_curah_hujan_kategori' => ['nullable', 'string', 'max:50'],
+            'kondisi_musim'                => ['nullable', 'string', 'max:50'],
+            'kondisi_drainase'             => ['nullable', 'string', 'max:50'],
+            'kondisi_defisiensi'           => ['nullable', 'string', 'max:50'],
+            'kondisi_kategori_umur'        => ['nullable', 'string', 'max:50'],
+            'kondisi_pelepah'              => ['nullable', 'string', 'max:100'],
+            'kondisi_tandan'               => ['nullable', 'string', 'max:100'],
+            'ada_serangan_hama'            => ['nullable'],
+            'ada_gulma_dominan'            => ['nullable'],
             // Output (THEN)
             'indikasi_masalah'      => ['required', 'string', 'max:255'],
             'jenis_pupuk_utama'     => ['required', 'string', 'max:100'],
@@ -94,6 +96,9 @@ class RuleBaseController extends Controller
         $validated['aktif'] = $request->boolean('aktif');
         $validated['ada_serangan_hama'] = $request->has('ada_serangan_hama')
             ? ($request->input('ada_serangan_hama') === 'null' ? null : $request->boolean('ada_serangan_hama'))
+            : null;
+        $validated['ada_gulma_dominan'] = $request->has('ada_gulma_dominan')
+            ? ($request->input('ada_gulma_dominan') === 'null' ? null : $request->boolean('ada_gulma_dominan'))
             : null;
 
         // Bersihkan string kosong jadi null

@@ -13,6 +13,7 @@ class RuleBaseLanjutan extends Model
         'kondisi_ph_min',
         'kondisi_ph_max',
         'kondisi_kelembaban',
+        'kondisi_curah_hujan_kategori',
         'kondisi_musim',
         'kondisi_drainase',
         'kondisi_defisiensi',
@@ -20,6 +21,7 @@ class RuleBaseLanjutan extends Model
         'kondisi_pelepah',
         'kondisi_tandan',
         'ada_serangan_hama',
+        'ada_gulma_dominan',
         'kondisi_intermediate',
         'prasyarat_intermediate',
         'indikasi_masalah',
@@ -40,6 +42,7 @@ class RuleBaseLanjutan extends Model
         return [
             'aktif'                    => 'boolean',
             'ada_serangan_hama'        => 'boolean',
+            'ada_gulma_dominan'        => 'boolean',
             'kondisi_ph_min'           => 'decimal:2',
             'kondisi_ph_max'           => 'decimal:2',
             'prioritas'                => 'integer',

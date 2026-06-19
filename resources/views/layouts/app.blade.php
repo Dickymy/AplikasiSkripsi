@@ -334,6 +334,8 @@
     // Back to Top button visibility
     var btnBackTop = document.getElementById('btn-back-top');
     window.addEventListener('scroll', function() {
+        if (!btnBackTop) btnBackTop = document.getElementById('btn-back-top');
+        if (!btnBackTop) return;
         if (window.scrollY > 300) {
             btnBackTop.style.opacity = '1';
             btnBackTop.style.pointerEvents = 'auto';

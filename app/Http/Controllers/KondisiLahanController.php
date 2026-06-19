@@ -187,6 +187,8 @@ class KondisiLahanController extends Controller
 
         $musim = $data['musim_saat_ini'] ?? null;
         $kelembaban = $data['kelembaban_tanah'] ?? null;
+        $curahHujan = $data['curah_hujan_kategori'] ?? null;
+        $drainase = $data['kondisi_drainase'] ?? null;
         $warnaDaun = $data['warna_daun'] ?? null;
         $defisiensi = $data['gejala_defisiensi'] ?? [];
 
@@ -200,9 +202,39 @@ class KondisiLahanController extends Controller
             $warnings[] = 'Musim hujan tapi kelembaban rendah — mohon verifikasi data.';
         }
 
+        // Drainase tergenang tapi curah hujan sangat rendah
+        if ($drainase === 'Buruk — Tergenang' && $curahHujan === 'Sangat Rendah') {
+            $warnings[] = 'Drainase tergenang tapi curah hujan sangat rendah — kondisi ini jarang terjadi. Pastikan data sudah benar atau tambahkan catatan penjelasan.';
+        }
+
+        // Drainase tergenang tapi musim kemarau
+        if ($drainase === 'Buruk — Tergenang' && $musim === 'Musim Kemarau') {
+            $warnings[] = 'Drainase tergenang saat musim kemarau — situasi tidak lazim. Jika benar, mungkin ada masalah saluran drainase yang perlu dicatat.';
+        }
+
+        // Curah hujan sangat tinggi tapi kelembaban sangat kering
+        if ($curahHujan === 'Sangat Tinggi' && in_array($kelembaban, ['Kering', 'Sangat Kering'])) {
+            $warnings[] = 'Curah hujan sangat tinggi tapi kelembaban rendah — data ini kontradiktif, mohon verifikasi.';
+        }
+
+        // Curah hujan sangat rendah tapi kelembaban sangat lembab
+        if ($curahHujan === 'Sangat Rendah' && in_array($kelembaban, ['Lembab', 'Sangat Lembab'])) {
+            $warnings[] = 'Curah hujan sangat rendah tapi kelembaban tinggi — mohon verifikasi apakah ada sumber air lain.';
+        }
+
         // Daun hijau normal tapi ada gejala defisiensi
         if ($warnaDaun === 'Hijau Normal' && !empty($defisiensi)) {
-            $warnings[] = 'Warna daun normal tapi ada gejala defisiensi terpilih — mohon verifikasi.';
+            $warnings[] = 'Warna daun normal tapi ada dugaan unsur hara kurang — mohon verifikasi.';
+        }
+
+        // Musim hujan + curah hujan sangat rendah
+        if ($musim === 'Musim Hujan' && $curahHujan === 'Sangat Rendah') {
+            $warnings[] = 'Musim hujan tapi curah hujan sangat rendah — mohon pastikan data musim atau curah hujan sudah benar.';
+        }
+
+        // Musim kemarau + curah hujan sangat tinggi
+        if ($musim === 'Musim Kemarau' && $curahHujan === 'Sangat Tinggi') {
+            $warnings[] = 'Musim kemarau tapi curah hujan sangat tinggi — data ini tidak lazim, mohon verifikasi.';
         }
 
         return $warnings;

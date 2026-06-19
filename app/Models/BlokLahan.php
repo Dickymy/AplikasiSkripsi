@@ -53,7 +53,9 @@ class BlokLahan extends Model
 
     public function rekomendasiRbsTerbaru(): HasOne
     {
-        return $this->hasOne(RekomendasiRbs::class, 'blok_lahan_id')->latestOfMany('tanggal_analisis');
+        return $this->hasOne(RekomendasiRbs::class, 'blok_lahan_id')
+            ->where('is_latest', true)
+            ->latestOfMany('tanggal_analisis');
     }
 
     // ─── Accessor ────────────────────────────────────────────

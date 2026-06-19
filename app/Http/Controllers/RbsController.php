@@ -117,7 +117,14 @@ class RbsController extends Controller
             'rekomendasiRbsTerbaru.admin',
         ]);
 
-        return view('rbs.detail', compact('blokLahan'));
+        // Histori rekomendasi (Fitur 1)
+        $historiRekomendasi = RekomendasiRbs::where('blok_lahan_id', $blokLahan->id)
+            ->where('is_latest', false)
+            ->latest('tanggal_analisis')
+            ->limit(20)
+            ->get();
+
+        return view('rbs.detail', compact('blokLahan', 'historiRekomendasi'));
     }
 
     /**

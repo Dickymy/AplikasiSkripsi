@@ -15,6 +15,11 @@ class LaporanController extends Controller
         $query = RekomendasiRbs::with(['blokLahan.anggota', 'admin', 'kondisiLahan', 'realisasi'])
             ->latest('tanggal_analisis');
 
+        // Filter histori: default hanya latest
+        if (!$request->filled('histori') || $request->histori !== 'semua') {
+            $query->where('is_latest', true);
+        }
+
         // Filter by status
         if ($request->filled('status_kebutuhan_dominan')) {
             $query->where('status_kebutuhan_dominan', $request->status_kebutuhan_dominan);

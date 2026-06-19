@@ -15,6 +15,8 @@ class RekomendasiRbs extends Model
         'kondisi_lahan_id',
         'admin_id',
         'tanggal_analisis',
+        'is_latest',
+        'nomor_analisis',
         'rules_terpicu',
         'masalah_teridentifikasi',
         'rekomendasi_pupuk',
@@ -26,6 +28,15 @@ class RekomendasiRbs extends Model
         'total_urea',
         'total_kcl',
         'catatan_dosis',
+        'jadwal_pemupukan',
+        'validitas_rekomendasi',
+        'catatan_validitas',
+        'confidence_score',
+        'confidence_label',
+        'catatan_confidence',
+        'data_cukup',
+        'data_kurang',
+        'notifikasi_data',
     ];
 
     protected function casts(): array
@@ -35,10 +46,15 @@ class RekomendasiRbs extends Model
             'rules_terpicu'           => 'array',
             'masalah_teridentifikasi' => 'array',
             'rekomendasi_pupuk'       => 'array',
+            'jadwal_pemupukan'        => 'array',
+            'data_kurang'             => 'array',
+            'is_latest'               => 'boolean',
+            'data_cukup'              => 'boolean',
             'dosis_urea'              => 'double',
             'dosis_kcl'               => 'double',
             'total_urea'              => 'double',
             'total_kcl'               => 'double',
+            'confidence_score'        => 'integer',
         ];
     }
 
@@ -111,5 +127,31 @@ class RekomendasiRbs extends Model
     public function getKarungKclAttribute(): int
     {
         return $this->total_kcl ? (int) ceil($this->total_kcl / 50) : 0;
+    }
+
+    // Accessor: badge warna confidence
+    public function getWarnaConfidenceAttribute(): string
+    {
+        return match($this->confidence_label) {
+            'Tinggi' => 'green',
+            'Sedang' => 'blue',
+            default  => 'amber',
+        };
+    }
+
+    // Accessor: badge warna validitas
+    public function getWarnaValiditasAttribute(): string
+    {
+        return match($this->validitas_rekomendasi) {
+            'Terverifikasi' => 'green',
+            'Cukup Kuat'    => 'blue',
+            default         => 'amber',
+        };
+    }
+
+    // Scope: hanya rekomendasi terbaru
+    public function scopeLatest_only($query)
+    {
+        return $query->where('is_latest', true);
     }
 }

@@ -114,6 +114,7 @@
                     <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Umur</th>
                     <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Kondisi Terakhir</th>
                     <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Status</th>
+                    <th class="px-4 py-2.5 text-center text-[10px] font-semibold text-slate-400 uppercase">Confidence</th>
                     <th class="px-4 py-2.5 text-center text-[10px] font-semibold text-slate-400 uppercase">Rule</th>
                     <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-400 uppercase">Aksi</th>
                 </tr>
@@ -153,6 +154,14 @@
                     </td>
                     <td class="px-4 py-2.5">
                         <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $statusConfig['bg'] }}">{{ $statusConfig['label'] }}</span>
+                    </td>
+                    <td class="px-4 py-2.5 text-center text-xs">
+                        @if($rbs)
+                            @php $confColor = match($rbs->confidence_label) { 'Tinggi' => 'text-green-600', 'Sedang' => 'text-blue-600', default => 'text-amber-600' }; @endphp
+                            <span class="font-semibold {{ $confColor }}">{{ $rbs->confidence_score }}%</span>
+                        @else
+                            <span class="text-slate-300">—</span>
+                        @endif
                     </td>
                     <td class="px-4 py-2.5 text-center text-xs text-slate-600">
                         {{ $rbs ? $rbs->jumlah_rule_terpicu : '—' }}

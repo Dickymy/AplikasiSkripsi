@@ -196,13 +196,13 @@
                 </div>
             </div>
 
-            {{-- Gejala Defisiensi Multi-select --}}
+            {{-- Dugaan Unsur Hara yang Kurang (Fitur 8) --}}
             <div class="mb-5">
                 <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Gejala Defisiensi Terdeteksi
-                    <span class="text-xs text-slate-400 font-normal">(boleh pilih lebih dari satu)</span>
+                    Dugaan Unsur Hara yang Kurang
+                    <span class="text-xs text-slate-400 font-normal">(opsional, boleh pilih lebih dari satu)</span>
                 </label>
-                <p class="text-xs text-slate-400 mb-3">Pilih unsur hara yang diduga kurang berdasarkan pengamatan visual. Sistem akan mencocokkan dengan rule base untuk menentukan jenis pupuk yang tepat.</p>
+                <p class="text-xs text-slate-400 mb-3">Opsional. Pilih unsur hara yang diduga kurang berdasarkan gejala visual daun. Jika tidak yakin, kosongkan pilihan ini. Field ini bukan hasil uji lab, tetapi dugaan awal berdasarkan pengamatan visual di lapangan.</p>
 
                 <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1.5 sm:gap-2" id="defisiensi-grid">
                     @foreach(['N','P','K','Mg','B','Fe','Zn'] as $def)
@@ -241,13 +241,15 @@
                 </div>
 
                 <div class="mt-3 p-3 rounded-xl bg-blue-50 border border-blue-100 text-xs text-blue-800">
-                    <p class="font-semibold mb-1">💡 Cara menentukan gejala defisiensi:</p>
+                    <p class="font-semibold mb-1">💡 Panduan memilih dugaan unsur:</p>
                     <ul class="space-y-0.5 text-blue-700">
-                        <li>• <strong>N (Nitrogen)</strong> — daun menguning secara merata dari daun tua ke muda</li>
-                        <li>• <strong>K (Kalium)</strong> — daun oranye kemerahan (Orange Frond) atau tepi menguning</li>
-                        <li>• <strong>Mg (Magnesium)</strong> — kuning hanya di antara tulang daun, tulang tetap hijau</li>
-                        <li>• <strong>B (Boron)</strong> — pucuk tidak berkembang, daun muda kerdil dan bengkok</li>
-                        <li>• <strong>P (Fosfor)</strong> — ujung daun tua coklat/nekrosis, pertumbuhan lambat</li>
+                        <li>• <strong>N (Nitrogen)</strong> — biasanya terkait daun hijau pucat atau kuning merata</li>
+                        <li>• <strong>K (Kalium)</strong> — sering berkaitan dengan tepi daun kuning/oranye</li>
+                        <li>• <strong>Mg (Magnesium)</strong> — sering berkaitan dengan kuning antar tulang daun</li>
+                        <li>• <strong>B (Boron)</strong> — dapat berkaitan dengan pertumbuhan terhambat atau daun muda abnormal</li>
+                        <li>• <strong>P (Fosfor)</strong> — dapat berkaitan dengan pertumbuhan lemah atau ujung daun mengering</li>
+                        <li>• <strong>Fe (Besi)</strong> — dapat berkaitan dengan klorosis pada daun muda</li>
+                        <li>• <strong>Zn (Seng)</strong> — dapat berkaitan dengan pertumbuhan tidak normal</li>
                     </ul>
                 </div>
             </div>

@@ -123,6 +123,27 @@
                         <option value="1" {{ old('ada_serangan_hama', $rule->ada_serangan_hama) == '1' ? 'selected' : '' }}>Harus ada hama</option>
                     </select>
                 </div>
+
+                {{-- Curah Hujan (Fitur 4) --}}
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1.5">Kondisi Curah Hujan</label>
+                    <select name="kondisi_curah_hujan_kategori" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">— Abaikan —</option>
+                        @foreach(['Sangat Rendah','Rendah','Normal','Tinggi','Sangat Tinggi'] as $ch)
+                        <option value="{{ $ch }}" {{ old('kondisi_curah_hujan_kategori', $rule->kondisi_curah_hujan_kategori) == $ch ? 'selected' : '' }}>{{ $ch }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Gulma Dominan (Fitur 4) --}}
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1.5">Ada Gulma Dominan</label>
+                    <select name="ada_gulma_dominan" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="null" {{ old('ada_gulma_dominan', $rule->ada_gulma_dominan === null ? 'null' : '') == 'null' ? 'selected' : '' }}>— Abaikan —</option>
+                        <option value="1" {{ old('ada_gulma_dominan', $rule->ada_gulma_dominan) == '1' ? 'selected' : '' }}>Ya</option>
+                        <option value="0" {{ old('ada_gulma_dominan', $rule->ada_gulma_dominan) === '0' || (old('ada_gulma_dominan') === null && $rule->ada_gulma_dominan === false) ? 'selected' : '' }}>Tidak</option>
+                    </select>
+                </div>
             </div>
         </div>
 

@@ -4,20 +4,6 @@
 @section('page-title', 'Laporan & Rekap Pemupukan')
 @section('page-subtitle', 'Rekapitulasi kebutuhan pupuk per anggota kelompok tani')
 
-@push('styles')
-<style>
-    @media print {
-        aside, header, .no-print, nav, .sidebar { display: none !important; }
-        button[type="button"] { display: none !important; }
-        .lg\:ml-64, [data-main-content] { margin-left: 0 !important; }
-        main { padding: 0 !important; }
-        .shadow-sm { box-shadow: none !important; }
-        .rounded-2xl, .rounded-xl { border-radius: 4px !important; }
-        body { font-size: 11px !important; }
-    }
-</style>
-@endpush
-
 @section('content')
 <div class="space-y-4 sm:space-y-5">
 
@@ -28,32 +14,32 @@
             <p class="text-xl sm:text-2xl font-extrabold text-slate-900">{{ $laporanPerAnggota->count() }}</p>
             <p class="text-[10px] text-slate-400">memiliki rekomendasi</p>
         </div>
-        <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
-            <p class="text-xs text-slate-500 font-medium mb-0.5">Kebutuhan Urea</p>
-            <p class="text-xl sm:text-2xl font-extrabold text-amber-700">{{ number_format($totalUrea, 1) }}</p>
-            <p class="text-[10px] text-slate-400">kg ({{ $karungUrea }} karung)</p>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
-            <p class="text-xs text-slate-500 font-medium mb-0.5">Kebutuhan KCl</p>
-            <p class="text-xl sm:text-2xl font-extrabold text-cyan-700">{{ number_format($totalKcl, 1) }}</p>
-            <p class="text-[10px] text-slate-400">kg ({{ $karungKcl }} karung)</p>
+        <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-amber-400">
+            <p class="text-xs text-slate-500 font-medium mb-0.5">Belum Direalisasi</p>
+            <p class="text-xl sm:text-2xl font-extrabold text-amber-700">{{ $rekap->filter(fn($r) => !$r->realisasi)->count() }}</p>
+            <p class="text-[10px] text-slate-400">blok butuh tindakan</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-emerald-500">
+            <p class="text-xs text-slate-500 font-medium mb-0.5">Sudah Direalisasi</p>
+            <p class="text-xl sm:text-2xl font-extrabold text-emerald-700">{{ $rekap->filter(fn($r) => $r->realisasi)->count() }}</p>
+            <p class="text-[10px] text-slate-400">blok sudah dipupuk</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
             <p class="text-xs text-slate-500 font-medium mb-0.5">Blok Layak Pupuk</p>
-            <p class="text-xl sm:text-2xl font-extrabold text-emerald-700">{{ $blokLayakTotal }}</p>
+            <p class="text-xl sm:text-2xl font-extrabold text-blue-600">{{ $blokLayakTotal }}</p>
             <p class="text-[10px] text-slate-400">dari {{ $rekap->count() }} blok dianalisis</p>
         </div>
     </div>
 
     {{-- Keterangan --}}
     <div class="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-800">
-        <span class="font-semibold">ℹ Catatan:</span> Total kebutuhan pupuk hanya dihitung dari blok berstatus <strong>Sehat</strong> dan <strong>Perlu Pupuk</strong>. Blok berstatus Defisiensi Berat (perlu penanganan masalah dulu) dan Tunda Pupuk tidak dihitung.
+        <span class="font-semibold">ℹ Catatan:</span> Blok layak pupuk = berstatus <strong>Sehat</strong> dan <strong>Perlu Pupuk</strong>. Blok Defisiensi Berat dan Tunda perlu penanganan masalah terlebih dahulu.
     </div>
 
     {{-- Filter --}}
-    <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm no-print">
+    <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm relative z-20">
         <form method="GET" action="{{ route('laporan.index') }}" id="laporan-filter-form" data-no-prevent-double="true" class="flex flex-col sm:flex-row flex-wrap items-start sm:items-end gap-2 sm:gap-3">
-            <div class="w-full sm:w-auto sm:min-w-[180px]">
+            <div class="w-full sm:w-auto sm:min-w-[180px] relative z-30">
                 <label class="block text-xs text-slate-500 font-semibold mb-1">Pemilik</label>
                 @include('components.filter-searchable', [
                     'name' => 'anggota_id',
@@ -66,38 +52,39 @@
             </div>
 
             @if($blokFilter->isNotEmpty())
-            <div class="w-full sm:w-auto">
+            <div class="w-full sm:w-auto relative">
                 <label class="block text-xs text-slate-500 font-semibold mb-1">Blok</label>
                 <select name="blok_lahan_id" onchange="this.form.submit()"
-                    class="w-full sm:w-auto px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 sm:min-w-[140px]">
+                    class="w-full sm:w-auto pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 sm:min-w-[140px] appearance-none cursor-pointer">
                     <option value="">Semua Blok</option>
                     @foreach($blokFilter as $bf)
                         <option value="{{ $bf->id }}" {{ request('blok_lahan_id') == $bf->id ? 'selected' : '' }}>{{ $bf->nama_blok }}</option>
                     @endforeach
                 </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 pt-5">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
             </div>
             @endif
 
-            <div class="w-full sm:w-auto">
+            <div class="w-full sm:w-auto relative">
                 <label class="block text-xs text-slate-500 font-semibold mb-1">Status</label>
                 <select name="status_kebutuhan_dominan" onchange="this.form.submit()"
-                    class="w-full sm:w-auto px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 sm:min-w-[130px]">
+                    class="w-full sm:w-auto pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 sm:min-w-[160px] appearance-none cursor-pointer">
                     <option value="">Semua Status</option>
                     @foreach(['Darurat' => 'Defisiensi Berat', 'Segera' => 'Perlu Pupuk', 'Normal' => 'Sehat', 'Tunda' => 'Tunda Pupuk'] as $val => $label)
                         <option value="{{ $val }}" {{ request('status_kebutuhan_dominan') == $val ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 pt-5">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
             </div>
 
             <div class="flex items-center gap-2 w-full sm:w-auto sm:ml-auto pt-1 sm:pt-0">
                 @if(request()->hasAny(['status_kebutuhan_dominan', 'anggota_id', 'blok_lahan_id']))
                 <a href="{{ route('laporan.index') }}" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-medium rounded-lg transition-colors">Reset</a>
                 @endif
-                <button type="button" onclick="window.print()"
-                    class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm flex items-center gap-1.5 ml-auto">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                    Cetak
-                </button>
             </div>
         </form>
     </div>
@@ -181,6 +168,12 @@
                         </td>
                         <td class="px-4 py-2.5 text-right">
                             <div class="flex items-center gap-1 justify-end">
+                                @if(!$r->realisasi)
+                                <button type="button" onclick="openRealisasiModal({{ $r->id }}, '{{ $r->blokLahan->nama_blok }}', {{ $r->total_urea ? number_format($r->total_urea, 1, '.', '') : '0' }}, {{ $r->total_kcl ? number_format($r->total_kcl, 1, '.', '') : '0' }})"
+                                    class="p-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100 transition-all" title="Catat Realisasi">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </button>
+                                @endif
                                 <a href="{{ route('laporan.show', $r) }}" class="p-1 rounded-md bg-slate-50 border border-slate-200 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition-all" title="Detail">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
@@ -237,6 +230,10 @@
                         <span class="text-slate-400">{{ $r->tanggal_analisis->format('d/m/Y') }}</span>
                     </div>
                     <div class="flex items-center gap-1 flex-shrink-0">
+                        @if(!$r->realisasi)
+                        <button type="button" onclick="openRealisasiModal({{ $r->id }}, '{{ $r->blokLahan->nama_blok }}', {{ $r->total_urea ? number_format($r->total_urea, 1, '.', '') : '0' }}, {{ $r->total_kcl ? number_format($r->total_kcl, 1, '.', '') : '0' }})"
+                            class="p-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-600 text-[10px] font-medium">Realisasi</button>
+                        @endif
                         <a href="{{ route('laporan.show', $r) }}" class="p-1 rounded-md bg-slate-50 border border-slate-200 text-slate-500 text-[10px]">Detail</a>
                     </div>
                 </div>
@@ -262,31 +259,76 @@
     </div>
     @endforelse
 
-    {{-- Grand Total --}}
-    @if($laporanPerAnggota->count() > 0 && ($totalUrea > 0 || $totalKcl > 0))
-    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 sm:p-5 shadow-sm">
-        <p class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">Grand Total Kebutuhan Pupuk</p>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div>
-                <p class="text-[10px] text-emerald-600 font-medium">Total Urea</p>
-                <p class="text-lg sm:text-xl font-extrabold text-amber-700">{{ number_format($totalUrea, 1) }} <span class="text-xs font-semibold">kg</span></p>
-            </div>
-            <div>
-                <p class="text-[10px] text-emerald-600 font-medium">Karung Urea</p>
-                <p class="text-lg sm:text-xl font-extrabold text-amber-700">{{ $karungUrea }} <span class="text-xs font-semibold">karung</span></p>
-            </div>
-            <div>
-                <p class="text-[10px] text-emerald-600 font-medium">Total KCl</p>
-                <p class="text-lg sm:text-xl font-extrabold text-cyan-700">{{ number_format($totalKcl, 1) }} <span class="text-xs font-semibold">kg</span></p>
-            </div>
-            <div>
-                <p class="text-[10px] text-emerald-600 font-medium">Karung KCl</p>
-                <p class="text-lg sm:text-xl font-extrabold text-cyan-700">{{ $karungKcl }} <span class="text-xs font-semibold">karung</span></p>
-            </div>
-        </div>
-        <p class="text-[10px] text-emerald-700 mt-2">Dihitung dari {{ $blokLayakTotal }} blok berstatus Sehat & Perlu Pupuk · 1 karung = 50 kg</p>
-    </div>
-    @endif
+</div>
 
+{{-- Modal Realisasi Pemupukan --}}
+<div id="modal-realisasi" class="fixed inset-0 z-[9000] hidden" style="overflow: hidden;">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeRealisasiModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md relative" onclick="event.stopPropagation()">
+            <div class="px-5 py-4 border-b border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800">Catat Realisasi Pemupukan</h3>
+                <p class="text-xs text-slate-500 mt-0.5" id="modal-realisasi-subtitle"></p>
+            </div>
+            <form action="{{ route('realisasi.store') }}" method="POST" class="p-5 space-y-3">
+                @csrf
+                <input type="hidden" name="rekomendasi_rbs_id" id="modal-rekomendasi-id">
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Tanggal Realisasi *</label>
+                    <input type="date" name="tanggal_realisasi" id="modal-tgl-realisasi" required
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Jumlah Urea (kg) *</label>
+                        <input type="number" name="jumlah_urea_realisasi" id="modal-urea" step="0.1" min="0" required
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Jumlah KCl (kg) *</label>
+                        <input type="number" name="jumlah_kcl_realisasi" id="modal-kcl" step="0.1" min="0" required
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Catatan Pelaksana</label>
+                    <textarea name="catatan_pelaksana" rows="2" placeholder="Catatan tambahan (opsional)..."
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 resize-none"></textarea>
+                </div>
+                <div class="flex items-center gap-2 pt-2">
+                    <button type="submit" class="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors">
+                        Simpan Realisasi
+                    </button>
+                    <button type="button" onclick="closeRealisasiModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-colors">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function openRealisasiModal(rekomendasiId, blokNama, totalUrea, totalKcl) {
+    document.getElementById('modal-rekomendasi-id').value = rekomendasiId;
+    document.getElementById('modal-realisasi-subtitle').textContent = 'Blok: ' + blokNama;
+    document.getElementById('modal-tgl-realisasi').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modal-urea').value = totalUrea || 0;
+    document.getElementById('modal-kcl').value = totalKcl || 0;
+    document.getElementById('modal-realisasi').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeRealisasiModal() {
+    document.getElementById('modal-realisasi').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeRealisasiModal();
+});
+</script>
+@endpush

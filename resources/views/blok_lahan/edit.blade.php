@@ -313,6 +313,15 @@
                 @error('luas_ha') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
             </div>
 
+            {{-- Overlap Warning (Fitur 5) --}}
+            <div id="overlap-warning" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-4">
+                <p class="text-sm text-amber-800 font-semibold mb-2" id="overlap-message"></p>
+                <label class="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" id="overlap-confirm" class="mt-0.5 rounded border-amber-400 text-amber-600 focus:ring-amber-500">
+                    <span class="text-xs text-amber-700">Saya memahami bahwa polygon ini bertumpuk dengan blok lain dan tetap ingin menyimpan.</span>
+                </label>
+            </div>
+
             <div class="flex gap-3 pt-2">
                 <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-600/20">
                     Perbarui Data
@@ -519,5 +528,96 @@ document.addEventListener('sidebarToggled', function() {
         drawMap.invalidateSize();
     }
 });
+
+// ─── FITUR 5: DETEKSI OVERLAP POLYGON (EDIT) ────────────────────────
+(function() {
+    var overlapWarning = document.getElementById('overlap-warning');
+    var overlapCheckbox = document.getElementById('overlap-confirm');
+    var submitBtn = document.querySelector('button[type="submit"]');
+
+    function checkOverlapOnChange() {
+        var geojsonInput = document.getElementById('koordinat_geojson');
+        if (!geojsonInput || !geojsonInput.value) return;
+        try {
+            var newGeojson = JSON.parse(geojsonInput.value);
+            detectOverlap(newGeojson);
+        } catch(e) {}
+    }
+
+    function detectOverlap(newGeojson) {
+        if (!overlapWarning) return;
+        var overlaps = [];
+
+        existingBloks.forEach(function(blok) {
+            if (!blok.geojson) return;
+            try {
+                if (polygonsIntersect(newGeojson, blok.geojson)) {
+                    overlaps.push(blok.nama);
+                }
+            } catch(e) {}
+        });
+
+        if (overlaps.length > 0) {
+            var msg = 'Peringatan: Area blok yang digambar bertumpuk dengan ' + overlaps.join(', ') + '. Silakan sesuaikan polygon agar tidak menimpa blok lain.';
+            document.getElementById('overlap-message').textContent = msg;
+            overlapWarning.classList.remove('hidden');
+            if (submitBtn) submitBtn.disabled = true;
+        } else {
+            overlapWarning.classList.add('hidden');
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    }
+
+    function polygonsIntersect(geojsonA, geojsonB) {
+        var coordsA = getCoords(geojsonA);
+        var coordsB = getCoords(geojsonB);
+        if (!coordsA || !coordsB) return false;
+        for (var i = 0; i < coordsA.length - 1; i++) {
+            if (pointInPolygon(coordsA[i], coordsB)) return true;
+        }
+        for (var j = 0; j < coordsB.length - 1; j++) {
+            if (pointInPolygon(coordsB[j], coordsA)) return true;
+        }
+        return false;
+    }
+
+    function getCoords(geojson) {
+        if (geojson.type === 'Polygon') return geojson.coordinates[0];
+        if (geojson.type === 'Feature' && geojson.geometry) return geojson.geometry.coordinates[0];
+        if (geojson.type === 'FeatureCollection' && geojson.features && geojson.features.length > 0) {
+            return geojson.features[0].geometry.coordinates[0];
+        }
+        return null;
+    }
+
+    function pointInPolygon(point, polygon) {
+        var x = point[0], y = point[1];
+        var inside = false;
+        for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            var xi = polygon[i][0], yi = polygon[i][1];
+            var xj = polygon[j][0], yj = polygon[j][1];
+            var intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+
+    var geojsonInput = document.getElementById('koordinat_geojson');
+    if (geojsonInput) {
+        geojsonInput.addEventListener('change', checkOverlapOnChange);
+        geojsonInput.addEventListener('input', checkOverlapOnChange);
+    }
+
+    if (overlapCheckbox) {
+        overlapCheckbox.addEventListener('change', function() {
+            if (submitBtn) submitBtn.disabled = !this.checked && !overlapWarning.classList.contains('hidden');
+        });
+    }
+
+    if (typeof drawnItems !== 'undefined') {
+        drawMap.on(L.Draw.Event.CREATED, function() { setTimeout(checkOverlapOnChange, 200); });
+        drawMap.on(L.Draw.Event.EDITED, function() { setTimeout(checkOverlapOnChange, 200); });
+    }
+})();
 </script>
 @endpush

@@ -173,11 +173,11 @@
                 </div>
             </div>
 
-            {{-- Gejala Defisiensi --}}
+            {{-- Dugaan Unsur Hara yang Kurang (Fitur 8) --}}
             <div class="mb-5">
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                    Gejala Defisiensi Terdeteksi
-                    <span class="text-xs text-slate-400 font-normal">(boleh pilih lebih dari satu)</span>
+                    Dugaan Unsur Hara yang Kurang
+                    <span class="text-xs text-slate-400 font-normal">(opsional, boleh pilih lebih dari satu)</span>
                 </label>
                 @php $defAktif = old('gejala_defisiensi', $kondisiLahan->gejala_defisiensi ?? []); @endphp
                 <div class="grid grid-cols-4 sm:grid-cols-7 gap-2" id="defisiensi-grid">
