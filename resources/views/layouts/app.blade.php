@@ -44,7 +44,9 @@
         /* Fix: semua child element tidak boleh exceed parent */
         *, *::before, *::after { max-width: 100%; }
         /* Exclude elements that need to overflow (tables, maps, pagination, etc) */
-        table, table *, .leaflet-container, .leaflet-container *, svg, canvas, video, iframe, nav, nav *, [id$="-dropdown"], [id$="-dropdown"] *, .notif-dropdown-panel, .notif-dropdown-panel * { max-width: none; }
+        table, table *, .leaflet-container, .leaflet-container *, svg, canvas, video, iframe, nav, nav *, [id$="-dropdown"], [id$="-dropdown"] *, .notif-dropdown-panel, .notif-dropdown-panel *, button, button * { max-width: none; }
+        /* Spinner animation for inline-styled elements */
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         /* Print styles */
         @media print {
             .no-print, nav, aside, .sidebar, button, .filter-bar, header { display: none !important; }

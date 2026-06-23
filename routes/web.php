@@ -65,4 +65,7 @@ Route::middleware(AdminAuthenticated::class)->group(function () {
 
     // API endpoint — RBS popup WebGIS
     Route::get('/api/rbs-popup/{blokLahan}', [RbsController::class, 'apiPopup'])->name('api.rbs.popup');
+
+    // API endpoint — Cuaca otomatis dari Open-Meteo
+    Route::post('/api/cuaca/fetch', [\App\Http\Controllers\CuacaController::class, 'fetch'])->name('api.cuaca.fetch');
 });

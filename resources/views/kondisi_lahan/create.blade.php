@@ -143,6 +143,74 @@
                 Kondisi Iklim
             </h2>
             <p class="text-xs text-slate-400 mb-4 ml-0 sm:ml-8">Musim dan curah hujan mempengaruhi kapan waktu terbaik aplikasi pupuk.</p>
+
+            {{-- Tombol Ambil Data Cuaca Otomatis --}}
+            <div class="mb-4 p-3 sm:p-4 rounded-xl" id="cuaca-auto-section" style="background:#e0f2fe; border:2px solid #7dd3fc;">
+                <div class="flex items-start gap-2.5 mb-3">
+                    <span class="text-xl flex-shrink-0">🌦️</span>
+                    <div>
+                        <p class="text-sm font-bold" style="color:#075985;">Data Cuaca Otomatis</p>
+                        <p class="text-xs mt-0.5" style="color:#0369a1;" id="cuaca-auto-hint">Pilih blok lahan terlebih dahulu untuk mengambil data cuaca dari lokasi blok.</p>
+                    </div>
+                </div>
+
+                {{-- Placeholder saat blok belum dipilih --}}
+                <div id="cuaca-btn-placeholder" class="text-center py-3 px-4 rounded-xl" style="background:#f1f5f9; border:2px dashed #94a3b8;">
+                    <p class="text-xs font-medium" style="color:#64748b;">⬆️ Pilih blok lahan di atas untuk mengaktifkan tombol cuaca</p>
+                </div>
+
+                {{-- Tombol aktif — hidden sampai blok dipilih --}}
+                <button type="button" id="btn-fetch-cuaca" onclick="fetchCuacaOtomatis()"
+                    class="hidden w-full rounded-xl"
+                    style="display:none; min-height:52px; max-width:none!important; padding:14px 20px; background:#0284c7; color:#ffffff; font-size:15px; font-weight:700; border:2px solid #0369a1; border-radius:12px; cursor:pointer; box-shadow:0 4px 12px rgba(2,132,199,0.3); transition:all 0.15s; text-align:center;">
+                    <span id="btn-fetch-cuaca-inner" style="display:flex; align-items:center; justify-content:center; gap:10px; max-width:none!important;">
+                        <svg id="cuaca-icon-normal" style="width:20px; height:20px; max-width:none!important; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <svg id="cuaca-icon-loading" style="width:20px; height:20px; max-width:none!important; flex-shrink:0; display:none; animation:spin 1s linear infinite;" fill="none" viewBox="0 0 24 24">
+                            <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        <span id="btn-fetch-cuaca-text">🔄 Ambil Data Cuaca Otomatis</span>
+                    </span>
+                </button>
+
+                {{-- Result info --}}
+                <div id="cuaca-result" style="display:none; margin-top:12px; padding:12px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:12px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                        <span style="font-size:18px;">✅</span>
+                        <span style="font-size:13px; font-weight:700; color:#047857;">Data cuaca berhasil diambil!</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" style="font-size:11px;">
+                        <div style="background:#fff; border-radius:8px; padding:8px; text-align:center; border:1px solid #d1fae5;">
+                            <p style="color:#94a3b8; font-size:10px;">Rata-rata</p>
+                            <p style="font-weight:700; color:#1e293b;" id="cuaca-rata2">-</p>
+                        </div>
+                        <div style="background:#fff; border-radius:8px; padding:8px; text-align:center; border:1px solid #d1fae5;">
+                            <p style="color:#94a3b8; font-size:10px;">Total 30 hari</p>
+                            <p style="font-weight:700; color:#1e293b;" id="cuaca-total">-</p>
+                        </div>
+                        <div style="background:#fff; border-radius:8px; padding:8px; text-align:center; border:1px solid #d1fae5;">
+                            <p style="color:#94a3b8; font-size:10px;">Kategori</p>
+                            <p style="font-weight:700; color:#0369a1;" id="cuaca-kategori">-</p>
+                        </div>
+                        <div style="background:#fff; border-radius:8px; padding:8px; text-align:center; border:1px solid #d1fae5;">
+                            <p style="color:#94a3b8; font-size:10px;">Musim</p>
+                            <p style="font-weight:700; color:#0369a1;" id="cuaca-musim">-</p>
+                        </div>
+                    </div>
+                    <p style="font-size:10px; color:#047857; margin-top:8px; font-weight:500;" id="cuaca-periode"></p>
+                </div>
+                {{-- Error info --}}
+                <div id="cuaca-error" style="display:none; margin-top:12px; padding:12px; background:#fef2f2; border:1px solid #fca5a5; border-radius:12px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:18px;">⚠️</span>
+                        <p style="font-size:12px; font-weight:500; color:#b91c1c;" id="cuaca-error-msg"></p>
+                    </div>
+                    <p style="font-size:10px; color:#dc2626; margin-top:6px;">Anda tetap bisa mengisi data musim dan curah hujan secara manual di bawah.</p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Musim Saat Ini</label>
@@ -506,6 +574,192 @@ function handleBlokSelected(blok) {
         var existing = document.getElementById('tandan-hidden-tbm');
         if (existing) existing.remove();
     }
+
+    // Enable/disable tombol cuaca otomatis berdasarkan blok yang dipilih
+    updateCuacaButton(blok);
+}
+
+// ─── CUACA OTOMATIS (Open-Meteo API) ─────────────────────────────
+function updateCuacaButton(blok) {
+    var btn = document.getElementById('btn-fetch-cuaca');
+    var hint = document.getElementById('cuaca-auto-hint');
+    var placeholder = document.getElementById('cuaca-btn-placeholder');
+
+    if (blok && blok.centroid_lat && blok.centroid_lng) {
+        // Tampilkan tombol, sembunyikan placeholder
+        btn.style.display = 'block';
+        placeholder.style.display = 'none';
+        hint.textContent = 'Blok "' + blok.nama_blok + '" dipilih — klik tombol biru di bawah untuk mengisi otomatis.';
+        showToast('info', '📍 Blok "' + blok.nama_blok + '" dipilih. Klik tombol cuaca untuk mengisi otomatis.');
+    } else if (blok) {
+        // Blok dipilih tapi tidak ada koordinat
+        btn.style.display = 'none';
+        placeholder.style.display = 'block';
+        placeholder.innerHTML = '<p style="font-size:12px; color:#d97706; font-weight:500;">⚠️ Blok "' + blok.nama_blok + '" belum memiliki koordinat peta. Silakan isi data iklim secara manual.</p>';
+        hint.textContent = 'Blok belum memiliki koordinat peta.';
+        showToast('warning', '⚠️ Blok ini belum punya koordinat. Isi data iklim secara manual.');
+    } else {
+        // Belum ada blok dipilih
+        btn.style.display = 'none';
+        placeholder.style.display = 'block';
+        placeholder.innerHTML = '<p style="font-size:12px; color:#64748b; font-weight:500;">⬆️ Pilih blok lahan di atas untuk mengaktifkan tombol cuaca</p>';
+        hint.textContent = 'Pilih blok lahan terlebih dahulu untuk mengambil data cuaca dari lokasi blok.';
+    }
+}
+
+// ─── TOAST ALERT SYSTEM ──────────────────────────────────────────
+function showToast(type, message, duration) {
+    duration = duration || 4000;
+    var container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none';
+        container.style.maxWidth = 'calc(100vw - 32px)';
+        container.style.width = '360px';
+        document.body.appendChild(container);
+    }
+
+    var colors = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-red-600 text-white',
+        warning: 'bg-amber-500 text-white',
+        info: 'bg-sky-600 text-white',
+    };
+
+    var toast = document.createElement('div');
+    toast.className = 'pointer-events-auto px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 transform transition-all duration-300 translate-x-full opacity-0 ' + (colors[type] || colors.info);
+    toast.innerHTML = '<span class="flex-1">' + message + '</span><button onclick="this.parentElement.remove()" class="ml-2 opacity-70 hover:opacity-100 text-lg leading-none">&times;</button>';
+    container.appendChild(toast);
+
+    // Animate in
+    requestAnimationFrame(function() {
+        toast.classList.remove('translate-x-full', 'opacity-0');
+        toast.classList.add('translate-x-0', 'opacity-100');
+    });
+
+    // Auto dismiss
+    setTimeout(function() {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, duration);
+}
+
+function fetchCuacaOtomatis() {
+    var blokId = document.getElementById('blok-lahan-id-value').value;
+    if (!blokId) return;
+
+    var blok = bloksData.find(function(b) { return b.id == blokId; });
+    if (!blok || !blok.centroid_lat || !blok.centroid_lng) return;
+
+    var btn = document.getElementById('btn-fetch-cuaca');
+    var btnText = document.getElementById('btn-fetch-cuaca-text');
+
+    // Loading state
+    btn.style.opacity = '0.7';
+    btn.style.pointerEvents = 'none';
+    btnText.textContent = '⏳ Mengambil data cuaca...';
+    document.getElementById('cuaca-icon-normal').style.display = 'none';
+    document.getElementById('cuaca-icon-loading').style.display = 'inline-block';
+    document.getElementById('cuaca-result').style.display = 'none';
+    document.getElementById('cuaca-error').style.display = 'none';
+
+    // AbortController untuk timeout 30 detik (ngrok + API bisa lambat)
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function() { controller.abort(); }, 30000);
+
+    fetch('{{ route("api.cuaca.fetch") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'ngrok-skip-browser-warning': 'true',
+        },
+        body: JSON.stringify({ lat: blok.centroid_lat, lng: blok.centroid_lng }),
+        signal: controller.signal
+    })
+    .then(function(response) {
+        clearTimeout(timeoutId);
+        if (!response.ok) {
+            throw new Error('Server response: ' + response.status);
+        }
+        // Pastikan response adalah JSON (bukan HTML dari ngrok interstitial/login redirect)
+        var contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            throw new Error('Response bukan JSON (kemungkinan session expired atau ngrok interstitial). Refresh halaman dan coba lagi.');
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        // Reset loading state
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+        btnText.textContent = '🔄 Ambil Data Cuaca Otomatis';
+        document.getElementById('cuaca-icon-normal').style.display = 'inline-block';
+        document.getElementById('cuaca-icon-loading').style.display = 'none';
+
+        if (data.success) {
+            // Show result info
+            document.getElementById('cuaca-result').style.display = 'block';
+            document.getElementById('cuaca-error').style.display = 'none';
+            document.getElementById('cuaca-rata2').textContent = data.detail.rata_rata_harian_mm + ' mm/hari';
+            document.getElementById('cuaca-total').textContent = (data.detail.total_curah_hujan_mm || data.detail.total_30_hari_mm) + ' mm';
+            document.getElementById('cuaca-kategori').textContent = data.curah_hujan_kategori;
+            document.getElementById('cuaca-musim').textContent = data.musim_saat_ini;
+            document.getElementById('cuaca-periode').textContent = data.detail.analisis || '';
+
+            // Toast sukses
+            showToast('success', '🌤️ Data cuaca berhasil diambil! Musim: ' + data.musim_saat_ini + ', Curah Hujan: ' + data.curah_hujan_kategori, 5000);
+
+            // Auto-fill musim & curah hujan fields
+            var musimEl = document.getElementById('select-musim');
+            musimEl.value = data.musim_saat_ini;
+            musimEl.dispatchEvent(new Event('change'));
+
+            // Setelah curah opsi terupdate, set nilainya
+            setTimeout(function() {
+                var curahEl = document.getElementById('select-curah-hujan');
+                curahEl.value = data.curah_hujan_kategori;
+                // Jika kategori tidak ada di options (karena filter musim), tambahkan sementara
+                if (!curahEl.value) {
+                    var opt = document.createElement('option');
+                    opt.value = data.curah_hujan_kategori;
+                    opt.textContent = data.curah_hujan_kategori + ' (dari data cuaca)';
+                    opt.selected = true;
+                    curahEl.appendChild(opt);
+                }
+                var infoEl = document.getElementById('curah-hujan-info');
+                infoEl.textContent = '✓ Terisi otomatis dari data cuaca — Anda tetap bisa mengubahnya';
+                infoEl.className = 'mt-1 text-xs text-emerald-600 font-medium';
+            }, 100);
+        } else {
+            // Show error
+            document.getElementById('cuaca-error').style.display = 'block';
+            document.getElementById('cuaca-result').style.display = 'none';
+            document.getElementById('cuaca-error-msg').textContent = data.message || 'Gagal mengambil data cuaca.';
+            showToast('warning', '⚠️ ' + (data.message || 'Gagal mengambil data cuaca. Isi manual.'), 5000);
+        }
+    })
+    .catch(function(err) {
+        clearTimeout(timeoutId);
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+        btnText.textContent = '🔄 Ambil Data Cuaca Otomatis';
+        document.getElementById('cuaca-icon-normal').style.display = 'inline-block';
+        document.getElementById('cuaca-icon-loading').style.display = 'none';
+        document.getElementById('cuaca-error').style.display = 'block';
+        document.getElementById('cuaca-result').style.display = 'none';
+
+        var msg = 'Tidak dapat terhubung ke server.';
+        if (err.name === 'AbortError') {
+            msg = 'Request timeout (>30 detik). Koneksi ke server terlalu lambat. Silakan isi form secara manual.';
+        } else if (err.message) {
+            msg = 'Gagal terhubung: ' + err.message + '. Silakan isi form cuaca secara manual.';
+        }
+        document.getElementById('cuaca-error-msg').textContent = msg;
+        showToast('error', '❌ ' + msg, 6000);
+    });
 }
 </script>
 @endpush

@@ -44,6 +44,9 @@ class KondisiLahanController extends Controller
 
         // Build bloks data as JSON for cascading filter JS
         $bloksJson = $bloks->map(function ($b) {
+            // Hitung centroid dari polygon untuk API cuaca
+            $centroid = $this->hitungCentroid($b->koordinat_geojson);
+
             return [
                 'id'          => $b->id,
                 'nama_blok'   => $b->nama_blok,
@@ -52,6 +55,8 @@ class KondisiLahanController extends Controller
                 'luas_ha'     => $b->luas_ha,
                 'kategori'    => $b->kategori_umur ?? '-',
                 'updated_at'  => $b->updated_at?->timestamp ?? 0,
+                'centroid_lat' => $centroid['lat'],
+                'centroid_lng' => $centroid['lng'],
             ];
         })->values();
 
@@ -114,7 +119,22 @@ class KondisiLahanController extends Controller
     public function edit(KondisiLahan $kondisiLahan)
     {
         $bloks = BlokLahan::with('anggota')->orderBy('nama_blok')->get();
-        return view('kondisi_lahan.edit', compact('kondisiLahan', 'bloks'));
+
+        // Build bloks data with centroid for cuaca API
+        $bloksJson = $bloks->map(function ($b) {
+            $centroid = $this->hitungCentroid($b->koordinat_geojson);
+            return [
+                'id'           => $b->id,
+                'nama_blok'    => $b->nama_blok,
+                'anggota_id'   => $b->anggota_id,
+                'anggota_nama' => $b->anggota?->nama ?? '-',
+                'luas_ha'      => $b->luas_ha,
+                'centroid_lat' => $centroid['lat'],
+                'centroid_lng' => $centroid['lng'],
+            ];
+        })->values();
+
+        return view('kondisi_lahan.edit', compact('kondisiLahan', 'bloks', 'bloksJson'));
     }
 
     public function update(Request $request, KondisiLahan $kondisiLahan)
@@ -166,6 +186,46 @@ class KondisiLahanController extends Controller
 
         return redirect()->route('kondisi-lahan.index')
             ->with('success', 'Data kondisi lahan berhasil dihapus.');
+    }
+
+    /**
+     * Hitung centroid (titik tengah) dari polygon GeoJSON.
+     */
+    private function hitungCentroid(?string $geojsonString): array
+    {
+        $default = ['lat' => null, 'lng' => null];
+
+        if (!$geojsonString) return $default;
+
+        try {
+            $geojson = json_decode($geojsonString, true);
+            if (!$geojson) return $default;
+
+            $coords = null;
+            if (($geojson['type'] ?? '') === 'Polygon') {
+                $coords = $geojson['coordinates'][0] ?? null;
+            } elseif (($geojson['type'] ?? '') === 'Feature') {
+                $coords = $geojson['geometry']['coordinates'][0] ?? null;
+            }
+
+            if (!$coords || count($coords) < 3) return $default;
+
+            $sumLat = 0;
+            $sumLng = 0;
+            $count = count($coords) - 1; // Exclude closing point
+
+            for ($i = 0; $i < $count; $i++) {
+                $sumLng += $coords[$i][0];
+                $sumLat += $coords[$i][1];
+            }
+
+            return [
+                'lat' => round($sumLat / $count, 6),
+                'lng' => round($sumLng / $count, 6),
+            ];
+        } catch (\Exception $e) {
+            return $default;
+        }
     }
 
     /**
