@@ -7,7 +7,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KondisiLahanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\RbsController;
-use App\Http\Controllers\RealisasiPemupukanController;
 use App\Http\Controllers\RuleBaseController;
 use App\Http\Middleware\AdminAuthenticated;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +41,11 @@ Route::middleware(AdminAuthenticated::class)->group(function () {
     Route::get('rule-base/info', [RuleBaseController::class, 'info'])->name('rule-base.info');
     Route::resource('rule-base', RuleBaseController::class)->except(['show']);
 
+    // Panduan Penggunaan
+    Route::get('/panduan', function () {
+        return view('panduan');
+    })->name('panduan');
+
     // Analisis RBS (Rule-Based System) — Satu-satunya mesin analisis
     Route::prefix('rbs')->name('rbs.')->group(function () {
         Route::get('/', [RbsController::class, 'index'])->name('index');
@@ -58,10 +62,6 @@ Route::middleware(AdminAuthenticated::class)->group(function () {
         Route::get('/{rekomendasiRbs}/ringkasan', [LaporanController::class, 'exportRingkasan'])->name('ringkasan');
         Route::get('/{rekomendasiRbs}', [LaporanController::class, 'show'])->name('show');
     });
-
-    // Realisasi Pemupukan (B2)
-    Route::post('/realisasi-pemupukan', [RealisasiPemupukanController::class, 'store'])->name('realisasi.store');
-    Route::delete('/realisasi-pemupukan/{realisasiPemupukan}', [RealisasiPemupukanController::class, 'destroy'])->name('realisasi.destroy');
 
     // API endpoint — RBS popup WebGIS
     Route::get('/api/rbs-popup/{blokLahan}', [RbsController::class, 'apiPopup'])->name('api.rbs.popup');

@@ -1,395 +1,314 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Analisis RBS — ' . $blokLahan->nama_blok)
-@section('page-title', 'Detail Analisis RBS')
+@section('title', 'Detail Analisis — ' . $blokLahan->nama_blok)
+@section('page-title', 'Detail Analisis')
 @section('page-subtitle', $blokLahan->nama_blok . ' · ' . $blokLahan->nama_pemilik)
 
 @section('content')
 
-<div class="mb-5">
+<div class="mb-4">
     <a href="{{ route('rbs.index') }}" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
-        Kembali ke Analisis RBS
+        Kembali
     </a>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    {{-- KOLOM KIRI: Info Blok + Kondisi --}}
-    <div class="space-y-5">
-
-        {{-- Info Blok Lahan --}}
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-            <h3 class="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
-                </svg>
-                Informasi Blok Lahan
-            </h3>
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Nama Blok</span>
-                    <span class="font-semibold text-slate-800">{{ $blokLahan->nama_blok }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Pemilik</span>
-                    <span class="text-slate-700">{{ $blokLahan->nama_pemilik }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Luas</span>
-                    <span class="text-slate-700">{{ $blokLahan->luas_ha }} Ha</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500">SPH</span>
-                    <span class="text-slate-700">{{ $blokLahan->sph }} pokok/Ha</span>
-                </div>
-                @if($blokLahan->tahun_tanam)
-                <div class="pt-2 border-t border-slate-100">
-                    <div class="flex justify-between">
-                        <span class="text-slate-500">Tahun Tanam</span>
-                        <span class="text-slate-700">{{ $blokLahan->tahun_tanam }}</span>
-                    </div>
-                    <div class="flex justify-between mt-1">
-                        <span class="text-slate-500">Umur Tanaman</span>
-                        <span class="font-semibold text-slate-800">{{ $blokLahan->umur_tanaman }} tahun</span>
-                    </div>
-                    <div class="flex justify-between mt-1">
-                        <span class="text-slate-500">Kategori</span>
-                        <span class="text-emerald-700 font-medium">{{ $blokLahan->kategori_umur }}</span>
-                    </div>
-                    <div class="flex justify-between mt-1">
-                        <span class="text-slate-500">Jenis Tanah</span>
-                        <span class="text-slate-700 text-xs text-right max-w-[120px]">{{ $blokLahan->jenis_tanah }}</span>
-                    </div>
-                </div>
-                @endif
-            </div>
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- SECTION 1: Ringkasan Blok (compact) --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-5 mb-5">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
+        <div>
+            <p class="text-[10px] text-slate-400 uppercase font-semibold">Luas</p>
+            <p class="text-sm font-bold text-slate-800">{{ $blokLahan->luas_ha }} Ha</p>
         </div>
-
-        {{-- Kondisi Lahan Terbaru --}}
-        @if($kondisi = $blokLahan->kondisiTerbaru)
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-            <h3 class="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                Kondisi Observasi
-                <span class="text-xs text-slate-400 font-normal">{{ $kondisi->tanggal_observasi->format('d M Y') }}</span>
-            </h3>
-            <div class="space-y-1.5 text-xs">
-                @if($kondisi->warna_daun)
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500">Warna Daun</span>
-                    <span class="font-medium text-slate-800">{{ $kondisi->warna_daun }}</span>
-                </div>
-                @endif
-                @if($kondisi->ph_tanah)
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500">pH Tanah</span>
-                    <span class="font-medium text-slate-800">{{ $kondisi->ph_tanah }} <span class="text-slate-400">({{ $kondisi->label_ph }})</span></span>
-                </div>
-                @endif
-                @if($kondisi->kelembaban_tanah)
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500">Kelembaban</span>
-                    <span class="font-medium text-slate-800">{{ $kondisi->kelembaban_tanah }}</span>
-                </div>
-                @endif
-                @if($kondisi->musim_saat_ini)
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500">Musim</span>
-                    <span class="font-medium text-slate-800">{{ $kondisi->musim_saat_ini }}</span>
-                </div>
-                @endif
-                @if($kondisi->kondisi_drainase)
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500">Drainase</span>
-                    <span class="font-medium text-slate-800">{{ $kondisi->kondisi_drainase }}</span>
-                </div>
-                @endif
-                @if($kondisi->kondisi_pelepah)
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500">Kondisi Pelepah</span>
-                    <span class="font-medium text-slate-800">{{ $kondisi->kondisi_pelepah }}</span>
-                </div>
-                @endif
-                @if($kondisi->kondisi_tandan)
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500">Kondisi Tandan</span>
-                    <span class="font-medium text-slate-800">{{ $kondisi->kondisi_tandan }}</span>
-                </div>
-                @endif
-                @if(!empty($kondisi->gejala_defisiensi))
-                <div class="pt-1.5 border-t border-slate-100">
-                    <p class="text-slate-500 mb-1">Dugaan Unsur Hara yang Kurang</p>
-                    <div class="flex flex-wrap gap-1">
-                        @foreach($kondisi->gejala_defisiensi as $def)
-                        <span class="px-1.5 py-0.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded font-bold">{{ $def }}</span>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
-                <div class="pt-1.5 border-t border-slate-100 flex gap-3">
-                    @if($kondisi->ada_serangan_hama)
-                    <span class="text-red-600 font-medium">🐛 Ada Hama</span>
-                    @endif
-                    @if($kondisi->ada_gulma_dominan)
-                    <span class="text-amber-600 font-medium">🌿 Ada Gulma</span>
-                    @endif
-                </div>
-                @if($kondisi->catatan_observasi)
-                <div class="pt-1.5 border-t border-slate-100">
-                    <p class="text-slate-500 mb-1">Catatan</p>
-                    <p class="text-slate-700 italic leading-relaxed">{{ $kondisi->catatan_observasi }}</p>
-                </div>
-                @endif
-            </div>
-            <div class="mt-3 pt-3 border-t border-slate-100">
-                <a href="{{ route('kondisi-lahan.edit', $kondisi) }}"
-                   class="text-xs text-blue-600 hover:underline font-medium">Edit kondisi →</a>
-                <span class="text-slate-200 mx-2">|</span>
-                <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blokLahan->id]) }}"
-                   class="text-xs text-emerald-600 hover:underline font-medium">+ Observasi baru</a>
-            </div>
+        <div>
+            <p class="text-[10px] text-slate-400 uppercase font-semibold">SPH</p>
+            <p class="text-sm font-bold text-slate-800">{{ $blokLahan->sph }} pokok/Ha</p>
         </div>
-        @else
-        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
-            <p class="text-amber-700 text-sm font-medium">Belum ada data kondisi lahan</p>
-            <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blokLahan->id]) }}"
-               class="mt-2 inline-flex items-center gap-1.5 text-xs text-amber-700 font-semibold hover:underline">
-                + Input kondisi sekarang
-            </a>
+        <div>
+            <p class="text-[10px] text-slate-400 uppercase font-semibold">Umur</p>
+            <p class="text-sm font-bold text-slate-800">{{ $blokLahan->umur_tanaman ?? '—' }} tahun</p>
+            @if($blokLahan->kategori_umur)
+            <p class="text-[9px] text-emerald-600 font-medium">{{ $blokLahan->kategori_umur }}</p>
+            @endif
         </div>
-        @endif
-
+        <div>
+            <p class="text-[10px] text-slate-400 uppercase font-semibold">Jenis Tanah</p>
+            <p class="text-xs font-bold text-slate-800 leading-tight">{{ $blokLahan->jenis_tanah ?? '—' }}</p>
+        </div>
     </div>
+</div>
 
-    {{-- KOLOM KANAN: Hasil RBS --}}
-    <div class="lg:col-span-2 space-y-5">
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- SECTION 2: Hasil Analisis RBS (komponen utama) --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+@include('rbs.partials._hasil_rbs', ['blokLahan' => $blokLahan])
 
-        {{-- Komponen Hasil RBS --}}
-        @include('rbs.partials._hasil_rbs', ['blokLahan' => $blokLahan])
+@if($rbs = $blokLahan->rekomendasiRbsTerbaru)
 
-        {{-- Detail Rules Terpicu --}}
-        @if($rbs = $blokLahan->rekomendasiRbsTerbaru)
-
-        {{-- Badges: Validitas + Confidence + Data Cukup (Fitur 3, 6, 7) --}}
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
-            <div class="flex flex-wrap items-center gap-2">
-                {{-- Validitas --}}
-                @php
-                    $validitasColor = match($rbs->validitas_rekomendasi) {
-                        'Cukup Kuat'    => 'bg-blue-100 text-blue-800 border-blue-200',
-                        'Terverifikasi' => 'bg-green-100 text-green-800 border-green-200',
-                        default         => 'bg-amber-100 text-amber-800 border-amber-200',
-                    };
-                @endphp
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-semibold {{ $validitasColor }}">
-                    @if($rbs->validitas_rekomendasi === 'Cukup Kuat') 🔬 @elseif($rbs->validitas_rekomendasi === 'Terverifikasi') ✅ @else 👁 @endif
-                    {{ $rbs->validitas_rekomendasi }}
-                </span>
-
-                {{-- Confidence --}}
-                @php
-                    $confColor = match($rbs->confidence_label) {
-                        'Tinggi' => 'bg-green-100 text-green-800 border-green-200',
-                        'Sedang' => 'bg-blue-100 text-blue-800 border-blue-200',
-                        default  => 'bg-amber-100 text-amber-800 border-amber-200',
-                    };
-                @endphp
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-semibold {{ $confColor }}">
-                    📊 Keyakinan: {{ $rbs->confidence_label }} ({{ $rbs->confidence_score }}%)
-                </span>
-
-                {{-- Data Cukup --}}
-                @if(!$rbs->data_cukup)
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-semibold bg-red-50 text-red-700 border-red-200">
-                    ⚠️ Data Belum Cukup
-                </span>
-                @else
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
-                    ✓ Data Cukup
-                </span>
-                @endif
-            </div>
-
-            {{-- Catatan Validitas --}}
-            @if($rbs->catatan_validitas)
-            <p class="text-xs text-slate-500 mt-2 italic">{{ $rbs->catatan_validitas }}</p>
-            @endif
-
-            {{-- Notifikasi Data --}}
-            @if(!$rbs->data_cukup && $rbs->notifikasi_data)
-            <div class="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-800">
-                {{ $rbs->notifikasi_data }}
-            </div>
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- SECTION 3: Kebutuhan Pupuk (angka besar, mudah dipahami) --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+@if($rbs->total_urea || $rbs->total_kcl)
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-5 mt-5">
+    <h3 class="text-sm font-bold text-slate-800 mb-3">🧮 Total Kebutuhan Pupuk</h3>
+    <div class="grid grid-cols-2 gap-4">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+            <p class="text-[10px] text-amber-600 uppercase font-semibold mb-1">Urea</p>
+            <p class="text-xl sm:text-2xl font-extrabold text-amber-800">{{ $rbs->total_urea ? number_format($rbs->total_urea, 0) : '—' }}</p>
+            <p class="text-xs text-amber-600">kg ({{ $rbs->karung_urea }} karung)</p>
+            @if($rbs->dosis_urea)
+            <p class="text-[9px] text-amber-500 mt-1">{{ $rbs->dosis_urea }} kg/pokok</p>
             @endif
         </div>
-
-        {{-- Jadwal Pemupukan Per Tahap (Fitur 2) --}}
-        @if($rbs->jadwal_pemupukan && count($rbs->jadwal_pemupukan) > 0)
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100">
-                <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                    📅 Jadwal Pemupukan Per Tahap
-                </h3>
-                <p class="text-xs text-slate-400 mt-0.5">Pembagian dosis berdasarkan status rekomendasi</p>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="border-b border-slate-100 bg-slate-50">
-                            <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500 uppercase">Tahap</th>
-                            <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500 uppercase">Estimasi Waktu</th>
-                            <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500 uppercase">Urea (kg)</th>
-                            <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500 uppercase">KCl (kg)</th>
-                            <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500 uppercase">Metode</th>
-                            <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500 uppercase">Catatan</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                        @foreach($rbs->jadwal_pemupukan as $jadwal)
-                        <tr>
-                            <td class="px-4 py-2.5 font-semibold text-slate-800 text-xs">{{ $jadwal['nama_tahap'] }}</td>
-                            <td class="px-4 py-2.5 text-xs text-slate-600">{{ $jadwal['estimasi_waktu'] }}</td>
-                            <td class="px-4 py-2.5 text-right text-xs font-bold text-amber-700">{{ number_format($jadwal['urea_kg'], 2) }}</td>
-                            <td class="px-4 py-2.5 text-right text-xs font-bold text-cyan-700">{{ number_format($jadwal['kcl_kg'], 2) }}</td>
-                            <td class="px-4 py-2.5 text-xs text-slate-600">{{ $jadwal['metode_aplikasi'] }}</td>
-                            <td class="px-4 py-2.5 text-xs text-slate-500 italic max-w-[200px]">{{ $jadwal['catatan'] }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+        <div class="bg-cyan-50 border border-cyan-200 rounded-xl p-3 text-center">
+            <p class="text-[10px] text-cyan-600 uppercase font-semibold mb-1">KCl</p>
+            <p class="text-xl sm:text-2xl font-extrabold text-cyan-800">{{ $rbs->total_kcl ? number_format($rbs->total_kcl, 0) : '—' }}</p>
+            <p class="text-xs text-cyan-600">kg ({{ $rbs->karung_kcl }} karung)</p>
+            @if($rbs->dosis_kcl)
+            <p class="text-[9px] text-cyan-500 mt-1">{{ $rbs->dosis_kcl }} kg/pokok</p>
+            @endif
         </div>
+    </div>
+</div>
+@endif
+
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- SECTION 4: Info Tambahan (Validitas + Confidence) --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-5 mt-5">
+    <h3 class="text-sm font-bold text-slate-800 mb-3">📊 Tingkat Keyakinan Rekomendasi</h3>
+    <div class="flex flex-wrap items-center gap-2 mb-3">
+        {{-- Confidence --}}
+        @php
+            $confColor = match($rbs->confidence_label) {
+                'Tinggi' => 'bg-green-100 text-green-800 border-green-200',
+                'Sedang' => 'bg-blue-100 text-blue-800 border-blue-200',
+                default  => 'bg-amber-100 text-amber-800 border-amber-200',
+            };
+            $validitasColor = match($rbs->validitas_rekomendasi) {
+                'Cukup Kuat'    => 'bg-blue-100 text-blue-800 border-blue-200',
+                'Terverifikasi' => 'bg-green-100 text-green-800 border-green-200',
+                default         => 'bg-amber-100 text-amber-800 border-amber-200',
+            };
+        @endphp
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-semibold {{ $confColor }}">
+            Keyakinan: {{ $rbs->confidence_label }} ({{ $rbs->confidence_score }}%)
+        </span>
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-semibold {{ $validitasColor }}">
+            {{ $rbs->validitas_rekomendasi }}
+        </span>
+        @if($rbs->data_cukup)
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">✓ Data Cukup</span>
+        @else
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-semibold bg-red-50 text-red-700 border-red-200">⚠️ Data Belum Lengkap</span>
         @endif
+    </div>
+    @if($rbs->catatan_confidence)
+    <p class="text-xs text-slate-500 italic">{{ $rbs->catatan_confidence }}</p>
+    @endif
+    @if(!$rbs->data_cukup && $rbs->notifikasi_data)
+    <div class="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-800">
+        {{ $rbs->notifikasi_data }}
+    </div>
+    @endif
+</div>
 
-        @if($rbs->jumlah_rule_terpicu > 0)
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100">
-                <h3 class="text-sm font-semibold text-slate-800">Detail Rules yang Terpicu</h3>
-                <p class="text-xs text-slate-400 mt-0.5">{{ $rbs->jumlah_rule_terpicu }} aturan cocok dengan kondisi lahan saat ini</p>
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- SECTION 5: Jadwal Pemupukan --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+@if($rbs->jadwal_pemupukan && count($rbs->jadwal_pemupukan) > 0)
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-5">
+    <div class="px-4 sm:px-5 py-4 border-b border-slate-100">
+        <h3 class="text-sm font-bold text-slate-800">📅 Jadwal Pemupukan</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Pembagian dosis per tahap aplikasi</p>
+    </div>
+    <div class="divide-y divide-slate-100">
+        @foreach($rbs->jadwal_pemupukan as $jadwal)
+        <div class="px-4 sm:px-5 py-3">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+                <p class="text-xs font-bold text-slate-800">{{ $jadwal['nama_tahap'] }}</p>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">{{ $jadwal['estimasi_waktu'] }}</span>
             </div>
-            <div class="divide-y divide-slate-100">
-                @foreach($rbs->rules_terpicu as $i => $rule)
-                @php
-                    $ruleStatusConfig = match($rule['status']) {
-                        'Darurat' => 'bg-red-100 text-red-800',
-                        'Segera'  => 'bg-orange-100 text-orange-800',
-                        'Normal'  => 'bg-emerald-100 text-emerald-800',
-                        'Tunda'   => 'bg-slate-100 text-slate-700',
-                        default   => 'bg-blue-100 text-blue-800',
-                    };
-                    $ruleStatusLabel = \App\Models\RekomendasiRbs::labelStatus($rule['status']);
-                @endphp
-                <div class="px-5 py-3.5 flex items-start gap-3">
-                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold flex items-center justify-center mt-0.5">
-                        {{ $i + 1 }}
-                    </span>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <p class="text-sm font-medium text-slate-800">{{ $rule['indikasi'] }}</p>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ $ruleStatusConfig }}">
-                                {{ $ruleStatusLabel }}
-                            </span>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-0.5">
-                            Pupuk: <span class="font-medium text-slate-700">{{ $rule['pupuk'] }}</span>
-                            <span class="text-slate-300 mx-1">·</span>
-                            Prioritas: <span class="font-medium text-slate-700">{{ $rule['prioritas'] }}</span>
-                        </p>
-                    </div>
-                </div>
+            <div class="flex gap-4 text-xs mb-1">
+                <span class="text-amber-700 font-semibold">Urea: {{ number_format($jadwal['urea_kg'], 1) }} kg</span>
+                <span class="text-cyan-700 font-semibold">KCl: {{ number_format($jadwal['kcl_kg'], 1) }} kg</span>
+            </div>
+            <p class="text-[10px] text-slate-500 italic">{{ $jadwal['catatan'] }}</p>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- SECTION 6: Kondisi Observasi (collapsible) --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+@if($kondisi = $blokLahan->kondisiTerbaru)
+<details class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-5 group">
+    <summary class="px-4 sm:px-5 py-4 cursor-pointer hover:bg-slate-50 transition-colors flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <h3 class="text-sm font-bold text-slate-800">🔍 Data Kondisi Observasi</h3>
+            <span class="text-xs text-slate-400">{{ $kondisi->tanggal_observasi->format('d M Y') }}</span>
+        </div>
+        <svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </summary>
+    <div class="px-4 sm:px-5 pb-4 border-t border-slate-100 pt-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+            @if($kondisi->warna_daun)
+            <div><span class="text-slate-400 block">Warna Daun</span><span class="font-semibold text-slate-800">{{ $kondisi->warna_daun }}</span></div>
+            @endif
+            @if($kondisi->ph_tanah)
+            <div><span class="text-slate-400 block">pH Tanah</span><span class="font-semibold text-slate-800">{{ $kondisi->ph_tanah }} ({{ $kondisi->label_ph }})</span></div>
+            @endif
+            @if($kondisi->kelembaban_tanah)
+            <div><span class="text-slate-400 block">Kelembaban</span><span class="font-semibold text-slate-800">{{ $kondisi->kelembaban_tanah }}</span></div>
+            @endif
+            @if($kondisi->musim_saat_ini)
+            <div><span class="text-slate-400 block">Musim</span><span class="font-semibold text-slate-800">{{ $kondisi->musim_saat_ini }}</span></div>
+            @endif
+            @if($kondisi->curah_hujan_kategori)
+            <div><span class="text-slate-400 block">Curah Hujan</span><span class="font-semibold text-slate-800">{{ $kondisi->curah_hujan_kategori }}</span></div>
+            @endif
+            @if($kondisi->kondisi_drainase)
+            <div><span class="text-slate-400 block">Drainase</span><span class="font-semibold text-slate-800">{{ $kondisi->kondisi_drainase }}</span></div>
+            @endif
+            @if($kondisi->kondisi_pelepah)
+            <div><span class="text-slate-400 block">Pelepah</span><span class="font-semibold text-slate-800">{{ $kondisi->kondisi_pelepah }}</span></div>
+            @endif
+            @if($kondisi->kondisi_tandan)
+            <div><span class="text-slate-400 block">Tandan</span><span class="font-semibold text-slate-800">{{ $kondisi->kondisi_tandan }}</span></div>
+            @endif
+            @if($kondisi->ada_serangan_hama)
+            <div><span class="text-slate-400 block">Hama</span><span class="font-semibold text-red-600">🐛 Ada</span></div>
+            @endif
+            @if($kondisi->ada_gulma_dominan)
+            <div><span class="text-slate-400 block">Gulma</span><span class="font-semibold text-amber-600">🌿 Ada</span></div>
+            @endif
+        </div>
+        @if(!empty($kondisi->gejala_defisiensi))
+        <div class="mt-3 pt-3 border-t border-slate-100">
+            <span class="text-slate-400 text-xs block mb-1">Dugaan Defisiensi:</span>
+            <div class="flex flex-wrap gap-1">
+                @foreach($kondisi->gejala_defisiensi as $def)
+                <span class="px-1.5 py-0.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded font-bold">{{ $def }}</span>
                 @endforeach
             </div>
         </div>
         @endif
-
-        {{-- Action: Re-run + Link kondisi --}}
-        <div class="flex items-center gap-3 flex-wrap">
-            @if($blokLahan->kondisiTerbaru)
-            <form action="{{ route('rbs.analisis', $blokLahan) }}" method="POST">
-                @csrf
-                <button type="submit"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                    Jalankan Ulang Analisis
-                </button>
-            </form>
-            @endif
-            <a href="{{ route('blok-lahan.show', $blokLahan) }}"
-               class="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors">
-                Lihat Detail Blok
-            </a>
+        <div class="mt-3 pt-3 border-t border-slate-100 flex gap-3">
+            <a href="{{ route('kondisi-lahan.edit', $kondisi) }}" class="text-xs text-blue-600 hover:underline font-medium">Edit kondisi →</a>
+            <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blokLahan->id]) }}" class="text-xs text-emerald-600 hover:underline font-medium">+ Observasi baru</a>
         </div>
-        @endif
-
-        {{-- Histori Rekomendasi (Fitur 1) --}}
-        @if(isset($historiRekomendasi) && $historiRekomendasi->count() > 0)
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100">
-                <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                    📜 Histori Rekomendasi
-                </h3>
-                <p class="text-xs text-slate-400 mt-0.5">{{ $historiRekomendasi->count() }} analisis sebelumnya</p>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="border-b border-slate-100 bg-slate-50">
-                            <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500 uppercase">#</th>
-                            <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500 uppercase">Tanggal</th>
-                            <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500 uppercase">Status</th>
-                            <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500 uppercase">Urea</th>
-                            <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500 uppercase">KCl</th>
-                            <th class="px-4 py-2.5 text-center text-[10px] font-semibold text-slate-500 uppercase">Confidence</th>
-                            <th class="px-4 py-2.5 text-center text-[10px] font-semibold text-slate-500 uppercase">Validitas</th>
-                            <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500 uppercase">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                        @foreach($historiRekomendasi as $hist)
-                        @php
-                            $histStatusConfig = match($hist->status_kebutuhan_dominan) {
-                                'Darurat' => 'bg-red-50 text-red-700',
-                                'Segera'  => 'bg-orange-50 text-orange-700',
-                                'Normal'  => 'bg-emerald-50 text-emerald-700',
-                                'Tunda'   => 'bg-slate-100 text-slate-600',
-                                default   => 'bg-blue-50 text-blue-700',
-                            };
-                            $histConfColor = match($hist->confidence_label) {
-                                'Tinggi' => 'text-green-700',
-                                'Sedang' => 'text-blue-700',
-                                default  => 'text-amber-700',
-                            };
-                        @endphp
-                        <tr class="hover:bg-slate-50/50">
-                            <td class="px-4 py-2.5 text-xs text-slate-500">{{ $hist->nomor_analisis ?? '-' }}</td>
-                            <td class="px-4 py-2.5 text-xs text-slate-700">{{ $hist->tanggal_analisis->format('d/m/Y') }}</td>
-                            <td class="px-4 py-2.5"><span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $histStatusConfig }}">{{ \App\Models\RekomendasiRbs::labelStatus($hist->status_kebutuhan_dominan) }}</span></td>
-                            <td class="px-4 py-2.5 text-right text-xs text-slate-700">{{ $hist->dosis_urea ? $hist->dosis_urea . ' kg/pk' : '-' }}</td>
-                            <td class="px-4 py-2.5 text-right text-xs text-slate-700">{{ $hist->dosis_kcl ? $hist->dosis_kcl . ' kg/pk' : '-' }}</td>
-                            <td class="px-4 py-2.5 text-center text-xs font-semibold {{ $histConfColor }}">{{ $hist->confidence_score ?? 0 }}%</td>
-                            <td class="px-4 py-2.5 text-center text-xs text-slate-600">{{ $hist->validitas_rekomendasi ?? '-' }}</td>
-                            <td class="px-4 py-2.5 text-right">
-                                <div class="flex items-center gap-1 justify-end">
-                                    <a href="{{ route('laporan.show', $hist) }}" class="px-2 py-1 bg-slate-50 text-slate-600 border border-slate-200 text-[10px] font-medium rounded-md hover:bg-slate-100">Detail</a>
-                                    <a href="{{ route('laporan.pdf', $hist) }}" class="px-2 py-1 bg-red-50 text-red-600 border border-red-200 text-[10px] font-medium rounded-md hover:bg-red-100">PDF</a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @endif
-
     </div>
+</details>
+@endif
+
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- SECTION 7: Detail Rules Terpicu (collapsible) --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+@if($rbs->jumlah_rule_terpicu > 0)
+<details class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-5 group">
+    <summary class="px-4 sm:px-5 py-4 cursor-pointer hover:bg-slate-50 transition-colors flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <h3 class="text-sm font-bold text-slate-800">⚙️ Rules yang Terpicu</h3>
+            <span class="text-xs text-slate-400">({{ $rbs->jumlah_rule_terpicu }} aturan)</span>
+        </div>
+        <svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </summary>
+    <div class="border-t border-slate-100 divide-y divide-slate-50">
+        @foreach($rbs->rules_terpicu as $i => $rule)
+        @php
+            $ruleColor = match($rule['status']) {
+                'Darurat' => 'bg-red-50 text-red-700',
+                'Segera'  => 'bg-orange-50 text-orange-700',
+                'Normal'  => 'bg-emerald-50 text-emerald-700',
+                default   => 'bg-slate-100 text-slate-600',
+            };
+        @endphp
+        <div class="px-4 sm:px-5 py-3 flex items-start gap-3">
+            <span class="flex-shrink-0 w-5 h-5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold flex items-center justify-center mt-0.5">{{ $i + 1 }}</span>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-slate-800">{{ $rule['indikasi'] }}</p>
+                <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span class="inline-flex px-1.5 py-0.5 rounded text-[9px] font-semibold {{ $ruleColor }}">{{ \App\Models\RekomendasiRbs::labelStatus($rule['status']) }}</span>
+                    <span class="text-[10px] text-slate-400">Pupuk: {{ $rule['pupuk'] }}</span>
+                    <span class="text-[10px] text-slate-400">Prioritas: {{ $rule['prioritas'] }}</span>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</details>
+@endif
+
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- SECTION 8: Aksi --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+<div class="flex items-center gap-3 flex-wrap mt-5">
+    @if($blokLahan->kondisiTerbaru)
+    <form action="{{ route('rbs.analisis', $blokLahan) }}" method="POST">
+        @csrf
+        <button type="submit"
+            class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Jalankan Ulang Analisis
+        </button>
+    </form>
+    @endif
+    <a href="{{ route('laporan.show', $rbs) }}" class="inline-flex items-center gap-2 px-4 py-2.5 border border-slate-300 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors">
+        📄 Lihat Laporan
+    </a>
+    <a href="{{ route('laporan.pdf', $rbs) }}" class="inline-flex items-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 text-sm font-medium rounded-xl hover:bg-red-50 transition-colors">
+        📥 Download PDF
+    </a>
 </div>
+
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- SECTION 9: Histori (hanya tampil jika ada perubahan nyata) --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+@if(isset($historiRekomendasi) && $historiRekomendasi->count() > 0)
+<details class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-5 group">
+    <summary class="px-4 sm:px-5 py-4 cursor-pointer hover:bg-slate-50 transition-colors flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <h3 class="text-sm font-bold text-slate-800">📜 Histori Analisis Sebelumnya</h3>
+            <span class="text-xs text-slate-400">({{ $historiRekomendasi->count() }})</span>
+        </div>
+        <svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </summary>
+    <div class="border-t border-slate-100 divide-y divide-slate-50">
+        @foreach($historiRekomendasi as $hist)
+        @php
+            $hColor = match($hist->status_kebutuhan_dominan) {
+                'Darurat' => 'bg-red-50 text-red-700',
+                'Segera'  => 'bg-orange-50 text-orange-700',
+                'Normal'  => 'bg-emerald-50 text-emerald-700',
+                default   => 'bg-slate-100 text-slate-600',
+            };
+        @endphp
+        <div class="px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <span class="text-xs text-slate-400 font-mono flex-shrink-0">#{{ $hist->nomor_analisis }}</span>
+                <div class="min-w-0">
+                    <p class="text-xs text-slate-700">{{ $hist->tanggal_analisis->format('d/m/Y') }}</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="inline-flex px-1.5 py-0.5 rounded text-[9px] font-semibold {{ $hColor }}">{{ \App\Models\RekomendasiRbs::labelStatus($hist->status_kebutuhan_dominan) }}</span>
+                        <span class="text-[10px] text-slate-400">{{ $hist->jumlah_rule_terpicu }} rule · {{ $hist->confidence_score ?? 0 }}%</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{{ route('laporan.show', $hist) }}" class="text-[10px] text-blue-600 hover:underline font-medium flex-shrink-0">Detail</a>
+        </div>
+        @endforeach
+    </div>
+</details>
+@endif
+
+@endif {{-- end if $rbs --}}
 
 @endsection

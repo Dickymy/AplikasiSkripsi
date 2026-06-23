@@ -655,10 +655,23 @@ class RbsService
 
     /**
      * Simpan rekomendasi baru dengan histori (Fitur 1).
+     * Jika hasil analisis sama persis dengan rekomendasi terakhir (kondisi_lahan_id dan status sama),
+     * tidak membuat record baru — hanya update tanggal_analisis.
      */
     private function simpanDenganHistori(int $blokLahanId, array $data): RekomendasiRbs
     {
         return DB::transaction(function () use ($blokLahanId, $data) {
+            // Cek apakah hasil sama dengan rekomendasi terakhir
+            $existing = RekomendasiRbs::where('blok_lahan_id', $blokLahanId)
+                ->where('is_latest', true)
+                ->first();
+
+            if ($existing && $this->hasilSamaDenganSebelumnya($existing, $data)) {
+                // Hanya update tanggal analisis tanpa membuat record baru
+                $existing->update(['tanggal_analisis' => $data['tanggal_analisis']]);
+                return $existing;
+            }
+
             // Set semua rekomendasi lama menjadi is_latest = false
             RekomendasiRbs::where('blok_lahan_id', $blokLahanId)
                 ->where('is_latest', true)
@@ -672,6 +685,19 @@ class RbsService
 
             return RekomendasiRbs::create($data);
         });
+    }
+
+    /**
+     * Cek apakah hasil analisis baru sama dengan rekomendasi sebelumnya.
+     * Perbandingan berdasarkan: kondisi_lahan_id + status + jumlah_rule + dosis.
+     */
+    private function hasilSamaDenganSebelumnya(RekomendasiRbs $existing, array $newData): bool
+    {
+        return $existing->kondisi_lahan_id == $newData['kondisi_lahan_id']
+            && $existing->status_kebutuhan_dominan === $newData['status_kebutuhan_dominan']
+            && $existing->jumlah_rule_terpicu == $newData['jumlah_rule_terpicu']
+            && (float) $existing->dosis_urea === (float) ($newData['dosis_urea'] ?? 0)
+            && (float) $existing->dosis_kcl === (float) ($newData['dosis_kcl'] ?? 0);
     }
 
     /**

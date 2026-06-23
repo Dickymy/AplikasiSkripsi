@@ -124,6 +124,8 @@
                 @php
                     $rbs = $blok->rekomendasiRbsTerbaru;
                     $kondisi = $blok->kondisiTerbaru;
+                    $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->tanggal_analisis);
+                    $dataBlokKurang = !$blok->tahun_tanam || !$blok->jenis_tanah || !$blok->topografi;
                     $statusConfig = match($rbs?->status_kebutuhan_dominan) {
                         'Darurat' => ['bg' => 'bg-red-50 text-red-700', 'label' => 'Defisiensi Berat'],
                         'Segera'  => ['bg' => 'bg-orange-50 text-orange-700', 'label' => 'Perlu Pupuk'],
@@ -136,6 +138,9 @@
                     <td class="px-4 py-2.5">
                         <p class="font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }}</p>
                         <p class="text-[10px] text-slate-400">{{ number_format($blok->luas_ha, 2) }} Ha · SPH {{ $blok->sph }}</p>
+                        @if($dataBlokKurang)
+                        <span class="text-[9px] text-red-500 font-medium">⚠️ Data blok belum lengkap</span>
+                        @endif
                     </td>
                     <td class="px-4 py-2.5 text-xs text-slate-600">
                         @if($blok->umur_tanaman !== null)
@@ -154,6 +159,9 @@
                     </td>
                     <td class="px-4 py-2.5">
                         <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $statusConfig['bg'] }}">{{ $statusConfig['label'] }}</span>
+                        @if($perluAnalisisUlang)
+                        <span class="block mt-0.5 text-[9px] text-amber-600 font-medium">⚠️ Data berubah</span>
+                        @endif
                     </td>
                     <td class="px-4 py-2.5 text-center text-xs">
                         @if($rbs)
@@ -200,6 +208,8 @@
         @php
             $rbs = $blok->rekomendasiRbsTerbaru;
             $kondisi = $blok->kondisiTerbaru;
+            $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->tanggal_analisis);
+            $dataBlokKurang = !$blok->tahun_tanam || !$blok->jenis_tanah || !$blok->topografi;
             $statusConfig = match($rbs?->status_kebutuhan_dominan) {
                 'Darurat' => ['bg' => 'bg-red-100 text-red-800', 'label' => 'Defisiensi Berat'],
                 'Segera'  => ['bg' => 'bg-orange-100 text-orange-800', 'label' => 'Perlu Pupuk'],
@@ -214,8 +224,16 @@
                 <div>
                     <p class="font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }}</p>
                     <p class="text-[10px] text-slate-400">{{ number_format($blok->luas_ha, 2) }} Ha · {{ $blok->umur_tanaman !== null ? $blok->umur_tanaman.' thn' : '—' }}</p>
+                    @if($dataBlokKurang)
+                    <span class="text-[8px] text-red-500 font-medium">⚠️ Data blok belum lengkap</span>
+                    @endif
                 </div>
-                <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold {{ $statusConfig['bg'] }} flex-shrink-0">{{ $statusConfig['label'] }}</span>
+                <div class="flex flex-col items-end gap-0.5 flex-shrink-0">
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold {{ $statusConfig['bg'] }}">{{ $statusConfig['label'] }}</span>
+                    @if($perluAnalisisUlang)
+                    <span class="text-[8px] text-amber-600 font-medium">⚠️ Data berubah</span>
+                    @endif
+                </div>
             </div>
 
             {{-- Row 2: Info + Aksi --}}

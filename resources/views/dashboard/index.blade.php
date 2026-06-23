@@ -15,13 +15,98 @@
     .leaflet-popup-tip { background: #fff; }
     .leaflet-popup-content { margin: 10px 12px; max-height: 200px; overflow-y: auto; }
     @media (max-width: 640px) {
-        .leaflet-popup-content { margin: 8px 10px; max-height: 160px; font-size: 11px; }
-        .leaflet-popup-content-wrapper { max-width: 230px !important; }
+        .leaflet-popup-content { margin: 8px 10px; max-height: 180px; font-size: 11px; }
+        .leaflet-popup-content-wrapper { max-width: 260px !important; }
     }
 
     /* Legend */
     .map-legend { position: absolute; bottom: 10px; right: 10px; z-index: 42; background: rgba(255,255,255,0.93); border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     @media (max-width: 640px) { .map-legend { bottom: 6px; right: 6px; left: 6px; padding: 5px 8px; } .map-legend .legend-items { display: flex; flex-wrap: wrap; gap: 4px 10px; } }
+
+    /* Hide default Leaflet zoom control */
+    .leaflet-control-zoom { display: none !important; }
+
+    /* Custom Zoom Slider */
+    .zoom-slider-container {
+        position: absolute;
+        bottom: 16px;
+        left: 16px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        background: rgba(255,255,255,0.96);
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 6px 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+        backdrop-filter: blur(6px);
+    }
+    .zoom-slider-container button {
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        color: #374151;
+        font-size: 16px;
+        font-weight: 700;
+        transition: background 0.15s, color 0.15s;
+        user-select: none;
+        line-height: 1;
+    }
+    .zoom-slider-container button:hover { background: #f0fdf4; color: #059669; }
+    .zoom-slider-container button:active { background: #dcfce7; }
+    .zoom-slider-container input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 4px;
+        height: 100px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        outline: none;
+        writing-mode: vertical-lr;
+        direction: rtl;
+        margin: 4px 0;
+        cursor: pointer;
+    }
+    .zoom-slider-container input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: #059669;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    .zoom-slider-container input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .zoom-slider-container input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: #059669;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        cursor: pointer;
+    }
+    .zoom-slider-container input[type="range"]::-moz-range-track {
+        width: 4px;
+        background: #e2e8f0;
+        border-radius: 4px;
+    }
+    @media (max-width: 640px) {
+        .zoom-slider-container { bottom: 56px; left: 10px; padding: 4px 4px; }
+        .zoom-slider-container button { width: 24px; height: 24px; font-size: 14px; }
+        .zoom-slider-container input[type="range"] { height: 70px; }
+    }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #64748b; padding: 1px 0; }
     .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
@@ -72,7 +157,7 @@
 @section('content')
 
 {{-- Stats Cards --}}
-<div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-3 sm:mb-4" id="stats-cards">
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-3 sm:mb-4" id="stats-cards">
     <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
         <p class="stat-label text-xs text-slate-500 mb-0.5">Total Blok</p>
         <p class="stat-value text-xl sm:text-2xl font-bold text-slate-900" id="stat-total-blok">{{ $stats['total_blok'] }}</p>
@@ -146,7 +231,7 @@
 {{-- Luas per Status --}}
 <div class="mb-3 sm:mb-4">
     <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Luas Lahan per Status</p>
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+    <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2">
         <div class="luas-status-item"><div class="luas-dot" style="background:#dc2626;"></div><span class="luas-label">Def. Berat</span><span class="luas-value" id="luas-darurat">0 Ha</span></div>
         <div class="luas-status-item"><div class="luas-dot" style="background:#f97316;"></div><span class="luas-label">Perlu Pupuk</span><span class="luas-value" id="luas-segera">0 Ha</span></div>
         <div class="luas-status-item"><div class="luas-dot" style="background:#22c55e;"></div><span class="luas-label">Sehat</span><span class="luas-value" id="luas-normal">0 Ha</span></div>
@@ -227,6 +312,12 @@
     {{-- PETA --}}
     <div class="p-1.5 sm:p-3 relative">
         <div id="map"></div>
+        {{-- Zoom Slider --}}
+        <div class="zoom-slider-container" id="zoom-slider-container">
+            <button type="button" id="zoom-in-btn" title="Zoom In">+</button>
+            <input type="range" id="zoom-slider" min="1" max="19" step="0.1" value="5" orient="vertical" title="Zoom Level">
+            <button type="button" id="zoom-out-btn" title="Zoom Out">−</button>
+        </div>
         {{-- Legend --}}
         <div class="map-legend">
             <p class="text-[9px] sm:text-[10px] font-semibold text-slate-600 mb-1">Status Lahan</p>
@@ -255,11 +346,73 @@ L.Icon.Default.mergeOptions({
 var mapData = @json($mapData);
 var activeStatuses = ['Darurat', 'Segera', 'Normal', 'Tunda', 'Belum Dianalisis'];
 
-var map = L.map('map', { center: [-2.5489, 118.0149], zoom: 5, zoomControl: true });
+var map = L.map('map', { center: [-2.5489, 118.0149], zoom: 5, zoomControl: false, zoomSnap: 0, zoomDelta: 0.25, wheelDebounceTime: 40, wheelPxPerZoomLevel: 120 });
 var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' });
 osm.addTo(map);
-var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri', maxZoom: 19 });
+var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri', maxZoom: 19, maxNativeZoom: 17 });
 L.control.layers({'Peta': osm, 'Satelit': satellite}).addTo(map);
+
+// ─── ZOOM SLIDER (smooth continuous zoom on hold) ────────────────
+(function(){
+    var slider = document.getElementById('zoom-slider');
+    var zoomInBtn = document.getElementById('zoom-in-btn');
+    var zoomOutBtn = document.getElementById('zoom-out-btn');
+    var isSliderDragging = false;
+    var animFrameId = null;
+    var zoomSpeed = 0.02; // zoom levels per frame (~60fps = ~1.2 levels/sec)
+
+    slider.min = map.getMinZoom() || 1;
+    slider.max = map.getMaxZoom() || 19;
+    slider.step = '0.1';
+    slider.value = map.getZoom();
+
+    slider.addEventListener('input', function() {
+        isSliderDragging = true;
+        map.setZoom(parseFloat(this.value));
+    });
+    slider.addEventListener('change', function() { isSliderDragging = false; });
+    slider.addEventListener('pointerup', function() { isSliderDragging = false; });
+
+    map.on('zoomend zoom move', function() {
+        if (!isSliderDragging) slider.value = map.getZoom();
+    });
+
+    function startContinuousZoom(direction) {
+        stopContinuousZoom();
+        function frame() {
+            var current = map.getZoom();
+            var next = current + (direction * zoomSpeed);
+            var minZ = parseFloat(slider.min);
+            var maxZ = parseFloat(slider.max);
+            if (next < minZ) next = minZ;
+            if (next > maxZ) next = maxZ;
+            if ((direction > 0 && current < maxZ) || (direction < 0 && current > minZ)) {
+                map.setZoom(next);
+                animFrameId = requestAnimationFrame(frame);
+            }
+        }
+        animFrameId = requestAnimationFrame(frame);
+    }
+
+    function stopContinuousZoom() {
+        if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+    }
+
+    // Mouse events
+    zoomInBtn.addEventListener('mousedown', function(e) { e.preventDefault(); startContinuousZoom(1); });
+    zoomOutBtn.addEventListener('mousedown', function(e) { e.preventDefault(); startContinuousZoom(-1); });
+    document.addEventListener('mouseup', stopContinuousZoom);
+
+    // Touch events
+    zoomInBtn.addEventListener('touchstart', function(e) { e.preventDefault(); startContinuousZoom(1); }, {passive:false});
+    zoomOutBtn.addEventListener('touchstart', function(e) { e.preventDefault(); startContinuousZoom(-1); }, {passive:false});
+    document.addEventListener('touchend', stopContinuousZoom);
+    document.addEventListener('touchcancel', stopContinuousZoom);
+
+    // Prevent context menu on long press
+    zoomInBtn.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+    zoomOutBtn.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+})();
 
 function getColorRbs(s){return{'Darurat':'#dc2626','Segera':'#f97316','Normal':'#22c55e','Tunda':'#94a3b8','Belum Dianalisis':'#475569'}[s]||'#475569';}
 function getBadgeStyleRbs(s){return{'Darurat':'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;','Segera':'background:#ffedd5;color:#9a3412;border:1px solid #fdba74;','Normal':'background:#dcfce7;color:#166534;border:1px solid #86efac;','Tunda':'background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;','Belum Dianalisis':'background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;'}[s]||'background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;';}
@@ -310,7 +463,7 @@ function buildPopupContent(blok){
     var mh=masalahRbs.length?masalahRbs.slice(0,3).map(function(m){return'<span style="font-size:10px;color:#374151;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:1px 5px;display:inline-block;margin:1px 2px 1px 0;">'+m+'</span>';}).join('')+(masalahRbs.length>3?'<span style="font-size:9px;color:#9ca3af;"> +'+(masalahRbs.length-3)+'</span>':''):'<span style="font-size:10px;color:#9ca3af;">Tidak ada masalah</span>';
     var ph=pupukRbs.length?pupukRbs.slice(0,2).map(function(p){return'<div style="font-size:10px;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:5px;padding:2px 5px;margin-top:2px;">'+p.jenis_utama+(p.dosis?' — '+p.dosis:'')+'</div>';}).join(''):'';
     var sh=saranRbs?'<div style="font-size:9px;color:#78350f;background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:2px 5px;margin-top:3px;line-height:1.3;">'+saranRbs.substring(0,70)+(saranRbs.length>70?'...':'')+'</div>':'';
-    return'<div style="min-width:170px;max-width:220px;font-family:system-ui,sans-serif;"><div style="font-weight:700;font-size:12px;color:#0f172a;padding-bottom:4px;border-bottom:1px solid #f1f5f9;margin-bottom:4px;">'+blok.nama_blok+'</div><div style="font-size:10px;color:#64748b;margin-bottom:3px;">'+(blok.nama_pemilik||'-')+' \u00B7 '+blok.luas_ha+' Ha'+(blok.umur_tanaman!==null?' \u00B7 '+blok.umur_tanaman+' thn':'')+'</div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><span style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;">Status</span><span style="'+bs+'font-size:10px;font-weight:700;padding:1px 6px;border-radius:9999px;">'+statusLabel+'</span></div><div style="margin-bottom:3px;">'+mh+'</div>'+ph+sh+'<div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px;margin-top:3px;border-top:1px solid #f1f5f9;"><span style="font-size:9px;color:#9ca3af;">'+jumlahRule+' rule \u00B7 '+tglRbs+'</span><a href="/rbs/detail/'+blok.id+'" style="font-size:10px;color:#059669;font-weight:700;text-decoration:none;">Detail \u2192</a></div></div>';
+    return'<div style="min-width:170px;max-width:230px;font-family:system-ui,sans-serif;"><div style="font-weight:700;font-size:12px;color:#0f172a;padding-bottom:4px;border-bottom:1px solid #f1f5f9;margin-bottom:4px;">'+blok.nama_blok+'</div><div style="font-size:10px;color:#64748b;margin-bottom:3px;">'+(blok.nama_pemilik||'-')+' \u00B7 '+blok.luas_ha+' Ha'+(blok.umur_tanaman!==null?' \u00B7 '+blok.umur_tanaman+' thn':'')+'</div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><span style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;">Status</span><span style="'+bs+'font-size:10px;font-weight:700;padding:1px 6px;border-radius:9999px;">'+statusLabel+'</span></div><div style="margin-bottom:3px;">'+mh+'</div>'+ph+sh+'<div style="display:flex;gap:6px;align-items:center;padding-top:4px;margin-top:3px;border-top:1px solid #f1f5f9;flex-wrap:wrap;"><a href="/rbs/detail/'+blok.id+'" style="font-size:10px;color:#059669;font-weight:700;text-decoration:none;">Detail \u2192</a><a href="/blok-lahan/'+blok.id+'/edit#koordinat" style="font-size:10px;color:#2563eb;font-weight:600;text-decoration:none;">✏️ Edit Poligon</a><span style="font-size:9px;color:#9ca3af;margin-left:auto;">'+tglRbs+'</span></div></div>';
 }
 
 function getSelectedPemilik(){return window.innerWidth<640?selectElMobile.value:selectEl.value;}

@@ -15,14 +15,14 @@
             <p class="text-[10px] text-slate-400">memiliki rekomendasi</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-amber-400">
-            <p class="text-xs text-slate-500 font-medium mb-0.5">Belum Direalisasi</p>
-            <p class="text-xl sm:text-2xl font-extrabold text-amber-700">{{ $rekap->filter(fn($r) => !$r->realisasi)->count() }}</p>
-            <p class="text-[10px] text-slate-400">blok butuh tindakan</p>
+            <p class="text-xs text-slate-500 font-medium mb-0.5">Total Urea</p>
+            <p class="text-xl sm:text-2xl font-extrabold text-amber-700">{{ number_format($totalUrea, 0) }} <span class="text-xs font-normal">kg</span></p>
+            <p class="text-[10px] text-slate-400">{{ $karungUrea }} karung</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-emerald-500">
-            <p class="text-xs text-slate-500 font-medium mb-0.5">Sudah Direalisasi</p>
-            <p class="text-xl sm:text-2xl font-extrabold text-emerald-700">{{ $rekap->filter(fn($r) => $r->realisasi)->count() }}</p>
-            <p class="text-[10px] text-slate-400">blok sudah dipupuk</p>
+            <p class="text-xs text-slate-500 font-medium mb-0.5">Total KCl</p>
+            <p class="text-xl sm:text-2xl font-extrabold text-emerald-700">{{ number_format($totalKcl, 0) }} <span class="text-xs font-normal">kg</span></p>
+            <p class="text-[10px] text-slate-400">{{ $karungKcl }} karung</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
             <p class="text-xs text-slate-500 font-medium mb-0.5">Blok Layak Pupuk</p>
@@ -131,7 +131,6 @@
                         <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-400 uppercase">Urea (kg)</th>
                         <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-400 uppercase">KCl (kg)</th>
                         <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Tanggal</th>
-                        <th class="px-4 py-2.5 text-center text-[10px] font-semibold text-slate-400 uppercase">Realisasi</th>
                         <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-400 uppercase">Aksi</th>
                     </tr>
                 </thead>
@@ -159,21 +158,8 @@
                             {{ $layak && $r->total_kcl ? number_format($r->total_kcl, 1) : '—' }}
                         </td>
                         <td class="px-4 py-2.5 text-xs text-slate-500">{{ $r->tanggal_analisis->format('d/m/Y') }}</td>
-                        <td class="px-4 py-2.5 text-center">
-                            @if($r->realisasi)
-                            <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">Sudah</span>
-                            @else
-                            <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">Belum</span>
-                            @endif
-                        </td>
                         <td class="px-4 py-2.5 text-right">
                             <div class="flex items-center gap-1 justify-end">
-                                @if(!$r->realisasi)
-                                <button type="button" onclick="openRealisasiModal({{ $r->id }}, '{{ $r->blokLahan->nama_blok }}', {{ $r->total_urea ? number_format($r->total_urea, 1, '.', '') : '0' }}, {{ $r->total_kcl ? number_format($r->total_kcl, 1, '.', '') : '0' }})"
-                                    class="p-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100 transition-all" title="Catat Realisasi">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                </button>
-                                @endif
                                 <a href="{{ route('laporan.show', $r) }}" class="p-1 rounded-md bg-slate-50 border border-slate-200 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition-all" title="Detail">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
@@ -192,7 +178,7 @@
                         <td colspan="3" class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase">Subtotal ({{ $group['blok_layak'] }} blok layak)</td>
                         <td class="px-4 py-2 text-right text-xs font-bold text-amber-700">{{ number_format($group['subtotal_urea'], 1) }}</td>
                         <td class="px-4 py-2 text-right text-xs font-bold text-cyan-700">{{ number_format($group['subtotal_kcl'], 1) }}</td>
-                        <td colspan="3"></td>
+                        <td colspan="2"></td>
                     </tr>
                 </tfoot>
                 @endif
@@ -230,10 +216,6 @@
                         <span class="text-slate-400">{{ $r->tanggal_analisis->format('d/m/Y') }}</span>
                     </div>
                     <div class="flex items-center gap-1 flex-shrink-0">
-                        @if(!$r->realisasi)
-                        <button type="button" onclick="openRealisasiModal({{ $r->id }}, '{{ $r->blokLahan->nama_blok }}', {{ $r->total_urea ? number_format($r->total_urea, 1, '.', '') : '0' }}, {{ $r->total_kcl ? number_format($r->total_kcl, 1, '.', '') : '0' }})"
-                            class="p-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-600 text-[10px] font-medium">Realisasi</button>
-                        @endif
                         <a href="{{ route('laporan.show', $r) }}" class="p-1 rounded-md bg-slate-50 border border-slate-200 text-slate-500 text-[10px]">Detail</a>
                     </div>
                 </div>
@@ -261,74 +243,4 @@
 
 </div>
 
-{{-- Modal Realisasi Pemupukan --}}
-<div id="modal-realisasi" class="fixed inset-0 z-[9000] hidden" style="overflow: hidden;">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeRealisasiModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md relative" onclick="event.stopPropagation()">
-            <div class="px-5 py-4 border-b border-slate-100">
-                <h3 class="text-sm font-bold text-slate-800">Catat Realisasi Pemupukan</h3>
-                <p class="text-xs text-slate-500 mt-0.5" id="modal-realisasi-subtitle"></p>
-            </div>
-            <form action="{{ route('realisasi.store') }}" method="POST" class="p-5 space-y-3">
-                @csrf
-                <input type="hidden" name="rekomendasi_rbs_id" id="modal-rekomendasi-id">
-
-                <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Tanggal Realisasi *</label>
-                    <input type="date" name="tanggal_realisasi" id="modal-tgl-realisasi" required
-                        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Jumlah Urea (kg) *</label>
-                        <input type="number" name="jumlah_urea_realisasi" id="modal-urea" step="0.1" min="0" required
-                            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Jumlah KCl (kg) *</label>
-                        <input type="number" name="jumlah_kcl_realisasi" id="modal-kcl" step="0.1" min="0" required
-                            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Catatan Pelaksana</label>
-                    <textarea name="catatan_pelaksana" rows="2" placeholder="Catatan tambahan (opsional)..."
-                        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 resize-none"></textarea>
-                </div>
-                <div class="flex items-center gap-2 pt-2">
-                    <button type="submit" class="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors">
-                        Simpan Realisasi
-                    </button>
-                    <button type="button" onclick="closeRealisasiModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-colors">
-                        Batal
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 @endsection
-
-@push('scripts')
-<script>
-function openRealisasiModal(rekomendasiId, blokNama, totalUrea, totalKcl) {
-    document.getElementById('modal-rekomendasi-id').value = rekomendasiId;
-    document.getElementById('modal-realisasi-subtitle').textContent = 'Blok: ' + blokNama;
-    document.getElementById('modal-tgl-realisasi').value = new Date().toISOString().split('T')[0];
-    document.getElementById('modal-urea').value = totalUrea || 0;
-    document.getElementById('modal-kcl').value = totalKcl || 0;
-    document.getElementById('modal-realisasi').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeRealisasiModal() {
-    document.getElementById('modal-realisasi').classList.add('hidden');
-    document.body.style.overflow = '';
-}
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeRealisasiModal();
-});
-</script>
-@endpush

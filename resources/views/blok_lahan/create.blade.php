@@ -122,6 +122,91 @@
         .map-info-luas strong { font-size: 16px; }
         #btn-kecilkan { font-size: 12px; padding: 5px 9px; }
     }
+
+    /* Hide default Leaflet zoom control */
+    .leaflet-control-zoom { display: none !important; }
+
+    /* Custom Zoom Slider */
+    .zoom-slider-container {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        background: rgba(255,255,255,0.96);
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 6px 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+        backdrop-filter: blur(6px);
+    }
+    .zoom-slider-container button {
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        color: #374151;
+        font-size: 16px;
+        font-weight: 700;
+        transition: background 0.15s, color 0.15s;
+        user-select: none;
+        line-height: 1;
+    }
+    .zoom-slider-container button:hover { background: #f0fdf4; color: #059669; }
+    .zoom-slider-container button:active { background: #dcfce7; }
+    .zoom-slider-container input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 4px;
+        height: 90px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        outline: none;
+        writing-mode: vertical-lr;
+        direction: rtl;
+        margin: 4px 0;
+        cursor: pointer;
+    }
+    .zoom-slider-container input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: #059669;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    .zoom-slider-container input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .zoom-slider-container input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: #059669;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        cursor: pointer;
+    }
+    .zoom-slider-container input[type="range"]::-moz-range-track {
+        width: 4px;
+        background: #e2e8f0;
+        border-radius: 4px;
+    }
+    @media (max-width: 640px) {
+        .zoom-slider-container { bottom: 10px; right: 10px; padding: 4px 4px; }
+        .zoom-slider-container button { width: 24px; height: 24px; font-size: 14px; }
+        .zoom-slider-container input[type="range"] { height: 60px; }
+    }
 </style>
 @endpush
 
@@ -245,6 +330,12 @@
                         </div>
                         {{-- Peta Leaflet --}}
                         <div id="draw-map"></div>
+                        {{-- Zoom Slider --}}
+                        <div class="zoom-slider-container" id="zoom-slider-container">
+                            <button type="button" id="zoom-in-btn" title="Zoom In">+</button>
+                            <input type="range" id="zoom-slider" min="1" max="19" step="0.1" value="10" orient="vertical" title="Zoom Level">
+                            <button type="button" id="zoom-out-btn" title="Zoom Out">−</button>
+                        </div>
                         {{-- Tombol perluas (mode normal) - centered --}}
                         <button type="button" id="btn-expand" onclick="perluasPeta()">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
@@ -418,10 +509,69 @@ function updateLuas(geojson) {
 }
 
 // ─── MAP ─────────────────────────────────────────────────────────
-var drawMap = L.map('draw-map', { center: [-1.5, 110.0], zoom: 10 });
+var drawMap = L.map('draw-map', { center: [-1.5, 110.0], zoom: 10, zoomControl: false, zoomSnap: 0, zoomDelta: 0.25, wheelDebounceTime: 40, wheelPxPerZoomLevel: 120 });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OSM' }).addTo(drawMap);
-var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, maxNativeZoom: 17 });
 L.control.layers({'Peta': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}), 'Satelit': satLayer}).addTo(drawMap);
+
+// ─── ZOOM SLIDER (smooth continuous zoom on hold) ────────────────
+(function(){
+    var slider = document.getElementById('zoom-slider');
+    var zoomInBtn = document.getElementById('zoom-in-btn');
+    var zoomOutBtn = document.getElementById('zoom-out-btn');
+    var isSliderDragging = false;
+    var animFrameId = null;
+    var zoomSpeed = 0.02;
+
+    slider.min = drawMap.getMinZoom() || 1;
+    slider.max = drawMap.getMaxZoom() || 19;
+    slider.step = '0.1';
+    slider.value = drawMap.getZoom();
+
+    slider.addEventListener('input', function() {
+        isSliderDragging = true;
+        drawMap.setZoom(parseFloat(this.value));
+    });
+    slider.addEventListener('change', function() { isSliderDragging = false; });
+    slider.addEventListener('pointerup', function() { isSliderDragging = false; });
+
+    drawMap.on('zoomend zoom move', function() {
+        if (!isSliderDragging) slider.value = drawMap.getZoom();
+    });
+
+    function startContinuousZoom(direction) {
+        stopContinuousZoom();
+        function frame() {
+            var current = drawMap.getZoom();
+            var next = current + (direction * zoomSpeed);
+            var minZ = parseFloat(slider.min);
+            var maxZ = parseFloat(slider.max);
+            if (next < minZ) next = minZ;
+            if (next > maxZ) next = maxZ;
+            if ((direction > 0 && current < maxZ) || (direction < 0 && current > minZ)) {
+                drawMap.setZoom(next);
+                animFrameId = requestAnimationFrame(frame);
+            }
+        }
+        animFrameId = requestAnimationFrame(frame);
+    }
+
+    function stopContinuousZoom() {
+        if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+    }
+
+    zoomInBtn.addEventListener('mousedown', function(e) { e.preventDefault(); startContinuousZoom(1); });
+    zoomOutBtn.addEventListener('mousedown', function(e) { e.preventDefault(); startContinuousZoom(-1); });
+    document.addEventListener('mouseup', stopContinuousZoom);
+
+    zoomInBtn.addEventListener('touchstart', function(e) { e.preventDefault(); startContinuousZoom(1); }, {passive:false});
+    zoomOutBtn.addEventListener('touchstart', function(e) { e.preventDefault(); startContinuousZoom(-1); }, {passive:false});
+    document.addEventListener('touchend', stopContinuousZoom);
+    document.addEventListener('touchcancel', stopContinuousZoom);
+
+    zoomInBtn.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+    zoomOutBtn.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+})();
 
 existingBloks.forEach(function(blok) {
     if (!blok.geojson) return;
@@ -445,6 +595,15 @@ drawMap.addControl(new L.Control.Draw({
 drawMap.on(L.Draw.Event.CREATED, function(e) { drawnItems.clearLayers(); drawnItems.addLayer(e.layer); syncGeoJson(); });
 drawMap.on(L.Draw.Event.EDITED, syncGeoJson);
 drawMap.on(L.Draw.Event.DELETED, syncGeoJson);
+
+// Auto-sync saat layer digeser/diubah (tanpa perlu klik Save di toolbar)
+drawMap.on('draw:editvertex', syncGeoJson);
+drawMap.on('draw:editmove', syncGeoJson);
+
+// Tracking mode edit
+var isEditingPolygon = false;
+drawMap.on('draw:editstart', function() { isEditingPolygon = true; });
+drawMap.on('draw:editstop', function() { isEditingPolygon = false; });
 
 function syncGeoJson() {
     var layers = drawnItems.getLayers();
@@ -482,6 +641,10 @@ document.getElementById('textarea_geojson').addEventListener('blur', function() 
 
 // ─── FORM SUBMIT ─────────────────────────────────────────────────
 document.getElementById('form-blok-lahan').addEventListener('submit', function() {
+    // Force sync jika masih dalam mode edit
+    if (isEditingPolygon) {
+        syncGeoJson();
+    }
     if (currentTab === 'json') {
         document.getElementById('koordinat_geojson').value = document.getElementById('textarea_geojson').value.trim();
     }

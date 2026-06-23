@@ -83,6 +83,17 @@
             </div>
         </div>
 
+        {{-- Banner Info TBM (Tanaman Belum Menghasilkan) --}}
+        <div id="banner-tbm" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4">
+            <div class="flex items-start gap-2.5">
+                <span class="text-lg flex-shrink-0">🌱</span>
+                <div>
+                    <p class="text-xs font-bold text-blue-800">Tanaman Belum Menghasilkan (TBM)</p>
+                    <p class="text-xs text-blue-700 mt-0.5 leading-relaxed">Blok ini berusia &lt;3 tahun dan belum berbuah. Kondisi tandan otomatis diset "Tidak Ada Tandan". Dosis pupuk akan dihitung dengan formula khusus TBM (lebih rendah).</p>
+                </div>
+            </div>
+        </div>
+
         {{-- SEKSI 2: Kondisi Tanah --}}
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6">
             <h2 class="text-base font-semibold text-slate-800 mb-1 flex items-center gap-2.5">
@@ -186,13 +197,14 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Kondisi Tandan / Buah</label>
-                    <select name="kondisi_tandan"
+                    <select name="kondisi_tandan" id="kondisi-tandan-select"
                         class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
                         <option value="">— Pilih —</option>
                         @foreach(['Normal','Kecil','Rontok Prematur','Busuk Pangkal','Tidak Ada Tandan'] as $opt)
                             <option value="{{ $opt }}" {{ old('kondisi_tandan') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
                         @endforeach
                     </select>
+                    <p id="tandan-tbm-note" class="hidden mt-1 text-[10px] text-blue-600 font-medium">🌱 Terkunci — tanaman belum menghasilkan (belum berbuah)</p>
                 </div>
             </div>
 
@@ -446,11 +458,54 @@ function renderBlokList(anggotaId) {
 
         card.addEventListener('click', function() {
             blokValueEl.value = blok.id;
+            handleBlokSelected(blok);
             renderBlokList(anggotaId); // re-render to update selection
         });
 
         blokListEl.appendChild(card);
     });
+
+    // If already selected (e.g. from old input), trigger banner check
+    if (selectedBlokId) {
+        var sel = bloksData.find(function(b) { return b.id == selectedBlokId; });
+        if (sel) handleBlokSelected(sel);
+    }
+}
+
+function handleBlokSelected(blok) {
+    var bannerEl = document.getElementById('banner-tbm');
+    var tandanSelect = document.getElementById('kondisi-tandan-select');
+    var tandanNote = document.getElementById('tandan-tbm-note');
+    var tandanHidden = document.getElementById('tandan-hidden-tbm');
+
+    if (blok.kategori === 'Belum Menghasilkan') {
+        bannerEl.classList.remove('hidden');
+        if (tandanSelect) {
+            tandanSelect.value = 'Tidak Ada Tandan';
+            tandanSelect.disabled = true;
+            tandanSelect.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (tandanNote) tandanNote.classList.remove('hidden');
+        // Tambah hidden input agar nilai tetap terkirim saat submit (disabled select tidak terkirim)
+        if (!tandanHidden) {
+            var hi = document.createElement('input');
+            hi.type = 'hidden';
+            hi.name = 'kondisi_tandan';
+            hi.value = 'Tidak Ada Tandan';
+            hi.id = 'tandan-hidden-tbm';
+            tandanSelect.parentNode.appendChild(hi);
+        }
+    } else {
+        bannerEl.classList.add('hidden');
+        if (tandanSelect) {
+            tandanSelect.disabled = false;
+            tandanSelect.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        if (tandanNote) tandanNote.classList.add('hidden');
+        // Hapus hidden input jika ada
+        var existing = document.getElementById('tandan-hidden-tbm');
+        if (existing) existing.remove();
+    }
 }
 </script>
 @endpush

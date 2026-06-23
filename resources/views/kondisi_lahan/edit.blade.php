@@ -62,6 +62,17 @@
             </div>
         </div>
 
+        {{-- Banner Info TBM (Tanaman Belum Menghasilkan) --}}
+        <div id="banner-tbm" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4">
+            <div class="flex items-start gap-2.5">
+                <span class="text-lg flex-shrink-0">🌱</span>
+                <div>
+                    <p class="text-xs font-bold text-blue-800">Tanaman Belum Menghasilkan (TBM)</p>
+                    <p class="text-xs text-blue-700 mt-0.5 leading-relaxed">Blok ini berusia &lt;3 tahun dan belum berbuah. Kondisi tandan otomatis diset "Tidak Ada Tandan".</p>
+                </div>
+            </div>
+        </div>
+
         {{-- SEKSI 2: Kondisi Tanah --}}
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
             <h2 class="text-base font-semibold text-slate-800 mb-4 flex items-center gap-2.5">
@@ -163,13 +174,14 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Kondisi Tandan / Buah</label>
-                    <select name="kondisi_tandan"
+                    <select name="kondisi_tandan" id="kondisi-tandan-select"
                         class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
                         <option value="">— Pilih —</option>
                         @foreach(['Normal','Kecil','Rontok Prematur','Busuk Pangkal','Tidak Ada Tandan'] as $opt)
                             <option value="{{ $opt }}" {{ old('kondisi_tandan', $kondisiLahan->kondisi_tandan) == $opt ? 'selected' : '' }}>{{ $opt }}</option>
                         @endforeach
                     </select>
+                    <p id="tandan-tbm-note" class="hidden mt-1 text-[10px] text-blue-600 font-medium">🌱 Terkunci — tanaman belum menghasilkan (belum berbuah)</p>
                 </div>
             </div>
 
@@ -290,5 +302,30 @@ document.querySelectorAll('.toggle-label input[type="checkbox"]').forEach(functi
         }
     });
 });
+
+// TBM: Lock kondisi tandan jika blok belum menghasilkan
+(function() {
+    var kategoriUmur = @json($kondisiLahan->blokLahan->kategori_umur);
+    if (kategoriUmur === 'Belum Menghasilkan') {
+        var bannerEl = document.getElementById('banner-tbm');
+        var tandanSelect = document.getElementById('kondisi-tandan-select');
+        var tandanNote = document.getElementById('tandan-tbm-note');
+
+        if (bannerEl) bannerEl.classList.remove('hidden');
+        if (tandanSelect) {
+            tandanSelect.value = 'Tidak Ada Tandan';
+            tandanSelect.disabled = true;
+            tandanSelect.classList.add('opacity-50', 'cursor-not-allowed');
+            // Hidden input agar nilai terkirim
+            var hi = document.createElement('input');
+            hi.type = 'hidden';
+            hi.name = 'kondisi_tandan';
+            hi.value = 'Tidak Ada Tandan';
+            hi.id = 'tandan-hidden-tbm';
+            tandanSelect.parentNode.appendChild(hi);
+        }
+        if (tandanNote) tandanNote.classList.remove('hidden');
+    }
+})();
 </script>
 @endpush

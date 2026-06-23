@@ -10,39 +10,30 @@ class KondisiLahanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = KondisiLahan::with('blokLahan.anggota')
-            ->latest('tanggal_observasi');
+        // Ambil hanya kondisi terbaru per blok (1 per blok)
+        $query = BlokLahan::with(['anggota', 'kondisiTerbaru', 'rekomendasiRbsTerbaru'])
+            ->whereHas('kondisiLahans');
 
-        // Filter by blok lahan
-        if ($request->filled('blok_lahan_id')) {
-            $query->where('blok_lahan_id', $request->blok_lahan_id);
-        }
-
-        // Filter by anggota (through blokLahan)
+        // Filter by anggota
         if ($request->filled('anggota_id')) {
-            $query->whereHas('blokLahan', function ($q) use ($request) {
-                $q->where('anggota_id', $request->anggota_id);
-            });
+            $query->where('anggota_id', $request->anggota_id);
         }
 
-        $allData = $query->get();
+        $bloksWithKondisi = $query->orderBy('anggota_id')->orderBy('nama_blok')->get();
 
         // Group by anggota — sort: terbaru di atas
-        $grouped = $allData->groupBy(function ($k) {
-            return $k->blokLahan->anggota_id ?? 0;
-        })->map(function ($items) {
-            $anggota = $items->first()->blokLahan->anggota;
+        $grouped = $bloksWithKondisi->groupBy('anggota_id')->map(function ($bloks) {
+            $anggota = $bloks->first()->anggota;
             return [
                 'anggota'         => $anggota,
-                'items'           => $items,
-                'latest_activity' => $items->max(fn($k) => $k->created_at?->timestamp ?? 0),
+                'bloks'           => $bloks,
+                'latest_activity' => $bloks->max(fn($b) => $b->kondisiTerbaru?->updated_at?->timestamp ?? 0),
             ];
         })->sortByDesc('latest_activity')->values();
 
         $anggotas = \App\Models\Anggota::orderBy('nama')->get();
-        $bloks = \App\Models\BlokLahan::orderBy('nama_blok')->get();
 
-        return view('kondisi_lahan.index', compact('grouped', 'anggotas', 'bloks'));
+        return view('kondisi_lahan.index', compact('grouped', 'anggotas'));
     }
 
     public function create(Request $request)
@@ -160,7 +151,7 @@ class KondisiLahanController extends Controller
         $kondisiLahan->update($validated);
 
         $redirect = redirect()->route('kondisi-lahan.index')
-            ->with('success', 'Data kondisi lahan berhasil diperbarui.');
+            ->with('success', 'Data kondisi lahan berhasil diperbarui. Jalankan analisis ulang untuk mendapat rekomendasi terbaru.');
 
         if (!empty($warnings)) {
             $redirect = $redirect->with('warning', implode(' | ', $warnings));

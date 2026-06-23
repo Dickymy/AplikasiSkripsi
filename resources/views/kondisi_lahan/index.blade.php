@@ -2,14 +2,14 @@
 
 @section('title', 'Data Kondisi Lahan')
 @section('page-title', 'Kondisi Lahan')
-@section('page-subtitle', 'Riwayat observasi visual tanaman & lingkungan')
+@section('page-subtitle', 'Kondisi terbaru setiap blok lahan')
 
 @section('content')
 <div class="space-y-4">
 
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <p class="text-xs text-slate-500"><span class="font-bold text-slate-800">{{ $grouped->sum(fn($g) => $g['items']->count()) }}</span> data kondisi</p>
+        <p class="text-xs text-slate-500"><span class="font-bold text-slate-800">{{ $grouped->sum(fn($g) => $g['bloks']->count()) }}</span> blok memiliki data kondisi</p>
         <a href="{{ route('kondisi-lahan.create') }}"
            class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-all shadow-sm">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -29,14 +29,14 @@
                 'formId' => 'kondisi-filter-form',
             ])
         </div>
-        @if(request()->hasAny(['anggota_id', 'blok_lahan_id']))
+        @if(request()->hasAny(['anggota_id']))
             <a href="{{ route('kondisi-lahan.index') }}" class="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1.5">Reset</a>
         @endif
     </form>
 
     {{-- Grouped by Anggota --}}
     @forelse($grouped as $group)
-    @php $anggota = $group['anggota']; $items = $group['items']; @endphp
+    @php $anggota = $group['anggota']; $bloks = $group['bloks']; @endphp
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         {{-- Header anggota --}}
         <div class="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
@@ -45,7 +45,7 @@
             </div>
             <div>
                 <p class="font-bold text-slate-800 text-sm">{{ $anggota->nama ?? 'Tidak Diketahui' }}</p>
-                <p class="text-[10px] text-slate-500">{{ $items->count() }} observasi</p>
+                <p class="text-[10px] text-slate-500">{{ $bloks->count() }} blok</p>
             </div>
         </div>
 
@@ -55,23 +55,39 @@
                 <thead>
                     <tr class="border-b border-slate-100">
                         <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Blok</th>
-                        <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Tanggal</th>
+                        <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Observasi Terakhir</th>
                         <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Warna Daun</th>
                         <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">pH</th>
                         <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Musim</th>
                         <th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-400 uppercase">Drainase</th>
+                        <th class="px-4 py-2.5 text-center text-[10px] font-semibold text-slate-400 uppercase">Status</th>
                         <th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-400 uppercase">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                    @foreach($items as $kondisi)
+                    @foreach($bloks as $blok)
+                    @php
+                        $kondisi = $blok->kondisiTerbaru;
+                        $rbs = $blok->rekomendasiRbsTerbaru;
+                        $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->tanggal_analisis);
+                        $belumDianalisis = $kondisi && !$rbs;
+                    @endphp
                     <tr class="hover:bg-slate-50/50">
-                        <td class="px-4 py-2.5 font-semibold text-slate-800 text-xs">{{ $kondisi->blokLahan->nama_blok }}</td>
+                        <td class="px-4 py-2.5 font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }}</td>
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ $kondisi->tanggal_observasi->format('d/m/Y') }}</td>
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ $kondisi->warna_daun ?? '—' }}</td>
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ $kondisi->ph_tanah ? number_format($kondisi->ph_tanah, 1) : '—' }}</td>
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ $kondisi->musim_saat_ini ?? '—' }}</td>
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ $kondisi->kondisi_drainase ?? '—' }}</td>
+                        <td class="px-4 py-2.5 text-center">
+                            @if($perluAnalisisUlang)
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold bg-amber-50 text-amber-700 border border-amber-200" title="Kondisi diperbarui setelah analisis terakhir">⚠️ Perlu Analisis Ulang</span>
+                            @elseif($belumDianalisis)
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold bg-blue-50 text-blue-600 border border-blue-200">Belum Dianalisis</span>
+                            @else
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Sinkron</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-2.5 text-right">
                             <div class="flex items-center gap-1 justify-end">
                                 <a href="{{ route('kondisi-lahan.edit', $kondisi) }}" class="p-1 rounded-md bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-all" title="Edit">
@@ -93,10 +109,21 @@
 
         {{-- Mobile Cards --}}
         <div class="sm:hidden divide-y divide-slate-100">
-            @foreach($items as $kondisi)
+            @foreach($bloks as $blok)
+            @php
+                $kondisi = $blok->kondisiTerbaru;
+                $rbs = $blok->rekomendasiRbsTerbaru;
+                $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->tanggal_analisis);
+                $belumDianalisis = $kondisi && !$rbs;
+            @endphp
             <div class="px-4 py-3">
                 <div class="flex items-center justify-between gap-2 mb-1">
-                    <p class="font-semibold text-slate-800 text-xs">{{ $kondisi->blokLahan->nama_blok }} <span class="font-normal text-slate-400">· {{ $kondisi->tanggal_observasi->format('d/m/Y') }}</span></p>
+                    <p class="font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }} <span class="font-normal text-slate-400">· {{ $kondisi->tanggal_observasi->format('d/m/Y') }}</span></p>
+                    @if($perluAnalisisUlang)
+                    <span class="inline-flex px-1.5 py-0.5 rounded-full text-[8px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 flex-shrink-0">⚠️ Perlu Ulang</span>
+                    @elseif($belumDianalisis)
+                    <span class="inline-flex px-1.5 py-0.5 rounded-full text-[8px] font-semibold bg-blue-50 text-blue-600 border border-blue-200 flex-shrink-0">Belum</span>
+                    @endif
                 </div>
                 <div class="flex items-center justify-between gap-2">
                     <div class="flex flex-wrap gap-x-2 text-[10px] text-slate-500">

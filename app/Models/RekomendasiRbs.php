@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RekomendasiRbs extends Model
 {
@@ -71,11 +70,6 @@ class RekomendasiRbs extends Model
     public function admin(): BelongsTo
     {
         return $this->belongsTo(Admin::class, 'admin_id');
-    }
-
-    public function realisasi(): HasOne
-    {
-        return $this->hasOne(RealisasiPemupukan::class, 'rekomendasi_rbs_id');
     }
 
     // Accessor: badge warna status

@@ -12,7 +12,7 @@ class LaporanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = RekomendasiRbs::with(['blokLahan.anggota', 'admin', 'kondisiLahan', 'realisasi'])
+        $query = RekomendasiRbs::with(['blokLahan.anggota', 'admin', 'kondisiLahan'])
             ->latest('tanggal_analisis');
 
         // Filter histori: default hanya latest
@@ -91,7 +91,7 @@ class LaporanController extends Controller
 
     public function show(RekomendasiRbs $rekomendasiRbs)
     {
-        $rekomendasiRbs->load(['blokLahan.anggota', 'kondisiLahan', 'admin', 'realisasi']);
+        $rekomendasiRbs->load(['blokLahan.anggota', 'kondisiLahan', 'admin']);
         return view('laporan.show', compact('rekomendasiRbs'));
     }
 
