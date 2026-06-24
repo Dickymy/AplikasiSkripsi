@@ -54,30 +54,34 @@
             @if($blokFilter->isNotEmpty())
             <div class="w-full sm:w-auto relative">
                 <label class="block text-xs text-slate-500 font-semibold mb-1">Blok</label>
-                <select name="blok_lahan_id" onchange="this.form.submit()"
-                    class="w-full sm:w-auto pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 sm:min-w-[140px] appearance-none cursor-pointer">
-                    <option value="">Semua Blok</option>
-                    @foreach($blokFilter as $bf)
-                        <option value="{{ $bf->id }}" {{ request('blok_lahan_id') == $bf->id ? 'selected' : '' }}>{{ $bf->nama_blok }}</option>
-                    @endforeach
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 pt-5">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                <div class="relative">
+                    <select name="blok_lahan_id" onchange="this.form.submit()"
+                        class="w-full sm:w-auto pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 sm:min-w-[140px] appearance-none cursor-pointer">
+                        <option value="">Semua Blok</option>
+                        @foreach($blokFilter as $bf)
+                            <option value="{{ $bf->id }}" {{ request('blok_lahan_id') == $bf->id ? 'selected' : '' }}>{{ $bf->nama_blok }}</option>
+                        @endforeach
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-2.5 flex items-center">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
                 </div>
             </div>
             @endif
 
             <div class="w-full sm:w-auto relative">
                 <label class="block text-xs text-slate-500 font-semibold mb-1">Status</label>
-                <select name="status_kebutuhan_dominan" onchange="this.form.submit()"
-                    class="w-full sm:w-auto pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 sm:min-w-[160px] appearance-none cursor-pointer">
-                    <option value="">Semua Status</option>
-                    @foreach(['Darurat' => 'Defisiensi Berat', 'Segera' => 'Perlu Pupuk', 'Normal' => 'Sehat', 'Tunda' => 'Tunda Pupuk'] as $val => $label)
-                        <option value="{{ $val }}" {{ request('status_kebutuhan_dominan') == $val ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 pt-5">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                <div class="relative">
+                    <select name="status_kebutuhan_dominan" onchange="this.form.submit()"
+                        class="w-full sm:w-auto pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 sm:min-w-[160px] appearance-none cursor-pointer">
+                        <option value="">Semua Status</option>
+                        @foreach(['Darurat' => 'Defisiensi Berat', 'Segera' => 'Perlu Pupuk', 'Normal' => 'Sehat', 'Tunda' => 'Tunda Pupuk'] as $val => $label)
+                            <option value="{{ $val }}" {{ request('status_kebutuhan_dominan') == $val ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-2.5 flex items-center">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
                 </div>
             </div>
 

@@ -6,7 +6,7 @@
 
 @section('content')
 
-<div class="w-full max-w-4xl mx-auto overflow-hidden">
+<div class="w-full max-w-4xl mx-auto">
 
     <form action="{{ route('kondisi-lahan.store') }}" method="POST" class="space-y-4 sm:space-y-6">
         @csrf
@@ -17,64 +17,60 @@
                 <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</span>
                 Identifikasi Blok Lahan
             </h2>
-            <div class="grid grid-cols-1 gap-4">
-                {{-- Row 1: Pemilik + Blok --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {{-- Pilih Pemilik (searchable) --}}
-                    <div>
-                        @include('components.searchable-select', [
-                            'name' => '_anggota_filter',
-                            'label' => 'Pemilik Lahan',
-                            'placeholder' => 'Cari nama pemilik...',
-                            'options' => $anggotas,
-                            'displayField' => 'nama',
-                            'selected' => old('_anggota_filter', $selectedBlokId ? ($bloks->firstWhere('id', $selectedBlokId)?->anggota_id) : ''),
-                            'required' => false,
-                            'error' => null,
-                            'helpText' => 'Pilih pemilik untuk memfilter blok lahan di bawah',
-                        ])
-                    </div>
 
-                    {{-- Tanggal Observasi --}}
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                            Tanggal Observasi <span class="text-red-500">*</span>
-                        </label>
-                        <input type="date" name="tanggal_observasi"
-                            value="{{ old('tanggal_observasi', now()->format('Y-m-d')) }}"
-                            class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors @error('tanggal_observasi') border-red-400 @enderror"
-                            required>
-                        @error('tanggal_observasi')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+            {{-- Tanggal di atas — mobile-first --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Tanggal Observasi <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" name="tanggal_observasi"
+                        value="{{ old('tanggal_observasi', now()->format('Y-m-d')) }}"
+                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors @error('tanggal_observasi') border-red-400 @enderror"
+                        required>
+                    @error('tanggal_observasi')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Tanggal Pemupukan Terakhir <span class="text-xs text-slate-400 font-normal">(opsional)</span>
+                    </label>
+                    <input type="date" name="tanggal_pemupukan_terakhir"
+                        value="{{ old('tanggal_pemupukan_terakhir') }}"
+                        max="{{ now()->format('Y-m-d') }}"
+                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
+                    <p class="mt-1 text-xs text-slate-400">Koreksi dosis: &lt;60 hari → ×0.75, &gt;120 hari → ×1.25</p>
+                </div>
+            </div>
+
+            {{-- Pemilik + Blok berdampingan --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+                {{-- Kolom kiri: Pilih Pemilik --}}
+                <div>
+                    @include('components.searchable-select', [
+                        'name' => '_anggota_filter',
+                        'label' => 'Pemilik Lahan',
+                        'placeholder' => 'Cari nama pemilik...',
+                        'options' => $anggotas,
+                        'displayField' => 'nama',
+                        'selected' => old('_anggota_filter', $selectedBlokId ? ($bloks->firstWhere('id', $selectedBlokId)?->anggota_id) : ''),
+                        'required' => false,
+                        'error' => null,
+                        'helpText' => null,
+                    ])
                 </div>
 
-                {{-- Row: Tanggal Pemupukan Terakhir --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                            Tanggal Pemupukan Terakhir <span class="text-xs text-slate-400 font-normal">(opsional)</span>
-                        </label>
-                        <input type="date" name="tanggal_pemupukan_terakhir"
-                            value="{{ old('tanggal_pemupukan_terakhir') }}"
-                            max="{{ now()->format('Y-m-d') }}"
-                            class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                        <p class="mt-1 text-xs text-slate-400">Mempengaruhi koreksi dosis: &lt;60 hari → kurangi 25%, &gt;120 hari → tambah 25%</p>
-                    </div>
-                    <div></div>
-                </div>
-
-                {{-- Row 2: Pilih Blok (muncul setelah pilih pemilik) --}}
+                {{-- Kolom kanan: Pilih Blok (muncul setelah pilih pemilik) --}}
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">
                         Blok Lahan <span class="text-red-500">*</span>
                     </label>
                     <input type="hidden" name="blok_lahan_id" id="blok-lahan-id-value" value="{{ old('blok_lahan_id', $selectedBlokId) }}">
 
-                    <div id="blok-list-container">
-                        <p id="blok-hint" class="text-xs text-slate-400 py-2">Pilih pemilik lahan terlebih dahulu untuk menampilkan daftar blok.</p>
-                        <div id="blok-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 hidden"></div>
+                    <div id="blok-list-container" class="min-h-[44px]">
+                        <p id="blok-hint" class="text-xs text-slate-400 py-2.5 px-3 bg-slate-50 rounded-xl border border-dashed border-slate-300">⬅️ Pilih pemilik lahan terlebih dahulu</p>
+                        <div id="blok-list" class="grid grid-cols-1 gap-2 hidden"></div>
                     </div>
                     @error('blok_lahan_id')
                         <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
@@ -101,37 +97,36 @@
                 Kondisi Tanah
             </h2>
             <p class="text-xs text-slate-400 mb-4 ml-0 sm:ml-8">Data keasaman dan kelembaban tanah untuk menentukan efektivitas penyerapan pupuk.</p>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {{-- Stack di mobile, 3 kolom di desktop --}}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">pH Tanah</label>
                     <input type="number" name="ph_tanah" value="{{ old('ph_tanah') }}"
                         step="0.1" min="3" max="8" placeholder="Contoh: 5.2"
                         class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors @error('ph_tanah') border-red-400 @enderror">
                     <p class="mt-1 text-xs text-slate-400">Skala 3.0–8.0 · Optimal sawit: 5.5–6.5</p>
-                    <p class="mt-0.5 text-xs text-amber-600">⚡ pH < 4.5 = pupuk tidak efektif, perlu kapur dulu</p>
+                    <p class="mt-0.5 text-xs text-amber-600">⚡ pH &lt; 4.5 = pupuk tidak efektif, perlu kapur dulu</p>
                     @error('ph_tanah') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Kelembaban Tanah</label>
-                    <select name="kelembaban_tanah"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                        <option value="">— Pilih —</option>
-                        @foreach(['Sangat Kering','Kering','Normal','Lembab','Sangat Lembab'] as $opt)
-                            <option value="{{ $opt }}" {{ old('kelembaban_tanah') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-slate-400 break-words">Pengaruh: pupuk butuh kelembaban untuk terlarut dan diserap akar</p>
+                    @include('components.custom-select', [
+                        'name'    => 'kelembaban_tanah',
+                        'label'   => 'Kelembaban Tanah',
+                        'options' => ['Sangat Kering','Kering','Normal','Lembab','Sangat Lembab'],
+                        'selected'=> old('kelembaban_tanah'),
+                        'placeholder' => '— Pilih —',
+                        'helpText' => 'Pengaruh: pupuk butuh kelembaban untuk terlarut dan diserap akar',
+                    ])
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Kondisi Drainase</label>
-                    <select name="kondisi_drainase"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                        <option value="">— Pilih —</option>
-                        @foreach(['Baik','Cukup','Buruk — Tergenang'] as $opt)
-                            <option value="{{ $opt }}" {{ old('kondisi_drainase') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-slate-400">Buruk = tergenang air, pupuk tanah akan terbuang sia-sia</p>
+                    @include('components.custom-select', [
+                        'name'    => 'kondisi_drainase',
+                        'label'   => 'Kondisi Drainase',
+                        'options' => ['Baik','Cukup','Buruk — Tergenang'],
+                        'selected'=> old('kondisi_drainase'),
+                        'placeholder' => '— Pilih —',
+                        'helpText' => 'Buruk = tergenang air, pupuk tanah akan terbuang sia-sia',
+                    ])
                 </div>
             </div>
         </div>
@@ -213,22 +208,52 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Musim Saat Ini</label>
-                    <select name="musim_saat_ini" id="select-musim"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                        <option value="">— Pilih —</option>
-                        @foreach(['Musim Hujan','Musim Kemarau','Peralihan'] as $opt)
-                            <option value="{{ $opt }}" {{ old('musim_saat_ini') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-slate-400">Musim hujan = waktu optimal pemupukan; Kemarau = pupuk kurang efektif</p>
+                    @include('components.custom-select', [
+                        'name'    => 'musim_saat_ini',
+                        'id'      => 'select-musim',
+                        'label'   => 'Musim Saat Ini',
+                        'options' => ['Musim Hujan','Musim Kemarau','Peralihan'],
+                        'selected'=> old('musim_saat_ini'),
+                        'placeholder' => '— Pilih —',
+                        'helpText' => 'Musim hujan = waktu optimal pemupukan; Kemarau = pupuk kurang efektif',
+                    ])
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Intensitas Curah Hujan</label>
-                    <select name="curah_hujan_kategori" id="select-curah-hujan"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                        <option value="">— Pilih —</option>
-                    </select>
+                    {{-- Curah hujan dikelola oleh JS (berubah berdasarkan musim) --}}
+                    <div style="position:relative; min-width:0;" id="curah-hujan-cs-wrapper">
+                        <input type="hidden" name="curah_hujan_kategori" id="select-curah-hujan-val" value="{{ old('curah_hujan_kategori') }}">
+                        <button type="button" id="select-curah-hujan-btn"
+                            onclick="cuahToggle()"
+                            style="width:100%; min-width:0; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px; background:#fff; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; cursor:pointer; text-align:left; color:#9ca3af;">
+                            <span id="select-curah-hujan-display" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">— Pilih —</span>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="select-curah-hujan-cs-arrow" style="flex-shrink:0; max-width:none!important; color:#94a3b8; transition:transform 0.2s;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        {{-- Panel dipindahkan ke body via JS (portal pattern) --}}
+                        <div id="select-curah-hujan-cs-panel"
+                            style="display:none; position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.16); z-index:99999; overflow:hidden;">
+                            {{-- Panah atas — muncul saat bisa scroll ke atas --}}
+                            <div id="curah-arrow-up" style="display:none; align-items:center; justify-content:center; gap:4px; padding:5px 12px; background:linear-gradient(to bottom, #f8fafc, #fff); border-bottom:1px solid #e2e8f0; cursor:pointer; user-select:none;"
+                                onclick="document.getElementById('curah-options-scroll').scrollBy({top:-80,behavior:'smooth'})">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="max-width:none!important; flex-shrink:0; color:#64748b;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
+                                </svg>
+                                <span style="font-size:10px; color:#64748b; font-weight:600;">Scroll ke atas</span>
+                            </div>
+                            {{-- Scrollable options --}}
+                            <div id="curah-options-scroll" style="max-height:220px; overflow-y:auto; overscroll-behavior:contain;"></div>
+                            {{-- Panah bawah — muncul saat masih ada konten di bawah --}}
+                            <div id="curah-arrow-down" style="display:none; align-items:center; justify-content:center; gap:4px; padding:5px 12px; background:linear-gradient(to top, #f8fafc, #fff); border-top:1px solid #e2e8f0; cursor:pointer; user-select:none;"
+                                onclick="document.getElementById('curah-options-scroll').scrollBy({top:80,behavior:'smooth'})">
+                                <span style="font-size:10px; color:#64748b; font-weight:600;">Scroll ke bawah</span>
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="max-width:none!important; flex-shrink:0; color:#64748b;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                     <p class="mt-1 text-xs text-slate-400" id="curah-hujan-info">Pilih musim terlebih dahulu</p>
                 </div>
             </div>
@@ -242,36 +267,36 @@
             </h2>
             <p class="text-xs text-slate-400 mb-4 ml-0 sm:ml-8">Pengamatan fisik daun, pelepah, dan tandan untuk mendeteksi kekurangan unsur hara.</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Warna Daun</label>
-                    <select name="warna_daun"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                        <option value="">— Pilih —</option>
-                        @foreach(['Hijau Normal','Hijau Pucat','Kuning Merata','Kuning Tepi','Kuning Antar Tulang','Oranye/Kemerahan','Coklat Ujung','Bercak Nekrotik'] as $opt)
-                            <option value="{{ $opt }}" {{ old('warna_daun') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                        @endforeach
-                    </select>
+                    @include('components.custom-select', [
+                        'name'    => 'warna_daun',
+                        'label'   => 'Warna Daun',
+                        'options' => ['Hijau Normal','Hijau Pucat','Kuning Merata','Kuning Tepi','Kuning Antar Tulang','Oranye/Kemerahan','Coklat Ujung','Bercak Nekrotik'],
+                        'selected'=> old('warna_daun'),
+                        'placeholder' => '— Pilih —',
+                    ])
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Kondisi Pelepah</label>
-                    <select name="kondisi_pelepah"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                        <option value="">— Pilih —</option>
-                        @foreach(['Normal','Patah/Menggantung','Kering Prematur','Pertumbuhan Terhambat'] as $opt)
-                            <option value="{{ $opt }}" {{ old('kondisi_pelepah') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                        @endforeach
-                    </select>
+                    @include('components.custom-select', [
+                        'name'    => 'kondisi_pelepah',
+                        'label'   => 'Kondisi Pelepah',
+                        'options' => ['Normal','Patah/Menggantung','Kering Prematur','Pertumbuhan Terhambat'],
+                        'selected'=> old('kondisi_pelepah'),
+                        'placeholder' => '— Pilih —',
+                    ])
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Kondisi Tandan / Buah</label>
-                    <select name="kondisi_tandan" id="kondisi-tandan-select"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                        <option value="">— Pilih —</option>
-                        @foreach(['Normal','Kecil','Rontok Prematur','Busuk Pangkal','Tidak Ada Tandan'] as $opt)
-                            <option value="{{ $opt }}" {{ old('kondisi_tandan') == $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                        @endforeach
-                    </select>
+                    <p class="block text-sm font-medium text-slate-700 mb-1.5">Kondisi Tandan / Buah</p>
+                    <div id="kondisi-tandan-wrapper">
+                        @include('components.custom-select', [
+                            'name'    => 'kondisi_tandan',
+                            'id'      => 'kondisi-tandan-cs',
+                            'options' => ['Normal','Kecil','Rontok Prematur','Busuk Pangkal','Tidak Ada Tandan'],
+                            'selected'=> old('kondisi_tandan'),
+                            'placeholder' => '— Pilih —',
+                        ])
+                    </div>
                     <p id="tandan-tbm-note" class="hidden mt-1 text-[10px] text-blue-600 font-medium">🌱 Terkunci — tanaman belum menghasilkan (belum berbuah)</p>
                 </div>
             </div>
@@ -421,43 +446,203 @@ document.querySelectorAll('.toggle-label input[type="checkbox"]').forEach(functi
 });
 
 // ─── MUSIM → CURAH HUJAN DEPENDENCY ──────────────────────────────
-var musimEl = document.getElementById('select-musim');
-var curahEl = document.getElementById('select-curah-hujan');
-var curahInfo = document.getElementById('curah-hujan-info');
 var oldCurah = '{{ old("curah_hujan_kategori") }}';
 
 var curahOptions = {
-    'Musim Hujan': ['Normal','Tinggi','Sangat Tinggi'],
-    'Musim Kemarau': ['Sangat Rendah','Rendah','Normal'],
-    'Peralihan': ['Sangat Rendah','Rendah','Normal','Tinggi','Sangat Tinggi'],
+    'Musim Hujan':  ['Normal','Tinggi','Sangat Tinggi'],
+    'Musim Kemarau':['Sangat Rendah','Rendah','Normal'],
+    'Peralihan':    ['Sangat Rendah','Rendah','Normal','Tinggi','Sangat Tinggi'],
 };
 
 var curahHints = {
-    'Musim Hujan': 'Saat musim hujan, curah hujan umumnya Normal hingga Sangat Tinggi',
-    'Musim Kemarau': 'Saat kemarau, curah hujan umumnya Sangat Rendah hingga Normal',
-    'Peralihan': 'Saat peralihan musim, curah hujan bisa bervariasi',
+    'Musim Hujan':  'Saat musim hujan, curah hujan umumnya Normal hingga Sangat Tinggi',
+    'Musim Kemarau':'Saat kemarau, curah hujan umumnya Sangat Rendah hingga Normal',
+    'Peralihan':    'Saat peralihan musim, curah hujan bisa bervariasi',
 };
 
-function updateCurahOptions() {
-    var musim = musimEl.value;
-    curahEl.innerHTML = '<option value="">— Pilih —</option>';
+function updateCurahOptions(musimVal, autoSelectVal) {
+    var panel     = document.getElementById('select-curah-hujan-cs-panel');
+    var scrollEl  = document.getElementById('curah-options-scroll');
+    var valEl     = document.getElementById('select-curah-hujan-val');
+    var display   = document.getElementById('select-curah-hujan-display');
+    var infoEl    = document.getElementById('curah-hujan-info');
 
-    if (musim && curahOptions[musim]) {
-        curahOptions[musim].forEach(function(opt) {
-            var selected = (opt === oldCurah) ? ' selected' : '';
-            curahEl.innerHTML += '<option value="' + opt + '"' + selected + '>' + opt + '</option>';
+    if (!panel || !scrollEl) return;
+
+    // Tutup panel dulu saat opsi berubah
+    cuahClose();
+    scrollEl.innerHTML = '';
+
+    if (!musimVal || !curahOptions[musimVal]) {
+        if (display) { display.textContent = '— Pilih —'; display.style.color = '#9ca3af'; }
+        if (valEl) valEl.value = '';
+        if (infoEl) { infoEl.textContent = 'Pilih musim terlebih dahulu'; infoEl.className = 'mt-1 text-xs text-slate-400'; }
+        return;
+    }
+
+    var opts = curahOptions[musimVal];
+
+    opts.forEach(function(opt) {
+        var div = document.createElement('div');
+        div.className = 'cs-option';
+        div.setAttribute('data-value', opt);
+        div.setAttribute('data-label', opt);
+        div.style.cssText = 'padding:11px 14px; cursor:pointer; font-size:13px; color:#374151; border-bottom:1px solid #f8fafc; word-break:break-word; line-height:1.4;';
+        div.textContent = opt;
+        div.addEventListener('click', function() {
+            if (valEl) valEl.value = opt;
+            if (display) { display.textContent = opt; display.style.color = '#1e293b'; }
+            scrollEl.querySelectorAll('.cs-option').forEach(function(o) {
+                o.style.background = o.getAttribute('data-value') === opt ? '#f0fdf4' : '#fff';
+                o.style.color      = o.getAttribute('data-value') === opt ? '#065f46' : '#374151';
+                o.style.fontWeight = o.getAttribute('data-value') === opt ? '600' : '400';
+            });
+            cuahClose();
         });
-        curahInfo.textContent = curahHints[musim] || '';
-        curahInfo.className = 'mt-1 text-xs text-sky-600';
-    } else {
-        curahInfo.textContent = 'Pilih musim terlebih dahulu';
-        curahInfo.className = 'mt-1 text-xs text-slate-400';
+        div.addEventListener('mouseenter', function() { if (this.style.background !== 'rgb(240, 253, 244)') this.style.background = '#f8fafc'; });
+        div.addEventListener('mouseleave', function() { if (this.style.background === 'rgb(248, 250, 252)') this.style.background = '#fff'; });
+        scrollEl.appendChild(div);
+    });
+
+    if (infoEl) { infoEl.textContent = curahHints[musimVal] || ''; infoEl.className = 'mt-1 text-xs text-sky-600'; }
+
+    // Auto-select jika ada nilai sebelumnya
+    var toSelect = autoSelectVal || (valEl && valEl.value);
+    if (toSelect && opts.includes(toSelect)) {
+        if (display) { display.textContent = toSelect; display.style.color = '#1e293b'; }
+        if (valEl) valEl.value = toSelect;
     }
 }
 
-musimEl.addEventListener('change', updateCurahOptions);
-// Init on load (kalau ada old value)
-if (musimEl.value) updateCurahOptions();
+// Update visibilitas panah atas/bawah curah hujan
+function cuahUpdateArrows() {
+    var scrollEl  = document.getElementById('curah-options-scroll');
+    var arrowUp   = document.getElementById('curah-arrow-up');
+    var arrowDown = document.getElementById('curah-arrow-down');
+    if (!scrollEl) return;
+    var atTop    = scrollEl.scrollTop <= 2;
+    var atBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 2;
+    if (arrowUp)   arrowUp.style.display  = atTop    ? 'none' : 'flex';
+    if (arrowDown) arrowDown.style.display = atBottom ? 'none' : 'flex';
+}
+
+// Pasang scroll listener pada curah-options-scroll
+document.addEventListener('DOMContentLoaded', function() {
+    var curahScroll = document.getElementById('curah-options-scroll');
+    if (curahScroll) {
+        curahScroll.addEventListener('scroll', cuahUpdateArrows);
+    }
+});
+
+// ─── Portal toggle functions untuk curah hujan dropdown ──────────
+function cuahPositionPanel() {
+    var btn   = document.getElementById('select-curah-hujan-btn');
+    var panel = document.getElementById('select-curah-hujan-cs-panel');
+    var scrollEl = document.getElementById('curah-options-scroll');
+    if (!btn || !panel) return;
+
+    var rect    = btn.getBoundingClientRect();
+    var viewH   = window.innerHeight;
+    var viewW   = window.innerWidth;
+    var isMobile = viewW < 640;
+
+    if (isMobile) {
+        panel.style.left  = '8px';
+        panel.style.right = '8px';
+        panel.style.width = 'auto';
+    } else {
+        panel.style.left  = rect.left + 'px';
+        panel.style.width = rect.width + 'px';
+        panel.style.right = 'auto';
+    }
+
+    var spaceBelow = viewH - rect.bottom - 10;
+    var spaceAbove = rect.top - 10;
+    var maxH       = Math.min(220, Math.max(spaceBelow, spaceAbove));
+    if (scrollEl) scrollEl.style.maxHeight = maxH + 'px';
+
+    if (spaceBelow >= Math.min(160, panel.offsetHeight) || spaceBelow >= spaceAbove) {
+        panel.style.top    = (rect.bottom + 4) + 'px';
+        panel.style.bottom = 'auto';
+    } else {
+        panel.style.bottom = (viewH - rect.top + 4) + 'px';
+        panel.style.top    = 'auto';
+    }
+}
+
+var _cuahOpen = false;
+var _cuahRAF  = null;
+
+function cuahToggle() {
+    if (_cuahOpen) { cuahClose(); } else { cuahOpenPanel(); }
+}
+
+function cuahOpenPanel() {
+    var panel = document.getElementById('select-curah-hujan-cs-panel');
+    var arrow = document.getElementById('select-curah-hujan-cs-arrow');
+    var btn   = document.getElementById('select-curah-hujan-btn');
+    if (!panel) return;
+
+    // Portal: pindahkan ke body
+    if (panel.parentElement !== document.body) document.body.appendChild(panel);
+    panel.style.display = 'block';
+    _cuahOpen = true;
+    cuahPositionPanel();
+    cuahUpdateArrows();
+    if (arrow) arrow.style.transform = 'rotate(180deg)';
+    if (btn)   btn.style.borderColor = '#10b981';
+}
+
+function cuahClose() {
+    var panel = document.getElementById('select-curah-hujan-cs-panel');
+    var arrow = document.getElementById('select-curah-hujan-cs-arrow');
+    var btn   = document.getElementById('select-curah-hujan-btn');
+    if (!panel) return;
+    panel.style.display = 'none';
+    _cuahOpen = false;
+    if (arrow) arrow.style.transform = '';
+    if (btn)   btn.style.borderColor = '';
+}
+
+// Reposisi saat scroll/resize
+window.addEventListener('scroll', function() {
+    if (!_cuahOpen) return;
+    if (_cuahRAF) cancelAnimationFrame(_cuahRAF);
+    _cuahRAF = requestAnimationFrame(cuahPositionPanel);
+}, { passive: true, capture: true });
+
+window.addEventListener('resize', function() {
+    if (!_cuahOpen) return;
+    if (_cuahRAF) cancelAnimationFrame(_cuahRAF);
+    _cuahRAF = requestAnimationFrame(cuahPositionPanel);
+}, { passive: true });
+
+// Tutup saat klik di luar
+document.addEventListener('click', function(e) {
+    if (!_cuahOpen) return;
+    var btn   = document.getElementById('select-curah-hujan-btn');
+    var panel = document.getElementById('select-curah-hujan-cs-panel');
+    if (btn   && btn.contains(e.target))   return;
+    if (panel && panel.contains(e.target)) return;
+    cuahClose();
+}, true);
+
+// Listen ke custom select musim via change event pada hidden input
+var musimValEl = document.querySelector('[name="_cs_musim_saat_ini"], [id$="-val"][id*="musim_saat_ini"]');
+// Fallback: watch via MutationObserver pada cs-wrapper musim
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.name === 'musim_saat_ini') {
+        updateCurahOptions(e.target.value);
+    }
+});
+
+// Init
+(function() {
+    var musimHidden = document.querySelector('input[name="musim_saat_ini"][type="hidden"]');
+    if (musimHidden && musimHidden.value) {
+        updateCurahOptions(musimHidden.value, oldCurah);
+    }
+})();
 
 // ─── CASCADING: PEMILIK → BLOK LAHAN ─────────────────────────────
 var bloksData = @json($bloksJson);
@@ -518,8 +703,8 @@ function renderBlokList(anggotaId) {
         card.dataset.blokId = blok.id;
 
         card.innerHTML = '<div class="flex-1 min-w-0">'
-            + '<p class="font-semibold text-slate-800 text-sm">' + blok.nama_blok + '</p>'
-            + '<p class="text-[10px] text-slate-500">' + blok.luas_ha + ' Ha · ' + blok.kategori + '</p>'
+            + '<p class="font-semibold text-slate-800 text-sm truncate">' + blok.nama_blok + '</p>'
+            + '<p class="text-[11px] text-slate-500 mt-0.5">' + blok.luas_ha + ' Ha · ' + blok.kategori + '</p>'
             + '</div>'
             + (isNew ? '<span class="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0">Terbaru</span>' : '')
             + (isSelected ? '<svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : '');
@@ -542,35 +727,33 @@ function renderBlokList(anggotaId) {
 
 function handleBlokSelected(blok) {
     var bannerEl = document.getElementById('banner-tbm');
-    var tandanSelect = document.getElementById('kondisi-tandan-select');
     var tandanNote = document.getElementById('tandan-tbm-note');
-    var tandanHidden = document.getElementById('tandan-hidden-tbm');
 
     if (blok.kategori === 'Belum Menghasilkan') {
         bannerEl.classList.remove('hidden');
-        if (tandanSelect) {
-            tandanSelect.value = 'Tidak Ada Tandan';
-            tandanSelect.disabled = true;
-            tandanSelect.classList.add('opacity-50', 'cursor-not-allowed');
-        }
+        // Paksa kondisi tandan = "Tidak Ada Tandan" via custom select
+        var valEl = document.querySelector('input[name="kondisi_tandan"][type="hidden"]');
+        var displayEl = document.getElementById('kondisi-tandan-cs-display');
+        var btnEl     = document.getElementById('kondisi-tandan-cs-btn');
+        if (valEl)    { valEl.value = 'Tidak Ada Tandan'; }
+        if (displayEl){ displayEl.textContent = 'Tidak Ada Tandan'; displayEl.style.color = '#1e293b'; }
+        if (btnEl)    { btnEl.style.opacity = '0.6'; btnEl.style.pointerEvents = 'none'; }
         if (tandanNote) tandanNote.classList.remove('hidden');
-        // Tambah hidden input agar nilai tetap terkirim saat submit (disabled select tidak terkirim)
-        if (!tandanHidden) {
+        // Tambah hidden input sebagai fallback
+        var existing = document.getElementById('tandan-hidden-tbm');
+        if (!existing) {
             var hi = document.createElement('input');
             hi.type = 'hidden';
-            hi.name = 'kondisi_tandan';
+            hi.name = 'kondisi_tandan_override';
             hi.value = 'Tidak Ada Tandan';
             hi.id = 'tandan-hidden-tbm';
-            tandanSelect.parentNode.appendChild(hi);
+            document.querySelector('form').appendChild(hi);
         }
     } else {
         bannerEl.classList.add('hidden');
-        if (tandanSelect) {
-            tandanSelect.disabled = false;
-            tandanSelect.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
+        var btnEl = document.getElementById('kondisi-tandan-cs-btn');
+        if (btnEl) { btnEl.style.opacity = ''; btnEl.style.pointerEvents = ''; }
         if (tandanNote) tandanNote.classList.add('hidden');
-        // Hapus hidden input jika ada
         var existing = document.getElementById('tandan-hidden-tbm');
         if (existing) existing.remove();
     }
@@ -712,26 +895,46 @@ function fetchCuacaOtomatis() {
             // Toast sukses
             showToast('success', '🌤️ Data cuaca berhasil diambil! Musim: ' + data.musim_saat_ini + ', Curah Hujan: ' + data.curah_hujan_kategori, 5000);
 
-            // Auto-fill musim & curah hujan fields
-            var musimEl = document.getElementById('select-musim');
-            musimEl.value = data.musim_saat_ini;
-            musimEl.dispatchEvent(new Event('change'));
+            // Auto-fill musim menggunakan custom-select API (csSelect)
+            // ID komponen musim adalah 'select-musim', sehingga hidden input = 'select-musim-val'
+            var musimValEl    = document.getElementById('select-musim-val');
+            var musimDisplayEl = document.getElementById('select-musim-display');
+            var musimBtnEl    = document.getElementById('select-musim-btn');
+            var musimPanelEl  = document.getElementById('select-musim-panel');
 
-            // Setelah curah opsi terupdate, set nilainya
-            setTimeout(function() {
-                var curahEl = document.getElementById('select-curah-hujan');
-                curahEl.value = data.curah_hujan_kategori;
-                // Jika kategori tidak ada di options (karena filter musim), tambahkan sementara
-                if (!curahEl.value) {
-                    var opt = document.createElement('option');
-                    opt.value = data.curah_hujan_kategori;
-                    opt.textContent = data.curah_hujan_kategori + ' (dari data cuaca)';
-                    opt.selected = true;
-                    curahEl.appendChild(opt);
+            if (musimValEl) {
+                // Set nilai pada hidden input
+                musimValEl.value = data.musim_saat_ini;
+
+                // Update tampilan display span
+                if (musimDisplayEl) {
+                    musimDisplayEl.textContent = data.musim_saat_ini;
+                    musimDisplayEl.style.color = '#1e293b';
                 }
+
+                // Update active state pada panel options
+                if (musimPanelEl) {
+                    musimPanelEl.querySelectorAll('.cs-option').forEach(function(opt) {
+                        var isMe = opt.getAttribute('data-value') === data.musim_saat_ini;
+                        opt.style.background = isMe ? '#f0fdf4' : '#fff';
+                        opt.style.color      = isMe ? '#065f46' : '#374151';
+                        opt.style.fontWeight = isMe ? '600' : '400';
+                    });
+                }
+
+                // Dispatch change event agar updateCurahOptions() terpanggil
+                musimValEl.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            // Setelah options curah hujan diupdate oleh updateCurahOptions(), set nilainya
+            setTimeout(function() {
+                updateCurahOptions(data.musim_saat_ini, data.curah_hujan_kategori);
+
                 var infoEl = document.getElementById('curah-hujan-info');
-                infoEl.textContent = '✓ Terisi otomatis dari data cuaca — Anda tetap bisa mengubahnya';
-                infoEl.className = 'mt-1 text-xs text-emerald-600 font-medium';
+                if (infoEl) {
+                    infoEl.textContent = '✓ Terisi otomatis dari data cuaca — Anda tetap bisa mengubahnya';
+                    infoEl.className = 'mt-1 text-xs text-emerald-600 font-medium';
+                }
             }, 100);
         } else {
             // Show error

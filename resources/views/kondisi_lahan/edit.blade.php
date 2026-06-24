@@ -6,7 +6,7 @@
 
 @section('content')
 
-<div class="w-full max-w-4xl mx-auto overflow-hidden">
+<div class="w-full max-w-4xl mx-auto">
 
     <form action="{{ route('kondisi-lahan.update', $kondisiLahan) }}" method="POST" class="space-y-6">
         @csrf
@@ -79,7 +79,7 @@
                 <span class="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">2</span>
                 Kondisi Tanah
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">
                         pH Tanah
@@ -94,7 +94,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Kelembaban Tanah</label>
                     <select name="kelembaban_tanah"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
+                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors appearance-auto">
                         <option value="">— Pilih —</option>
                         @foreach(['Sangat Kering','Kering','Normal','Lembab','Sangat Lembab'] as $opt)
                             <option value="{{ $opt }}" {{ old('kelembaban_tanah', $kondisiLahan->kelembaban_tanah) == $opt ? 'selected' : '' }}>{{ $opt }}</option>
@@ -104,7 +104,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Kondisi Drainase</label>
                     <select name="kondisi_drainase"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
+                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors appearance-auto">
                         <option value="">— Pilih —</option>
                         @foreach(['Baik','Cukup','Buruk — Tergenang'] as $opt)
                             <option value="{{ $opt }}" {{ old('kondisi_drainase', $kondisiLahan->kondisi_drainase) == $opt ? 'selected' : '' }}>{{ $opt }}</option>

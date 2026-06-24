@@ -36,6 +36,24 @@
             input[type="date"],
             textarea,
             select { font-size: 16px !important; }
+            /* Fix: form container tidak overflow di mobile */
+            .max-w-4xl, form, .space-y-4, .space-y-6 {
+                min-width: 0;
+                overflow-x: hidden;
+            }
+            /* Fix: grid tidak meluber */
+            .grid {
+                min-width: 0;
+            }
+            .grid > * {
+                min-width: 0;
+                overflow: visible;
+            }
+            /* Fix select teks panjang di mobile */
+            select {
+                padding-right: 2rem !important;
+                text-overflow: ellipsis;
+            }
         }
         /* Gambar tidak meluber */
         img { max-width: 100%; height: auto; }
@@ -45,6 +63,24 @@
         *, *::before, *::after { max-width: 100%; }
         /* Exclude elements that need to overflow (tables, maps, pagination, etc) */
         table, table *, .leaflet-container, .leaflet-container *, svg, canvas, video, iframe, nav, nav *, [id$="-dropdown"], [id$="-dropdown"] *, .notif-dropdown-panel, .notif-dropdown-panel *, button, button * { max-width: none; }
+        /* Fix khusus select di Android: pastikan tidak overflow dan teks tidak keluar */
+        select {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        /* Fix: form grid tidak overflow di mobile */
+        form .grid, form > div {
+            min-width: 0;
+        }
+        /* Fix: semua input dan select tidak keluar dari parent */
+        input, select, textarea {
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
         /* Spinner animation for inline-styled elements */
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         /* Print styles */

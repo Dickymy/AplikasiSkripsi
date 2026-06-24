@@ -1,38 +1,77 @@
- <mxfile host="app.diagrams.net" modified="2026-06-17T10:00:00.000Z" agent="draw.io" version="21.0.0">
+<mxfile host="app.diagrams.net" modified="2026-06-24T00:00:00.000Z" agent="draw.io" version="24.0.0">
   <diagram id="dfd-level-0" name="DFD Level 0">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
-        <!-- External Entity: Admin Kelompok Tani -->
-        <mxCell id="e1" value="Admin&#xa;Kelompok Tani" style="shape=rectangle;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="80" y="340" width="140" height="60" as="geometry" />
+        <!-- JUDUL -->
+        <mxCell id="title" value="DFD Level 0 — Sistem Rekomendasi Pemupukan Kelapa Sawit" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="234" y="30" width="700" height="40" as="geometry" />
         </mxCell>
 
-        <!-- Process: SPK Sawit (Sistem) -->
-        <mxCell id="p0" value="0&#xa;&#xa;Sistem Pendukung Keputusan&#xa;Pemupukan Kelapa Sawit&#xa;(SPK Sawit)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="420" y="280" width="280" height="180" as="geometry" />
+        <!-- ENTITAS: Admin Kelompok Tani (kiri) -->
+        <mxCell id="e1" value="Admin&#xa;Kelompok Tani" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="140" height="70" as="geometry" />
         </mxCell>
 
-        <!-- Data Store: Database -->
-        <mxCell id="d1" value="D1 | Database MySQL" style="shape=partialRectangle;top=0;left=0;right=0;bottom=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="440" y="580" width="240" height="40" as="geometry" />
+        <!-- ENTITAS: Open-Meteo API (kanan) -->
+        <mxCell id="e2" value="Open-Meteo API&#xa;(Cuaca Eksternal)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="950" y="360" width="140" height="70" as="geometry" />
         </mxCell>
 
-        <!-- Aliran Data: Admin → Sistem -->
-        <mxCell id="f1" value="Data login, data blok lahan,&#xa;data kondisi lahan, data anggota,&#xa;perintah analisis RBS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.3;entryX=0;entryY=0.4;strokeColor=#333333;fontSize=9;" edge="1" parent="1" source="e1" target="p0">
+        <!-- PROSES UTAMA (bubble tengah) -->
+        <mxCell id="p0" value="0&#xa;&#xa;Sistem Rekomendasi&#xa;Pemupukan Kelapa Sawit" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="420" y="270" width="330" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- DATA STORE -->
+        <mxCell id="d1" value="D1  |  Database Aplikasi" style="shape=partialRectangle;top=0;left=0;right=0;bottom=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="570" width="290" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ALIRAN: Admin → Sistem -->
+        <mxCell id="f1" value="Data login, data anggota, data blok lahan,&#xa;data kondisi lahan, data rule base,&#xa;perintah analisis RBS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.3;exitPerimeter=0;entryX=0;entryY=0.35;entryPerimeter=0;strokeColor=#000000;fontSize=9;" edge="1" parent="1" source="e1" target="p0">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <!-- Aliran Data: Sistem → Admin -->
-        <mxCell id="f2" value="Rekomendasi pemupukan,&#xa;peta WebGIS, laporan PDF,&#xa;jadwal pemupukan, status lahan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.7;entryX=1;entryY=0.7;strokeColor=#333333;fontSize=9;" edge="1" parent="1" source="p0" target="e1">
+        <!-- ALIRAN: Sistem → Admin -->
+        <mxCell id="f2" value="Rekomendasi pemupukan, peta WebGIS,&#xa;laporan PDF, jadwal pemupukan,&#xa;confidence score, status lahan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.65;exitPerimeter=0;entryX=1;entryY=0.7;entryPerimeter=0;strokeColor=#000000;fontSize=9;" edge="1" parent="1" source="p0" target="e1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <!-- Aliran Data: Sistem → Database -->
-        <mxCell id="f3" value="Simpan/ambil data&#xa;blok, kondisi, rule,&#xa;rekomendasi, realisasi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#333333;fontSize=9;" edge="1" parent="1" source="p0" target="d1">
+        <!-- ALIRAN: Sistem → Open-Meteo -->
+        <mxCell id="f3" value="Koordinat (lat, lng) blok lahan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.35;exitPerimeter=0;entryX=0;entryY=0.3;entryPerimeter=0;strokeColor=#000000;fontSize=9;" edge="1" parent="1" source="p0" target="e2">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ALIRAN: Open-Meteo → Sistem -->
+        <mxCell id="f4" value="Data curah hujan 30 hari,&#xa;evapotranspirasi (ET0)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.65;exitPerimeter=0;entryX=1;entryY=0.65;entryPerimeter=0;strokeColor=#000000;fontSize=9;" edge="1" parent="1" source="e2" target="p0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ALIRAN: Sistem → Database (simpan) -->
+        <mxCell id="f5" value="Simpan: blok, kondisi, rule, rekomendasi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.35;exitY=1;exitPerimeter=0;entryX=0.25;entryY=0;entryPerimeter=0;strokeColor=#000000;fontSize=9;" edge="1" parent="1" source="p0" target="d1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ALIRAN: Database → Sistem (baca) -->
+        <mxCell id="f6" value="Baca: blok, kondisi, rule aktif, histori" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.7;exitY=0;exitPerimeter=0;entryX=0.65;entryY=1;entryPerimeter=0;strokeColor=#000000;fontSize=9;" edge="1" parent="1" source="d1" target="p0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- LEGENDA -->
+        <mxCell id="leg_title" value="Legenda:" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="680" width="80" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1" value="Entitas Eksternal" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="710" width="130" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2" value="Proses" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="230" y="706" width="120" height="43" as="geometry" />
+        </mxCell>
+        <mxCell id="leg3" value="D  |  Data Store" style="shape=partialRectangle;top=0;left=0;right=0;bottom=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="370" y="715" width="150" height="30" as="geometry" />
         </mxCell>
 
       </root>

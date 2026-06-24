@@ -13,7 +13,11 @@ class RuleBaseLanjutanSeeder extends Seeder
      */
     public function run(): void
     {
-        RuleBaseLanjutan::truncate();
+        // Hanya seed jika tabel masih kosong — aman untuk re-deploy di Railway
+        if (RuleBaseLanjutan::count() > 0) {
+            $this->command->info('RuleBaseLanjutan sudah ada datanya, skip seeding.');
+            return;
+        }
 
         $rules = [
 

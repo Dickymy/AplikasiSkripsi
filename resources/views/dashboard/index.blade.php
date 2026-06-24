@@ -258,12 +258,22 @@
             </div>
             <div class="flex-1"></div>
             {{-- Filters --}}
-            <select id="filter-pemilik" class="min-w-[140px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
-                <option value="">Semua Pemilik</option>
-            </select>
-            <select id="filter-blok" disabled class="min-w-[130px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
-                <option value="">Semua Blok</option>
-            </select>
+            <div class="relative">
+                <select id="filter-pemilik" class="min-w-[140px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                    <option value="">Semua Pemilik</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                    <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+            </div>
+            <div class="relative">
+                <select id="filter-blok" disabled class="min-w-[130px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                    <option value="">Semua Blok</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                    <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+            </div>
             {{-- Perluas / Kecilkan --}}
             <button type="button" onclick="toggleFullscreen()" class="btn-map expand" id="btn-fs-desktop">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
@@ -288,12 +298,22 @@
             </div>
             {{-- Baris 2: Filter pemilik + blok --}}
             <div class="flex items-center gap-2">
-                <select id="filter-pemilik-mobile" class="flex-1 pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
-                    <option value="">Semua Pemilik</option>
-                </select>
-                <select id="filter-blok-mobile" disabled class="flex-1 pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
-                    <option value="">Semua Blok</option>
-                </select>
+                <div class="relative flex-1">
+                    <select id="filter-pemilik-mobile" class="w-full pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                        <option value="">Semua Pemilik</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                        <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                </div>
+                <div class="relative flex-1">
+                    <select id="filter-blok-mobile" disabled class="w-full pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                        <option value="">Semua Blok</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                        <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                </div>
             </div>
             {{-- Baris 3: Tambah + Perluas/Kecilkan (sama panjang) --}}
             <div class="flex items-center gap-2" id="mobile-btn-row">

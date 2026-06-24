@@ -261,24 +261,26 @@
                         @error('tahun_tanam') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="jenis_tanah" class="block text-sm font-medium text-slate-700 mb-2">Jenis Tanah <span class="text-red-400">*</span></label>
-                        <select id="jenis_tanah" name="jenis_tanah" required
-                            class="w-full px-4 py-3 bg-white border {{ $errors->has('jenis_tanah') ? 'border-red-400' : 'border-slate-300' }} rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                            @foreach(['Tanah Lempung','Tanah Lempung Berpasir','Tanah Berpasir','Tanah Liat','Tanah Gambut','Tanah Aluvial','Tanah Podsolik Merah Kuning (PMK)','Tanah Laterit','Tanah Berbatu','Lainnya'] as $jt)
-                                <option value="{{ $jt }}" {{ old('jenis_tanah', $blokLahan->jenis_tanah) == $jt ? 'selected' : '' }}>{{ $jt }}</option>
-                            @endforeach
-                        </select>
-                        @error('jenis_tanah') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+                        @include('components.custom-select', [
+                            'name'     => 'jenis_tanah',
+                            'label'    => 'Jenis Tanah',
+                            'required' => true,
+                            'options'  => ['Tanah Lempung','Tanah Lempung Berpasir','Tanah Berpasir','Tanah Liat','Tanah Gambut','Tanah Aluvial','Tanah Podsolik Merah Kuning (PMK)','Tanah Laterit','Tanah Berbatu','Lainnya'],
+                            'selected' => old('jenis_tanah', $blokLahan->jenis_tanah),
+                            'placeholder' => '— Pilih Jenis Tanah —',
+                            'error'    => $errors->first('jenis_tanah'),
+                        ])
                     </div>
                     <div>
-                        <label for="topografi" class="block text-sm font-medium text-slate-700 mb-2">Topografi <span class="text-red-400">*</span></label>
-                        <select id="topografi" name="topografi" required
-                            class="w-full px-4 py-3 bg-white border {{ $errors->has('topografi') ? 'border-red-400' : 'border-slate-300' }} rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                            @foreach(['Datar 0-15°','Bergelombang 15-30°','Curam >30°'] as $tp)
-                                <option value="{{ $tp }}" {{ old('topografi', $blokLahan->topografi) == $tp ? 'selected' : '' }}>{{ $tp }}</option>
-                            @endforeach
-                        </select>
-                        @error('topografi') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+                        @include('components.custom-select', [
+                            'name'     => 'topografi',
+                            'label'    => 'Topografi',
+                            'required' => true,
+                            'options'  => ['Datar 0-15°','Bergelombang 15-30°','Curam >30°'],
+                            'selected' => old('topografi', $blokLahan->topografi),
+                            'placeholder' => '— Pilih Topografi —',
+                            'error'    => $errors->first('topografi'),
+                        ])
                     </div>
                 </div>
             </div>

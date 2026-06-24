@@ -29,13 +29,18 @@
                 'formId' => 'blok-filter-form',
             ])
         </div>
-        <select name="status" onchange="this.form.submit()"
-            class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 sm:min-w-[120px]">
-            <option value="">Semua Status</option>
-            @foreach(['Darurat' => 'Defisiensi Berat', 'Segera' => 'Perlu Pupuk', 'Normal' => 'Sehat', 'Tunda' => 'Tunda Pupuk', 'Belum' => 'Belum Dicek'] as $val => $label)
-                <option value="{{ $val }}" {{ request('status') == $val ? 'selected' : '' }}>{{ $label }}</option>
-            @endforeach
-        </select>
+        <div class="relative sm:min-w-[130px]">
+            <select name="status" onchange="this.form.submit()"
+                class="w-full pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 appearance-none cursor-pointer">
+                <option value="">Semua Status</option>
+                @foreach(['Darurat' => 'Defisiensi Berat', 'Segera' => 'Perlu Pupuk', 'Normal' => 'Sehat', 'Tunda' => 'Tunda Pupuk', 'Belum' => 'Belum Dicek'] as $val => $label)
+                    <option value="{{ $val }}" {{ request('status') == $val ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-2.5 flex items-center">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+        </div>
         @if(request()->hasAny(['anggota_id','status']))
             <a href="{{ route('blok-lahan.index') }}" class="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1.5">Reset</a>
         @endif

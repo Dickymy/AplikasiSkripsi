@@ -1,23 +1,13 @@
 {{--
-    Searchable Select Component
-    Usage: @include('components.searchable-select', [
-        'name' => 'anggota_id',
-        'label' => 'Pemilik Lahan',
-        'placeholder' => 'Cari anggota...',
-        'options' => $anggotas, // collection with id & display field
-        'displayField' => 'nama',
-        'selected' => old('anggota_id', $blokLahan->anggota_id ?? ''),
-        'required' => true,
-        'error' => $errors->first('anggota_id'),
-        'helpText' => 'Belum ada? <a href="..." class="text-emerald-600 font-medium hover:underline">Tambah →</a>',
-    ])
+    Searchable Select Component — Mobile-safe, portal-based dropdown
+    Usage: @include('components.searchable-select', [...])
 --}}
 
 @php
     $uid = 'ss-' . $name . '-' . uniqid();
 @endphp
 
-<div class="relative" id="{{ $uid }}-wrapper">
+<div style="position:relative; min-width:0;" id="{{ $uid }}-wrapper">
     <label class="block text-sm font-medium text-slate-700 mb-2">
         {{ $label }} @if($required ?? false)<span class="text-red-400">*</span>@endif
     </label>
@@ -26,78 +16,234 @@
     <input type="hidden" name="{{ $name }}" id="{{ $uid }}-value" value="{{ $selected ?? '' }}">
 
     {{-- Display input (searchable) --}}
-    <div class="relative">
+    <div style="position:relative; min-width:0;">
         <input type="text" id="{{ $uid }}-search"
             placeholder="{{ $placeholder ?? 'Cari...' }}"
             autocomplete="off"
-            class="w-full px-4 py-3 pr-10 bg-white border {{ ($error ?? false) ? 'border-red-400' : 'border-slate-300' }} rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+            style="width:100%; box-sizing:border-box; padding:10px 36px 10px 14px; background:#fff; border:1px solid {{ ($error ?? false) ? '#f87171' : '#cbd5e1' }}; border-radius:12px; font-size:14px; color:#1e293b; outline:none; min-width:0;"
             value="{{ $selected ? ($options->firstWhere('id', $selected)?->{$displayField} ?? '') : '' }}">
-        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        <div style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#94a3b8;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="max-width:none!important;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
         </div>
     </div>
 
-    {{-- Dropdown results --}}
-    <div id="{{ $uid }}-dropdown" class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden hidden max-h-48 overflow-y-auto">
-        @foreach($options as $opt)
-        <div class="ss-option px-4 py-2.5 hover:bg-emerald-50 cursor-pointer text-sm text-slate-700 border-b border-slate-50 last:border-0 transition-colors"
-             data-value="{{ $opt->id }}" data-label="{{ $opt->{$displayField} }}">
-            {{ $opt->{$displayField} }}
+    {{-- Dropdown panel — akan dipindahkan ke body via JS (portal pattern) --}}
+    <div id="{{ $uid }}-dropdown"
+        data-uid="{{ $uid }}"
+        class="ss-panel"
+        style="display:none; position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.16); z-index:99999; overflow:hidden;">
+
+        {{-- Scroll indicator (tampil hanya jika opsi banyak) --}}
+        @if($options->count() > 4)
+        <div class="ss-arrow-up" style="display:none; align-items:center; justify-content:center; gap:4px; padding:5px 12px; background:linear-gradient(to bottom, #f8fafc, #fff); border-bottom:1px solid #e2e8f0; cursor:pointer; user-select:none; transition:opacity 0.15s;"
+            onclick="document.getElementById('{{ $uid }}-dropdown').querySelector('.ss-options-scroll').scrollBy({top:-80,behavior:'smooth'})">
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="max-width:none!important; flex-shrink:0; color:#64748b;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
+            </svg>
+            <span style="font-size:10px; color:#64748b; font-weight:600;">Scroll ke atas</span>
         </div>
-        @endforeach
-        <div class="ss-empty px-4 py-3 text-sm text-slate-400 text-center hidden">Tidak ditemukan</div>
+        @endif
+
+        {{-- Scrollable options list --}}
+        <div class="ss-options-scroll" style="max-height:220px; overflow-y:auto; overscroll-behavior:contain;">
+            @foreach($options as $opt)
+            <div class="ss-option"
+                 data-value="{{ $opt->id }}" data-label="{{ $opt->{$displayField} }}"
+                 style="padding:11px 14px; cursor:pointer; font-size:13px; color:#374151; border-bottom:1px solid #f8fafc; word-break:break-word; line-height:1.4;">
+                {{ $opt->{$displayField} }}
+            </div>
+            @endforeach
+            <div class="ss-empty" style="display:none; padding:12px 14px; font-size:13px; color:#94a3b8; text-align:center;">Tidak ditemukan</div>
+        </div>
+
+        {{-- Bottom scroll arrow --}}
+        @if($options->count() > 4)
+        <div class="ss-arrow-down" style="display:flex; align-items:center; justify-content:center; gap:4px; padding:5px 12px; background:linear-gradient(to top, #f8fafc, #fff); border-top:1px solid #e2e8f0; cursor:pointer; user-select:none; transition:opacity 0.15s;"
+            onclick="document.getElementById('{{ $uid }}-dropdown').querySelector('.ss-options-scroll').scrollBy({top:80,behavior:'smooth'})">
+            <span style="font-size:10px; color:#64748b; font-weight:600;">Scroll ke bawah</span>
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="max-width:none!important; flex-shrink:0; color:#64748b;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </div>
+        @endif
     </div>
 
     @if($error ?? false)
-        <p class="mt-1.5 text-xs text-red-500">{{ $error }}</p>
+        <p style="margin-top:6px; font-size:12px; color:#ef4444;">{{ $error }}</p>
     @endif
     @if($helpText ?? false)
-        <p class="mt-1.5 text-xs text-slate-400">{!! $helpText !!}</p>
+        <p style="margin-top:6px; font-size:12px; color:#94a3b8;">{!! $helpText !!}</p>
     @endif
 </div>
 
 @pushOnce('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[id$="-wrapper"]').forEach(function(wrapper) {
-        var id = wrapper.id.replace('-wrapper', '');
-        var searchEl = document.getElementById(id + '-search');
-        var valueEl = document.getElementById(id + '-value');
-        var dropdown = document.getElementById(id + '-dropdown');
+    var _openUid   = null;
+    var _scrollRAF = null;
+
+    // ── Hitung posisi dropdown ke viewport ────────────────────────
+    function ssPositionDropdown(uid) {
+        var searchEl = document.getElementById(uid + '-search');
+        var dropdown = document.getElementById(uid + '-dropdown');
+        if (!searchEl || !dropdown) return;
+
+        var rect    = searchEl.getBoundingClientRect();
+        var viewH   = window.innerHeight;
+        var viewW   = window.innerWidth;
+        var isMobile = viewW < 640;
+
+        // Horizontal
+        if (isMobile) {
+            dropdown.style.left  = '8px';
+            dropdown.style.right = '8px';
+            dropdown.style.width = 'auto';
+        } else {
+            dropdown.style.left  = rect.left + 'px';
+            dropdown.style.width = rect.width + 'px';
+            dropdown.style.right = 'auto';
+        }
+
+        // Max-height
+        var spaceBelow = viewH - rect.bottom - 10;
+        var spaceAbove = rect.top - 10;
+        var maxH       = Math.min(220, Math.max(spaceBelow, spaceAbove));
+        var scrollEl   = dropdown.querySelector('.ss-options-scroll');
+        if (scrollEl) scrollEl.style.maxHeight = maxH + 'px';
+
+        // Atas atau bawah
+        if (spaceBelow >= Math.min(160, dropdown.offsetHeight) || spaceBelow >= spaceAbove) {
+            dropdown.style.top    = (rect.bottom + 4) + 'px';
+            dropdown.style.bottom = 'auto';
+        } else {
+            dropdown.style.bottom = (viewH - rect.top + 4) + 'px';
+            dropdown.style.top    = 'auto';
+        }
+    }
+
+    function updateScrollArrows(uid) {
+        var dropdown = document.getElementById(uid + '-dropdown');
+        if (!dropdown) return;
+        var scrollEl  = dropdown.querySelector('.ss-options-scroll');
+        var arrowUp   = dropdown.querySelector('.ss-arrow-up');
+        var arrowDown = dropdown.querySelector('.ss-arrow-down');
+        if (!scrollEl) return;
+
+        var atTop    = scrollEl.scrollTop <= 2;
+        var atBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 2;
+
+        if (arrowUp)   arrowUp.style.display  = atTop    ? 'none' : 'flex';
+        if (arrowDown) arrowDown.style.display = atBottom ? 'none' : 'flex';
+    }
+
+    // ── Reposisi saat scroll/resize ───────────────────────────────
+    function onScrollResize() {
+        if (!_openUid) return;
+        if (_scrollRAF) cancelAnimationFrame(_scrollRAF);
+        _scrollRAF = requestAnimationFrame(function() {
+            if (_openUid) ssPositionDropdown(_openUid);
+        });
+    }
+    window.addEventListener('scroll', onScrollResize, { passive: true, capture: true });
+    window.addEventListener('resize', onScrollResize, { passive: true });
+
+    // ── Tutup saat klik di luar ───────────────────────────────────
+    document.addEventListener('click', function(e) {
+        if (!_openUid) return;
+        var search   = document.getElementById(_openUid + '-search');
+        var dropdown = document.getElementById(_openUid + '-dropdown');
+        if (search   && search.contains(e.target))   return;
+        if (dropdown && dropdown.contains(e.target)) return;
+        closeDropdown(_openUid);
+    }, true);
+
+    // ── Scroll-arrow update saat user scroll dalam panel ─────────
+    document.addEventListener('scroll', function(e) {
+        var scrollEl = e.target;
+        if (scrollEl && scrollEl.classList && scrollEl.classList.contains('ss-options-scroll')) {
+            var panel = scrollEl.closest('.ss-panel');
+            if (panel) updateScrollArrows(panel.dataset.uid);
+        }
+    }, true);
+
+    // ── Setup per instance ────────────────────────────────────────
+    document.querySelectorAll('.ss-panel').forEach(function(panel) {
+        var uid      = panel.dataset.uid;
+        var searchEl = document.getElementById(uid + '-search');
+        var valueEl  = document.getElementById(uid + '-value');
+        var dropdown = document.getElementById(uid + '-dropdown');
         if (!searchEl || !valueEl || !dropdown) return;
 
-        var options = dropdown.querySelectorAll('.ss-option');
-        var emptyEl = dropdown.querySelector('.ss-empty');
-
-        searchEl.addEventListener('focus', function() { dropdown.classList.remove('hidden'); filterOptions(); });
-
-        var debounceTimer;
-        searchEl.addEventListener('input', function() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(filterOptions, 200);
-        });
+        var scrollEl = dropdown.querySelector('.ss-options-scroll');
+        var items    = scrollEl ? scrollEl.querySelectorAll('.ss-option') : [];
+        var emptyEl  = scrollEl ? scrollEl.querySelector('.ss-empty') : null;
 
         function filterOptions() {
             var q = searchEl.value.toLowerCase().trim();
             var visible = 0;
-            options.forEach(function(opt) {
-                var show = opt.dataset.label.toLowerCase().includes(q);
-                opt.style.display = show ? '' : 'none';
-                if (show) visible++;
+            items.forEach(function(item) {
+                var match = item.dataset.label.toLowerCase().includes(q);
+                item.style.display = match ? '' : 'none';
+                if (match) visible++;
             });
             if (emptyEl) emptyEl.style.display = visible === 0 ? '' : 'none';
         }
 
-        options.forEach(function(opt) {
-            opt.addEventListener('click', function() {
-                valueEl.value = this.dataset.value;
+        function openDropdown() {
+            // Portal: pindahkan ke body
+            if (dropdown.parentElement !== document.body) {
+                document.body.appendChild(dropdown);
+            }
+            filterOptions();
+            dropdown.style.display = 'block';
+            _openUid = uid;
+            ssPositionDropdown(uid);
+            updateScrollArrows(uid);
+            // Highlight border
+            searchEl.style.borderColor = '#10b981';
+        }
+
+        function closeDropdown(targetUid) {
+            if (targetUid && targetUid !== uid) return;
+            dropdown.style.display = 'none';
+            searchEl.style.borderColor = '';
+            if (_openUid === uid) _openUid = null;
+        }
+
+        // Expose closeDropdown untuk event global
+        dropdown._closeDropdown = closeDropdown;
+
+        // Hover effect
+        items.forEach(function(item) {
+            item.addEventListener('mouseenter', function() { this.style.background = '#f0fdf4'; });
+            item.addEventListener('mouseleave', function() { this.style.background = ''; });
+            item.addEventListener('click', function() {
+                valueEl.value  = this.dataset.value;
                 searchEl.value = this.dataset.label;
-                dropdown.classList.add('hidden');
+                valueEl.setAttribute('value', this.dataset.value);
+                valueEl.dispatchEvent(new Event('change', { bubbles: true }));
+                closeDropdown(uid);
             });
         });
 
-        document.addEventListener('click', function(e) {
-            if (!wrapper.contains(e.target)) dropdown.classList.add('hidden');
+        // Scroll-fade update saat scroll di dalam dropdown
+        if (scrollEl) {
+            scrollEl.addEventListener('scroll', function() {
+                updateScrollArrows(uid);
+            });
+        }
+
+        searchEl.addEventListener('focus', openDropdown);
+
+        var debounce;
+        searchEl.addEventListener('input', function() {
+            clearTimeout(debounce);
+            debounce = setTimeout(function() {
+                filterOptions();
+                if (dropdown.style.display === 'none') openDropdown();
+            }, 150);
         });
     });
 });

@@ -9,10 +9,13 @@ class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        Admin::create([
-            'username'     => 'admin',
-            'password'     => 'admin123',
-            'nama_lengkap' => 'Administrator',
-        ]);
+        // firstOrCreate agar aman dijalankan ulang (re-deploy Railway)
+        Admin::firstOrCreate(
+            ['username' => 'admin'],
+            [
+                'password'     => 'admin123',
+                'nama_lengkap' => 'Administrator',
+            ]
+        );
     }
 }
