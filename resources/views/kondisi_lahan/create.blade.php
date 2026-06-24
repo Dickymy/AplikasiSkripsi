@@ -791,42 +791,7 @@ function updateCuacaButton(blok) {
 }
 
 // ─── TOAST ALERT SYSTEM ──────────────────────────────────────────
-function showToast(type, message, duration) {
-    duration = duration || 4000;
-    var container = document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container';
-        container.className = 'fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none';
-        container.style.maxWidth = 'calc(100vw - 32px)';
-        container.style.width = '360px';
-        document.body.appendChild(container);
-    }
-
-    var colors = {
-        success: 'bg-emerald-600 text-white',
-        error: 'bg-red-600 text-white',
-        warning: 'bg-amber-500 text-white',
-        info: 'bg-sky-600 text-white',
-    };
-
-    var toast = document.createElement('div');
-    toast.className = 'pointer-events-auto px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 transform transition-all duration-300 translate-x-full opacity-0 ' + (colors[type] || colors.info);
-    toast.innerHTML = '<span class="flex-1">' + message + '</span><button onclick="this.parentElement.remove()" class="ml-2 opacity-70 hover:opacity-100 text-lg leading-none">&times;</button>';
-    container.appendChild(toast);
-
-    // Animate in
-    requestAnimationFrame(function() {
-        toast.classList.remove('translate-x-full', 'opacity-0');
-        toast.classList.add('translate-x-0', 'opacity-100');
-    });
-
-    // Auto dismiss
-    setTimeout(function() {
-        toast.classList.add('translate-x-full', 'opacity-0');
-        setTimeout(function() { toast.remove(); }, 300);
-    }, duration);
-}
+// showToast sudah tersedia global dari layouts/app.blade.php
 
 function fetchCuacaOtomatis() {
     var blokId = document.getElementById('blok-lahan-id-value').value;

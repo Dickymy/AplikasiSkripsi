@@ -70,6 +70,10 @@
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
+            /* Fix double arrow: hapus arrow bawaan semua browser */
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
         }
         /* Fix: form grid tidak overflow di mobile */
         form .grid, form > div {
@@ -280,27 +284,16 @@
             </div>
         </header>
 
-        {{-- Flash Messages --}}
-        <div class="px-3 sm:px-6 pt-3 sm:pt-4 space-y-2">
-            @if(session('success'))
-                <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-sm shadow-sm">
-                    <svg class="w-5 h-5 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-800 text-sm shadow-sm">
-                    <svg class="w-5 h-5 flex-shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    {{ session('error') }}
-                </div>
-            @endif
-            @if(session('warning'))
-                <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-800 text-sm shadow-sm">
-                    <svg class="w-5 h-5 flex-shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    {{ session('warning') }}
-                </div>
-            @endif
-        </div>
+        {{-- Flash Messages (ditampilkan sebagai toast oleh JS di bawah) --}}
+        @if(session('success'))
+            <div id="flash-success" data-msg="{{ session('success') }}" style="display:none;"></div>
+        @endif
+        @if(session('error'))
+            <div id="flash-error" data-msg="{{ session('error') }}" style="display:none;"></div>
+        @endif
+        @if(session('warning'))
+            <div id="flash-warning" data-msg="{{ session('warning') }}" style="display:none;"></div>
+        @endif
 
         {{-- Page Content --}}
         <main class="flex-1 p-3 sm:p-6">
@@ -422,6 +415,228 @@
         </div>
     </div>
 </div>
+
+{{-- ═══ GLOBAL TOAST SYSTEM ═══════════════════════════════════════════════ --}}
+{{-- Container toast — fixed di pojok kanan atas, responsif --}}
+<div id="toast-container"
+    style="position:fixed; top:16px; right:16px; z-index:99998; display:flex; flex-direction:column; gap:10px; pointer-events:none; width:360px; max-width:calc(100vw - 32px);"
+    aria-live="polite" aria-atomic="false">
+</div>
+
+<style>
+@keyframes toastSlideIn {
+    from { opacity:0; transform:translateX(100%); }
+    to   { opacity:1; transform:translateX(0); }
+}
+@keyframes toastSlideOut {
+    from { opacity:1; transform:translateX(0); }
+    to   { opacity:0; transform:translateX(110%); }
+}
+.toast-item {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+    animation: toastSlideIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+    word-break: break-word;
+}
+.toast-item.toast-out {
+    animation: toastSlideOut 0.22s ease-in both;
+}
+/* Progress bar bawah */
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 0 0 14px 14px;
+    transition: width linear;
+}
+/* Warna per tipe */
+.toast-success { background:#f0fdf4; border-color:#bbf7d0; color:#14532d; }
+.toast-success .toast-icon { color:#16a34a; }
+.toast-success .toast-progress { background:#16a34a; }
+
+.toast-error { background:#fff1f2; border-color:#fecdd3; color:#881337; }
+.toast-error .toast-icon { color:#e11d48; }
+.toast-error .toast-progress { background:#e11d48; }
+
+.toast-warning { background:#fffbeb; border-color:#fde68a; color:#78350f; }
+.toast-warning .toast-icon { color:#d97706; }
+.toast-warning .toast-progress { background:#d97706; }
+
+.toast-info { background:#eff6ff; border-color:#bfdbfe; color:#1e3a5f; }
+.toast-info .toast-icon { color:#2563eb; }
+.toast-info .toast-progress { background:#2563eb; }
+
+.toast-close-btn {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    opacity: 0.5;
+    transition: opacity 0.15s, background 0.15s;
+    padding: 0;
+}
+.toast-close-btn:hover { opacity: 1; background: rgba(0,0,0,0.06); }
+
+@media (max-width: 480px) {
+    #toast-container { top:12px; right:12px; left:12px; width:auto; }
+    .toast-item { font-size: 12px; padding: 10px 12px; }
+}
+</style>
+
+<script>
+// ═══ GLOBAL TOAST SYSTEM ══════════════════════════════════════════════
+(function() {
+    // Map untuk deduplication: key = type+message, value = toast element
+    var _activeToasts = {};
+    var ICONS = {
+        success: '<svg class="toast-icon" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        error:   '<svg class="toast-icon" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        warning: '<svg class="toast-icon" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+        info:    '<svg class="toast-icon" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+    };
+
+    function getContainer() {
+        return document.getElementById('toast-container');
+    }
+
+    function dismissToast(el, key) {
+        if (!el || el._dismissed) return;
+        el._dismissed = true;
+        el.classList.add('toast-out');
+        var bar = el.querySelector('.toast-progress');
+        if (bar) bar.style.width = '0%';
+        setTimeout(function() {
+            if (el.parentNode) el.parentNode.removeChild(el);
+            if (key && _activeToasts[key] === el) delete _activeToasts[key];
+        }, 240);
+    }
+
+    /**
+     * showToast(type, message, duration)
+     * type: 'success' | 'error' | 'warning' | 'info'
+     * duration: ms, default 5000. 0 = persistent (no auto-dismiss)
+     *
+     * DEDUPLICATION: jika toast dengan message + type yang sama sudah tampil,
+     * tidak akan ditambah — hanya progress bar-nya yang di-restart.
+     */
+    window.showToast = function(type, message, duration) {
+        duration = (duration === undefined || duration === null) ? 5000 : duration;
+        type = type || 'info';
+
+        var key = type + ':' + message;
+
+        // ─── Deduplication: jika sudah ada, restart timer-nya saja ───
+        if (_activeToasts[key] && !_activeToasts[key]._dismissed) {
+            var existing = _activeToasts[key];
+            // Reset progress bar
+            var bar = existing.querySelector('.toast-progress');
+            if (bar && duration > 0) {
+                bar.style.transition = 'none';
+                bar.style.width = '100%';
+                setTimeout(function() {
+                    bar.style.transition = 'width ' + (duration / 1000) + 's linear';
+                    bar.style.width = '0%';
+                }, 20);
+            }
+            // Reset timer
+            if (existing._timer) clearTimeout(existing._timer);
+            if (duration > 0) {
+                existing._timer = setTimeout(function() { dismissToast(existing, key); }, duration);
+            }
+            // Shake animation untuk feedback
+            existing.style.animation = 'none';
+            setTimeout(function() { existing.style.animation = ''; }, 10);
+            return existing;
+        }
+
+        var container = getContainer();
+        if (!container) return;
+
+        // Batasi max 5 toast sekaligus
+        var all = container.querySelectorAll('.toast-item');
+        if (all.length >= 5) {
+            dismissToast(all[0], null);
+        }
+
+        // Buat elemen toast
+        var el = document.createElement('div');
+        el.className = 'toast-item toast-' + type;
+        el.setAttribute('role', 'alert');
+        el.innerHTML =
+            (ICONS[type] || ICONS.info) +
+            '<span style="flex:1;">' + message + '</span>' +
+            '<button class="toast-close-btn" aria-label="Tutup" title="Tutup" onclick="(function(b){' +
+                'var t=b.closest(\'.toast-item\');' +
+                'window._dismissToastEl(t);})(this)">✕</button>' +
+            '<div class="toast-progress" style="width:100%;"></div>';
+
+        container.appendChild(el);
+        _activeToasts[key] = el;
+
+        // Animasi progress bar
+        var bar = el.querySelector('.toast-progress');
+        if (duration > 0 && bar) {
+            setTimeout(function() {
+                bar.style.transition = 'width ' + (duration / 1000) + 's linear';
+                bar.style.width = '0%';
+            }, 30);
+            el._timer = setTimeout(function() { dismissToast(el, key); }, duration);
+        }
+
+        return el;
+    };
+
+    // Expose dismiss untuk tombol close inline
+    window._dismissToastEl = function(el) {
+        if (!el) return;
+        // Cari key
+        var key = null;
+        Object.keys(_activeToasts).forEach(function(k) {
+            if (_activeToasts[k] === el) key = k;
+        });
+        dismissToast(el, key);
+    };
+
+    // ─── Auto-show flash messages dari server ──────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        var flashSuccess = document.getElementById('flash-success');
+        var flashError   = document.getElementById('flash-error');
+        var flashWarning = document.getElementById('flash-warning');
+
+        if (flashSuccess && flashSuccess.dataset.msg) {
+            showToast('success', flashSuccess.dataset.msg, 6000);
+        }
+        if (flashError && flashError.dataset.msg) {
+            showToast('error', flashError.dataset.msg, 8000);
+        }
+        if (flashWarning && flashWarning.dataset.msg) {
+            showToast('warning', flashWarning.dataset.msg, 8000);
+        }
+    });
+})();
+</script>
+
+{{-- Flash data hidden divs (ditampilkan oleh JS toast di atas) --}}
 
 {{-- Back to Top Button --}}
 <button id="btn-back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"
