@@ -140,6 +140,16 @@
         #stats-cards .stat-sub { font-size: 8px; }
     }
 
+    /* Fix: hilangkan arrow bawaan browser pada select filter peta */
+    #filter-pemilik,
+    #filter-pemilik-mobile,
+    #filter-blok,
+    #filter-blok-mobile {
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+    }
+
     select:disabled { opacity: 0.5; cursor: not-allowed; background: #f1f5f9; }
 
     /* Action buttons */
