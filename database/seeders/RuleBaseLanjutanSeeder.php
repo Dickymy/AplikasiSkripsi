@@ -138,7 +138,7 @@ class RuleBaseLanjutanSeeder extends Seeder
             // ─── GRUP 6: KONDISI DRAINASE BURUK ──────────────────────────
             [
                 'kondisi_drainase'      => 'Buruk — Tergenang',
-                'kondisi_kelembaban'    => 'Sangat Lembab',
+                'kondisi_kelembaban'    => null,
                 'indikasi_masalah'      => 'Waterlogging — Akar Kekurangan Oksigen dan Leaching Hara',
                 'jenis_pupuk_utama'     => 'MOP / KCl (melalui jalur daun — foliar)',
                 'jenis_pupuk_pendukung' => null,
@@ -152,7 +152,7 @@ class RuleBaseLanjutanSeeder extends Seeder
 
             // ─── GRUP 7: MUSIM KEMARAU PANJANG ───────────────────────────
             [
-                'kondisi_musim'         => 'Musim Kemarau',
+                'kondisi_musim'         => null,
                 'kondisi_kelembaban'    => 'Sangat Kering',
                 'indikasi_masalah'      => 'Cekaman Kekeringan — Efisiensi Pupuk Sangat Rendah',
                 'jenis_pupuk_utama'     => 'Pupuk Organik / Kompos',

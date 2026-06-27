@@ -164,31 +164,173 @@
         <h3 class="text-sm font-extrabold text-slate-800 mb-4 flex items-center gap-2">
             📅 Jadwal Pemupukan Per Tahap
         </h3>
-        <div class="overflow-x-auto">
+        {{-- Desktop Version: Table --}}
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-sm border-collapse">
                 <thead>
-                    <tr class="border-b border-slate-200 bg-slate-50">
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Tahap</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Estimasi Waktu</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-slate-600">Urea (kg)</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-slate-600">KCl (kg)</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Metode</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Catatan</th>
+                    <tr class="border-b border-slate-200 bg-slate-50 text-[10px] text-slate-500 uppercase tracking-wider">
+                        <th class="px-3 py-2 text-left font-semibold">Tahap</th>
+                        <th class="px-3 py-2 text-left font-semibold">Waktu Aplikasi</th>
+                        <th class="px-3 py-2 text-left font-semibold">Jenis Pupuk</th>
+                        <th class="px-3 py-2 text-right font-semibold">Dosis/Pokok</th>
+                        <th class="px-3 py-2 text-right font-semibold">Total Blok</th>
+                        <th class="px-3 py-2 text-left font-semibold">Cara Aplikasi & Petunjuk</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
                     @foreach($rekomendasiRbs->jadwal_pemupukan as $jadwal)
-                    <tr>
-                        <td class="px-3 py-2.5 font-semibold text-slate-800 text-xs">{{ $jadwal['nama_tahap'] }}</td>
-                        <td class="px-3 py-2.5 text-xs text-slate-600">{{ $jadwal['estimasi_waktu'] }}</td>
-                        <td class="px-3 py-2.5 text-right text-xs font-bold text-amber-700">{{ number_format($jadwal['urea_kg'], 2) }}</td>
-                        <td class="px-3 py-2.5 text-right text-xs font-bold text-cyan-700">{{ number_format($jadwal['kcl_kg'], 2) }}</td>
-                        <td class="px-3 py-2.5 text-xs text-slate-600">{{ $jadwal['metode_aplikasi'] }}</td>
-                        <td class="px-3 py-2.5 text-xs text-slate-500 italic">{{ $jadwal['catatan'] }}</td>
+                    @php
+                        $hasUrea = isset($jadwal['urea_kg']) && $jadwal['urea_kg'] > 0;
+                        $hasKcl = isset($jadwal['kcl_kg']) && $jadwal['kcl_kg'] > 0;
+                        
+                        $isCombined = $hasUrea && $hasKcl;
+                        
+                        $jenisPupuk = '-';
+                        $dosisPokok = '-';
+                        $totalKg = '-';
+                        $colorClass = 'text-slate-700';
+                        $bgClass = '';
+                        
+                        $dosisU = 0;
+                        $dosisK = 0;
+                        if ($hasUrea) {
+                            $dosisU = isset($jadwal['urea_per_pokok']) ? $jadwal['urea_per_pokok'] : ($jadwal['urea_kg'] / max(1, ($rekomendasiRbs->blokLahan->sph * $rekomendasiRbs->blokLahan->luas_ha)));
+                        }
+                        if ($hasKcl) {
+                            $dosisK = isset($jadwal['kcl_per_pokok']) ? $jadwal['kcl_per_pokok'] : ($jadwal['kcl_kg'] / max(1, ($rekomendasiRbs->blokLahan->sph * $rekomendasiRbs->blokLahan->luas_ha)));
+                        }
+                        
+                        if ($isCombined) {
+                            $jenisPupuk = 'Urea & KCl';
+                            $dosisPokok = 'Urea: ' . number_format($dosisU, 2) . ' kg | KCl: ' . number_format($dosisK, 2) . ' kg';
+                            $totalKg = 'Urea: ' . number_format($jadwal['urea_kg'], 1) . ' kg | KCl: ' . number_format($jadwal['kcl_kg'], 1) . ' kg';
+                            $colorClass = 'text-slate-800 font-semibold';
+                            $bgClass = 'bg-slate-50';
+                        } elseif ($hasUrea) {
+                            $jenisPupuk = 'Urea (N)';
+                            $dosisPokok = number_format($dosisU, 2) . ' kg';
+                            $totalKg = number_format($jadwal['urea_kg'], 1) . ' kg';
+                            $colorClass = 'text-amber-800 font-bold';
+                            $bgClass = 'bg-amber-50/20';
+                        } elseif ($hasKcl) {
+                            $jenisPupuk = 'KCl (K)';
+                            $dosisPokok = number_format($dosisK, 2) . ' kg';
+                            $totalKg = number_format($jadwal['kcl_kg'], 1) . ' kg';
+                            $colorClass = 'text-cyan-800 font-bold';
+                            $bgClass = 'bg-cyan-50/20';
+                        }
+                    @endphp
+                    <tr class="{{ $bgClass }}">
+                        <td class="px-3 py-3 font-semibold text-slate-800">{{ $jadwal['nama_tahap'] }}</td>
+                        <td class="px-3 py-3 text-slate-600 font-medium">{{ $jadwal['estimasi_waktu'] }}</td>
+                        <td class="px-3 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold {{ $hasUrea && !$isCombined ? 'bg-amber-100 text-amber-800' : ($hasKcl && !$isCombined ? 'bg-cyan-100 text-cyan-800' : 'bg-slate-100 text-slate-800') }}">
+                                {{ $jenisPupuk }}
+                            </span>
+                        </td>
+                        <td class="px-3 py-3 text-right {{ $colorClass }}">{{ $dosisPokok }}</td>
+                        <td class="px-3 py-3 text-right {{ $colorClass }}">{{ $totalKg }}</td>
+                        <td class="px-3 py-3">
+                            <div class="max-w-md">
+                                <p class="leading-relaxed">{{ $jadwal['metode_aplikasi'] }}</p>
+                                @if(!empty($jadwal['catatan']))
+                                <p class="text-[10px] text-amber-600 font-medium italic mt-1">⚠️ {{ $jadwal['catatan'] }}</p>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
+        </div>
+
+        {{-- Mobile Version: Vertical Timeline --}}
+        <div class="block md:hidden">
+            <div class="relative border-l-2 border-slate-100 ml-2.5 pl-0.5 space-y-6">
+                @foreach($rekomendasiRbs->jadwal_pemupukan as $jadwal)
+                @php
+                    $hasUrea = isset($jadwal['urea_kg']) && $jadwal['urea_kg'] > 0;
+                    $hasKcl = isset($jadwal['kcl_kg']) && $jadwal['kcl_kg'] > 0;
+                    
+                    $dosisU = 0;
+                    $dosisK = 0;
+                    if ($hasUrea) {
+                        $dosisU = isset($jadwal['urea_per_pokok']) ? $jadwal['urea_per_pokok'] : ($jadwal['urea_kg'] / max(1, ($rekomendasiRbs->blokLahan->sph * $rekomendasiRbs->blokLahan->luas_ha)));
+                    }
+                    if ($hasKcl) {
+                        $dosisK = isset($jadwal['kcl_per_pokok']) ? $jadwal['kcl_per_pokok'] : ($jadwal['kcl_kg'] / max(1, ($rekomendasiRbs->blokLahan->sph * $rekomendasiRbs->blokLahan->luas_ha)));
+                    }
+                @endphp
+                <div class="relative pb-2 pl-6">
+                    <!-- Bullet point -->
+                    <div class="absolute top-1.5 w-4 h-4 rounded-full border-2 border-emerald-500 bg-white flex items-center justify-center" style="left: -9px;">
+                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-1 mb-2">
+                        <h4 class="text-xs font-extrabold text-slate-800 leading-snug">
+                            {{ $jadwal['nama_tahap'] }}
+                        </h4>
+                        <span class="inline-flex self-start text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 font-bold">
+                            🗓️ {{ $jadwal['estimasi_waktu'] }}
+                        </span>
+                    </div>
+
+                    <!-- Info Dosis Card -->
+                    @if($hasUrea || $hasKcl)
+                    <div class="space-y-2 mb-2.5">
+                        @if($hasUrea)
+                        <div class="bg-amber-50/60 border border-amber-100 rounded-xl p-3 flex items-start gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-[10px] flex-shrink-0">
+                                N
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-[10px] text-amber-700 font-semibold uppercase leading-none">Urea</p>
+                                <p class="text-xs text-slate-700 font-medium mt-1">
+                                    Dosis: <span class="font-extrabold text-slate-900">{{ number_format($dosisU, 2) }}</span> kg/pokok
+                                </p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">
+                                    Total Blok: {{ number_format($jadwal['urea_kg'], 1) }} kg (±{{ ceil($jadwal['urea_kg'] / 50) }} Karung)
+                                </p>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($hasKcl)
+                        <div class="bg-cyan-50/60 border border-cyan-100 rounded-xl p-3 flex items-start gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center text-cyan-700 font-bold text-[10px] flex-shrink-0">
+                                K
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-[10px] text-cyan-700 font-semibold uppercase leading-none">KCl</p>
+                                <p class="text-xs text-slate-700 font-medium mt-1">
+                                    Dosis: <span class="font-extrabold text-slate-900">{{ number_format($dosisK, 2) }}</span> kg/pokok
+                                </p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">
+                                    Total Blok: {{ number_format($jadwal['kcl_kg'], 1) }} kg (±{{ ceil($jadwal['kcl_kg'] / 50) }} Karung)
+                                </p>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- Cara & Catatan -->
+                    <div class="bg-slate-50 rounded-xl p-3 space-y-2 border border-slate-100">
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-semibold uppercase leading-none">Cara Penaburan</p>
+                            <p class="text-xs text-slate-700 mt-1 leading-relaxed">{{ $jadwal['metode_aplikasi'] }}</p>
+                        </div>
+                        @if(!empty($jadwal['catatan']))
+                        <div class="pt-2 border-t border-slate-200/60">
+                            <p class="text-[10px] text-amber-600 font-semibold uppercase leading-none">⚠️ Petunjuk Penting</p>
+                            <p class="text-xs text-slate-600 mt-1 italic leading-relaxed">{{ $jadwal['catatan'] }}</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
         </div>
     </div>
     @endif

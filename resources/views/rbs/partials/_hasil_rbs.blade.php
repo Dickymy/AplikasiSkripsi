@@ -81,6 +81,32 @@ $warna = match($rbs->status_kebutuhan_dominan) {
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Rekomendasi Pemupukan</p>
         <div class="space-y-2">
             @foreach($rbs->rekomendasi_pupuk as $pupuk)
+            @php
+                $dosisDisplay = $pupuk['dosis'] ?? '-';
+                $metodeDisplay = $pupuk['metode'] ?? '';
+                $waktuDisplay = $pupuk['waktu'] ?? '';
+                
+                // Override dosis dan cara aplikasi agar sinkron dengan kalkulasi kriteria lahan (Urea & KCl)
+                if (str_contains(strtolower($pupuk['jenis_utama']), 'urea') && $rbs->dosis_urea) {
+                    $dosisDisplay = number_format($rbs->dosis_urea, 2) . ' kg/pokok (Total Blok: ' . number_format($rbs->total_urea, 1) . ' kg)';
+                    $umurTanaman = $blokLahan->umur_tanaman;
+                    $kategoriUmur = $blokLahan->kategori_umur;
+                    if ($kategoriUmur === 'Belum Menghasilkan' || ($umurTanaman !== null && $umurTanaman < 3)) {
+                        $metodeDisplay = 'Ditabur melingkar merata (lebar band 10-20 cm) sekitar 30-50 cm dari pangkal batang sawit TBM.';
+                    } else {
+                        $metodeDisplay = 'Ditabur melingkar merata pada piringan bersih berjarak 1.5 - 2.0 meter dari pangkal batang (di bawah proyeksi tajuk terluar pelepah).';
+                    }
+                } elseif (str_contains(strtolower($pupuk['jenis_utama']), 'kcl') && $rbs->dosis_kcl) {
+                    $dosisDisplay = number_format($rbs->dosis_kcl, 2) . ' kg/pokok (Total Blok: ' . number_format($rbs->total_kcl, 1) . ' kg)';
+                    $umurTanaman = $blokLahan->umur_tanaman;
+                    $kategoriUmur = $blokLahan->kategori_umur;
+                    if ($kategoriUmur === 'Belum Menghasilkan' || ($umurTanaman !== null && $umurTanaman < 3)) {
+                        $metodeDisplay = 'Ditabur melingkar merata sekitar 30-50 cm dari pangkal batang di atas piringan bersih.';
+                    } else {
+                        $metodeDisplay = 'Ditabur melingkar merata berjarak 1.5 - 2.0 meter dari pangkal batang (di bawah area akar rambut aktif).';
+                    }
+                }
+            @endphp
             <div class="bg-white rounded-xl border border-slate-200 p-3 shadow-sm">
                 <div class="flex items-start justify-between gap-2 mb-1">
                     <span class="font-semibold text-emerald-700 text-sm">🌿 {{ $pupuk['jenis_utama'] }}</span>
@@ -88,14 +114,14 @@ $warna = match($rbs->status_kebutuhan_dominan) {
                     <span class="text-xs text-slate-400 flex-shrink-0">+ {{ $pupuk['jenis_pendukung'] }}</span>
                     @endif
                 </div>
-                @if(!empty($pupuk['dosis']))
-                <p class="text-xs text-slate-600"><span class="font-medium">Dosis:</span> {{ $pupuk['dosis'] }}</p>
+                @if(!empty($dosisDisplay))
+                <p class="text-xs text-slate-600"><span class="font-medium">Dosis:</span> {{ $dosisDisplay }}</p>
                 @endif
-                @if(!empty($pupuk['metode']))
-                <p class="text-xs text-slate-600 mt-0.5"><span class="font-medium">Cara:</span> {{ $pupuk['metode'] }}</p>
+                @if(!empty($metodeDisplay))
+                <p class="text-xs text-slate-600 mt-0.5"><span class="font-medium">Cara:</span> {{ $metodeDisplay }}</p>
                 @endif
-                @if(!empty($pupuk['waktu']))
-                <p class="text-xs text-slate-500 mt-0.5"><span class="font-medium">Waktu:</span> {{ $pupuk['waktu'] }}</p>
+                @if(!empty($waktuDisplay))
+                <p class="text-xs text-slate-500 mt-0.5"><span class="font-medium">Waktu:</span> {{ $waktuDisplay }}</p>
                 @endif
             </div>
             @endforeach
@@ -132,10 +158,12 @@ $warna = match($rbs->status_kebutuhan_dominan) {
         <p class="text-xs text-slate-400">
             {{ $rbs->jumlah_rule_terpicu }} rule terpicu · {{ $rbs->tanggal_analisis->diffForHumans() }}
         </p>
+        @if(!request()->routeIs('rbs.detail'))
         <a href="{{ route('rbs.detail', $blokLahan) }}"
            class="text-xs text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
             Lihat detail →
         </a>
+        @endif
     </div>
 </div>
 

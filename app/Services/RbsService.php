@@ -389,30 +389,107 @@ class RbsService
     /**
      * Generate jadwal pemupukan per tahap berdasarkan status dan dosis.
      */
-    private function generateJadwalPemupukan(array $dataDosis, KondisiLahan $kondisi, string $statusDominan): array
+    private function generateJadwalPemupukan(array $dataDosis, KondisiLahan $kondisi, string $statusDominan, BlokLahan $blok): array
     {
-        $totalUrea = $dataDosis['total_urea'];
-        $totalKcl = $dataDosis['total_kcl'];
+        // Jika status Tunda
+        if ($statusDominan === 'Tunda') {
+            $namaTahap = 'Tunda Pemupukan';
+            $metodeAplikasi = 'Tidak dianjurkan pemupukan tanah saat ini';
+            $catatan = 'Perbaiki faktor pembatas seperti drainase, hujan ekstrem, atau kekeringan terlebih dahulu.';
+            $estimasiWaktu = 'Setelah kondisi lahan membaik';
+
+            $isFlooded = ($kondisi->kondisi_drainase === 'Buruk — Tergenang') || ($kondisi->curah_hujan_kategori === 'Sangat Tinggi');
+            $isDrought = ($kondisi->kelembaban_tanah === 'Sangat Kering') || ($kondisi->curah_hujan_kategori === 'Sangat Rendah');
+            $isOldTree = ($blok->kategori_umur === 'Tua Renta') || ($blok->umur_tanaman !== null && $blok->umur_tanaman > 25);
+
+            if ($isFlooded) {
+                $namaTahap = 'Tunda Pemupukan & Perbaiki Drainase';
+                $metodeAplikasi = 'Fokus pada normalisasi parit drainase, piringan bebas air, dan pembuatan pasar rintis kering.';
+                $catatan = 'Hindari penaburan pupuk di atas air mengalir atau genangan karena pupuk akan terbuang percuma (leaching). Tunggu genangan surut dan tanah kembali lembab normal sebelum menjadwalkan pemupukan kembali.';
+                $estimasiWaktu = '1-2 Bulan (Menunggu Drainase Diperbaiki)';
+            } elseif ($isDrought) {
+                $namaTahap = 'Tunda Pemupukan & Lakukan Mulsing / Konservasi Air';
+                $metodeAplikasi = 'Aplikasikan janjang kosong (mulsing) di sekeliling piringan untuk menjaga kelembaban tanah.';
+                $catatan = 'Jangan menaburkan pupuk kimia (Urea/KCl) pada tanah kering pecah-pecah karena pupuk akan menguap sia-sia. Lakukan pemupukan segera setelah ada curah hujan yang cukup.';
+                $estimasiWaktu = 'Awal Musim Hujan (Curah Hujan Cukup)';
+            } elseif ($isOldTree) {
+                $namaTahap = 'Tunda Pemupukan & Evaluasi Kelayakan Replanting';
+                $metodeAplikasi = 'Lakukan analisis biaya pemeliharaan versus produktivitas tandan buah segar (TBS) tanaman tua.';
+                $catatan = 'Pemupukan pohon tua (>25 tahun) tidak lagi ekonomis karena tinggi pohon mempersulit panen dan efisiensi serapan pupuk sangat rendah. Pertimbangkan program peremajaan lahan.';
+                $estimasiWaktu = 'Segera (Mulai Perencanaan Replanting)';
+            }
+
+            return [[
+                'tahap'            => 1,
+                'nama_tahap'       => $namaTahap,
+                'estimasi_waktu'   => $estimasiWaktu,
+                'persentase_urea'  => 0,
+                'persentase_kcl'   => 0,
+                'urea_kg'          => 0,
+                'kcl_kg'           => 0,
+                'urea_per_pokok'   => 0,
+                'kcl_per_pokok'    => 0,
+                'metode_aplikasi'  => $metodeAplikasi,
+                'catatan'          => $catatan,
+                'status_tahap'     => 'Ditunda',
+            ]];
+        }
+
+        // Jika status Darurat (Defisiensi Berat)
+        if ($statusDominan === 'Darurat') {
+            return [[
+                'tahap'            => 1,
+                'nama_tahap'       => 'Tunda Pemupukan Kimia & Lakukan Koreksi Lahan',
+                'estimasi_waktu'   => 'Segera (Bulan Ini)',
+                'persentase_urea'  => 0,
+                'persentase_kcl'   => 0,
+                'urea_kg'          => 0,
+                'kcl_kg'           => 0,
+                'urea_per_pokok'   => 0,
+                'kcl_per_pokok'    => 0,
+                'metode_aplikasi'  => 'Lakukan pengapuran (Dolomit) atau penanganan hama/penyakit sesuai indikasi masalah.',
+                'catatan'          => 'Status DARURAT (Defisiensi Berat): Sangat tidak dianjurkan melakukan pemupukan Urea dan KCl sebelum masalah utama teratasi. Aplikasikan Dolomit sebanyak 0.5–1.0 kg/pokok jika pH sangat masam, lalu uji kembali pH tanah setelah 2-3 bulan.',
+                'status_tahap'     => 'Ditunda',
+            ]];
+        }
+
+        $totalUrea = $dataDosis['total_urea'] ?? 0;
+        $totalKcl = $dataDosis['total_kcl'] ?? 0;
+        $dosisUrea = $dataDosis['dosis_urea'] ?? 0;
+        $dosisKcl = $dataDosis['dosis_kcl'] ?? 0;
 
         // Jika tidak ada dosis, return empty
         if (!$totalUrea && !$totalKcl) {
             return [];
         }
 
-        // Jika status Tunda
-        if ($statusDominan === 'Tunda') {
-            return [[
+        $jadwal = [];
+        if ($kondisi->ada_gulma_dominan || $kondisi->ada_serangan_hama) {
+            $catatanPrep = [];
+            $metodePrep = [];
+            if ($kondisi->ada_gulma_dominan) {
+                $metodePrep[] = 'Pembersihan gulma (ring weeding) secara manual atau menggunakan herbisida secara selektif pada piringan pokok.';
+                $catatanPrep[] = 'Piringan harus bersih (radius 1.5-2.0 meter dari batang) sebelum pemupukan agar pupuk terserap sepenuhnya oleh kelapa sawit.';
+            }
+            if ($kondisi->ada_serangan_hama) {
+                $metodePrep[] = 'Pengendalian hama secara terpadu (PHT) dengan insektisida/pestisida yang sesuai.';
+                $catatanPrep[] = 'Pastikan serangan hama terkendali terlebih dahulu sebelum pupuk kimia ditabur agar tanaman sawit dapat pulih maksimal.';
+            }
+
+            $jadwal[] = [
                 'tahap'            => 1,
-                'nama_tahap'       => 'Tunda Pemupukan',
-                'estimasi_waktu'   => 'Setelah kondisi lahan membaik',
+                'nama_tahap'       => 'Tahap Persiapan: Pengendalian Hama & Gulma',
+                'estimasi_waktu'   => '7-14 hari sebelum pemupukan kimia',
                 'persentase_urea'  => 0,
                 'persentase_kcl'   => 0,
                 'urea_kg'          => 0,
                 'kcl_kg'           => 0,
-                'metode_aplikasi'  => 'Tidak dianjurkan pemupukan saat ini',
-                'catatan'          => 'Perbaiki faktor pembatas seperti drainase, hujan ekstrem, atau kekeringan terlebih dahulu',
-                'status_tahap'     => 'Ditunda',
-            ]];
+                'urea_per_pokok'   => 0,
+                'kcl_per_pokok'    => 0,
+                'metode_aplikasi'  => implode(' ', $metodePrep),
+                'catatan'          => implode(' ', $catatanPrep),
+                'status_tahap'     => 'Wajib Dilakukan',
+            ];
         }
 
         // Tentukan pembagian persentase berdasarkan status
@@ -440,34 +517,117 @@ class RbsService
             $catatanTahap2 = 'Aplikasikan segera setelah hujan turun dan tanah lembab.';
         }
 
-        $jadwal = [
-            [
-                'tahap'            => 1,
-                'nama_tahap'       => 'Tahap 1',
-                'estimasi_waktu'   => '7-14 hari setelah kondisi tanah sesuai',
-                'persentase_urea'  => $pembagian[0],
-                'persentase_kcl'   => $pembagian[0],
-                'urea_kg'          => round(($totalUrea * $pembagian[0]) / 100, 2),
-                'kcl_kg'           => round(($totalKcl * $pembagian[0]) / 100, 2),
-                'metode_aplikasi'  => 'Disebar merata pada piringan tanaman',
-                'catatan'          => $catatanTahap1,
-                'status_tahap'     => 'Direncanakan',
-            ],
-            [
-                'tahap'            => 2,
-                'nama_tahap'       => 'Tahap 2',
-                'estimasi_waktu'   => '60-90 hari setelah tahap 1',
-                'persentase_urea'  => $pembagian[1],
-                'persentase_kcl'   => $pembagian[1],
-                'urea_kg'          => round(($totalUrea * $pembagian[1]) / 100, 2),
-                'kcl_kg'           => round(($totalKcl * $pembagian[1]) / 100, 2),
-                'metode_aplikasi'  => 'Aplikasi lanjutan sesuai kondisi lapangan',
-                'catatan'          => $catatanTahap2,
-                'status_tahap'     => 'Direncanakan',
-            ],
+        // Tentukan Bulan Pelaksanaan Realistis Berdasarkan Musim & Tanggal Observasi
+        $baseDate = $kondisi->tanggal_observasi ?? now();
+        $bulanAnalisis = $baseDate->month;
+        $tahunAnalisis = $baseDate->year;
+
+        if (in_array($bulanAnalisis, [12, 1, 2])) {
+            $bulan1 = 3; // Maret
+            $tahun1 = ($bulanAnalisis == 12) ? $tahunAnalisis + 1 : $tahunAnalisis;
+        } elseif (in_array($bulanAnalisis, [3, 4, 5])) {
+            $bulan1 = $bulanAnalisis; // Bulan ini
+            $tahun1 = $tahunAnalisis;
+        } elseif (in_array($bulanAnalisis, [6, 7, 8])) {
+            $bulan1 = 9; // September
+            $tahun1 = $tahunAnalisis;
+        } else { // 9, 10, 11
+            $bulan1 = $bulanAnalisis; // Bulan ini
+            $tahun1 = $tahunAnalisis;
+        }
+
+        $time1 = \Carbon\Carbon::create($tahun1, $bulan1, 1, 0, 0, 0);
+        $time2 = $time1->copy()->addMonths(6);
+
+        $waktu1A = $this->getNamaBulanIndo($time1->month) . ' ' . $time1->year;
+        $waktu1B = $this->getNamaBulanIndo($time1->month) . ' ' . $time1->year . ' (Jeda 2-3 minggu setelah Urea)';
+        $waktu2A = $this->getNamaBulanIndo($time2->month) . ' ' . $time2->year;
+        $waktu2B = $this->getNamaBulanIndo($time2->month) . ' ' . $time2->year . ' (Jeda 2-3 minggu setelah Urea)';
+
+        // Metode aplikasi berdasarkan umur tanaman
+        $umurTanaman = $blok->umur_tanaman;
+        $kategoriUmur = $blok->kategori_umur;
+
+        if ($kategoriUmur === 'Belum Menghasilkan' || ($umurTanaman !== null && $umurTanaman < 3)) {
+            $metodeUrea = 'Ditabur melingkar merata (lebar band 10-20 cm) sekitar 30-50 cm dari pangkal batang sawit TBM.';
+            $metodeKcl  = 'Ditabur melingkar merata sekitar 30-50 cm dari pangkal batang di atas piringan bersih.';
+        } else {
+            $metodeUrea = 'Ditabur melingkar merata pada piringan bersih berjarak 1.5 - 2.0 meter dari pangkal batang (di bawah proyeksi tajuk terluar pelepah).';
+            $metodeKcl  = 'Ditabur melingkar merata berjarak 1.5 - 2.0 meter dari pangkal batang (di bawah area akar rambut aktif).';
+        }
+
+        $startTahap = count($jadwal) + 1;
+
+        $jadwal[] = [
+            'tahap'            => $startTahap,
+            'nama_tahap'       => 'Tahap 1A: Aplikasi Urea',
+            'estimasi_waktu'   => $waktu1A,
+            'persentase_urea'  => $pembagian[0],
+            'persentase_kcl'   => 0,
+            'urea_kg'          => round(($totalUrea * $pembagian[0]) / 100, 2),
+            'kcl_kg'           => 0,
+            'urea_per_pokok'   => round(($dosisUrea * $pembagian[0]) / 100, 2),
+            'kcl_per_pokok'    => 0,
+            'metode_aplikasi'  => $metodeUrea,
+            'catatan'          => $catatanTahap1,
+            'status_tahap'     => 'Direncanakan',
+        ];
+        $jadwal[] = [
+            'tahap'            => $startTahap + 1,
+            'nama_tahap'       => 'Tahap 1B: Aplikasi KCl',
+            'estimasi_waktu'   => $waktu1B,
+            'persentase_urea'  => 0,
+            'persentase_kcl'   => $pembagian[0],
+            'urea_kg'          => 0,
+            'kcl_kg'           => round(($totalKcl * $pembagian[0]) / 100, 2),
+            'urea_per_pokok'   => 0,
+            'kcl_per_pokok'    => round(($dosisKcl * $pembagian[0]) / 100, 2),
+            'metode_aplikasi'  => $metodeKcl,
+            'catatan'          => 'Pastikan piringan bersih dari gulma. Jangan mencampur KCl langsung dengan Urea.',
+            'status_tahap'     => 'Direncanakan',
+        ];
+        $jadwal[] = [
+            'tahap'            => $startTahap + 2,
+            'nama_tahap'       => 'Tahap 2A: Aplikasi Urea',
+            'estimasi_waktu'   => $waktu2A,
+            'persentase_urea'  => $pembagian[1],
+            'persentase_kcl'   => 0,
+            'urea_kg'          => round(($totalUrea * $pembagian[1]) / 100, 2),
+            'kcl_kg'           => 0,
+            'urea_per_pokok'   => round(($dosisUrea * $pembagian[1]) / 100, 2),
+            'kcl_per_pokok'    => 0,
+            'metode_aplikasi'  => $metodeUrea,
+            'catatan'          => $catatanTahap2,
+            'status_tahap'     => 'Direncanakan',
+        ];
+        $jadwal[] = [
+            'tahap'            => $startTahap + 3,
+            'nama_tahap'       => 'Tahap 2B: Aplikasi KCl',
+            'estimasi_waktu'   => $waktu2B,
+            'persentase_urea'  => 0,
+            'persentase_kcl'   => $pembagian[1],
+            'urea_kg'          => 0,
+            'kcl_kg'           => round(($totalKcl * $pembagian[1]) / 100, 2),
+            'urea_per_pokok'   => 0,
+            'kcl_per_pokok'    => round(($dosisKcl * $pembagian[1]) / 100, 2),
+            'metode_aplikasi'  => $metodeKcl,
+            'catatan'          => 'Lakukan evaluasi kondisi visual pelepah dan daun kelapa sawit sebelum penaburan.',
+            'status_tahap'     => 'Direncanakan',
         ];
 
         return $jadwal;
+    }
+
+    /**
+     * Helper nama bulan bahasa indonesia.
+     */
+    private function getNamaBulanIndo(int $month): string
+    {
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        return $namaBulan[$month] ?? '';
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -579,15 +739,14 @@ class RbsService
 
         // Cek defisiensi (array contains check)
         if ($rule->kondisi_defisiensi !== null) {
-            $jumlahKondisiDiRule++;
             $defisiensiInput = $kondisi->gejala_defisiensi ?? [];
-            if (empty($defisiensiInput)) {
-                return false;
+            if (!empty($defisiensiInput)) {
+                $jumlahKondisiDiRule++;
+                if (!in_array($rule->kondisi_defisiensi, $defisiensiInput)) {
+                    return false;
+                }
+                $jumlahKondisiCocok++;
             }
-            if (!in_array($rule->kondisi_defisiensi, $defisiensiInput)) {
-                return false;
-            }
-            $jumlahKondisiCocok++;
         }
 
         // Cek kondisi pelepah
@@ -669,6 +828,7 @@ class RbsService
             if ($existing && $this->hasilSamaDenganSebelumnya($existing, $data)) {
                 // Hanya update tanggal analisis tanpa membuat record baru
                 $existing->update(['tanggal_analisis' => $data['tanggal_analisis']]);
+                $existing->touch(); // Force update the updated_at timestamp to sync with the latest analysis run
                 return $existing;
             }
 
@@ -693,6 +853,13 @@ class RbsService
      */
     private function hasilSamaDenganSebelumnya(RekomendasiRbs $existing, array $newData): bool
     {
+        // Jika struktur atau jumlah tahapan jadwal berubah, anggap hasil berbeda agar diperbarui
+        $existingJadwal = $existing->jadwal_pemupukan ?? [];
+        $newJadwal = $newData['jadwal_pemupukan'] ?? [];
+        if (count($existingJadwal) !== count($newJadwal)) {
+            return false;
+        }
+
         return $existing->kondisi_lahan_id == $newData['kondisi_lahan_id']
             && $existing->status_kebutuhan_dominan === $newData['status_kebutuhan_dominan']
             && $existing->jumlah_rule_terpicu == $newData['jumlah_rule_terpicu']
@@ -705,8 +872,8 @@ class RbsService
      */
     private function susunHasil(BlokLahan $blok, KondisiLahan $kondisi, array $rules, array $kecukupanData): array
     {
-        // Tentukan status dominan
-        $hierarki = ['Darurat' => 4, 'Segera' => 3, 'Normal' => 2, 'Tunda' => 1];
+        // Tentukan status dominan (Tunda is prioritized to override Segera/Normal/Darurat)
+        $hierarki = ['Tunda' => 4, 'Darurat' => 3, 'Segera' => 2, 'Normal' => 1];
         $statusDominan = collect($rules)
             ->sortByDesc(fn($r) => $hierarki[$r->status_kebutuhan] ?? 0)
             ->first()
@@ -735,14 +902,35 @@ class RbsService
             ->pluck('saran_tindakan')
             ->implode(' | ');
 
-        // Hitung dosis
-        $dosis = $this->hitungDosisStandar($blok, $kondisi);
+        if ($kondisi->ada_gulma_dominan || $kondisi->ada_serangan_hama) {
+            $saranTambahan = [];
+            if ($kondisi->ada_gulma_dominan) {
+                $saranTambahan[] = 'Kendalikan gulma dominan di piringan sawit';
+            }
+            if ($kondisi->ada_serangan_hama) {
+                $saranTambahan[] = 'Atasi serangan hama aktif';
+            }
+            $saranUtama = implode(' & ', $saranTambahan) . ' sebelum pemupukan kimia dilakukan. | ' . $saranUtama;
+        }
+
+        // Hitung dosis (Jika Darurat / Tunda, dosis Urea & KCl adalah 0 karena pemupukan kimia ditunda)
+        if ($statusDominan === 'Darurat' || $statusDominan === 'Tunda') {
+            $dosis = [
+                'dosis_urea' => 0.0,
+                'dosis_kcl'  => 0.0,
+                'total_urea' => 0.0,
+                'total_kcl'  => 0.0,
+                'multiplier_waktu_info' => $statusDominan === 'Darurat' ? '[Pemupukan kimia ditunda: Atasi kondisi darurat terlebih dahulu]' : '[Pemupukan ditunda: Kondisi pembatas belum sesuai]',
+            ];
+        } else {
+            $dosis = $this->hitungDosisStandar($blok, $kondisi);
+        }
 
         // Catatan dosis
-        $catatanDosis = $this->tentukanCatatanDosis($statusDominan, $masalah, $dosis);
+        $catatanDosis = $this->tentukanCatatanDosis($statusDominan, $masalah, $dosis, $kondisi);
 
         // Fitur 2: Jadwal pemupukan
-        $jadwal = $this->generateJadwalPemupukan($dosis, $kondisi, $statusDominan);
+        $jadwal = $this->generateJadwalPemupukan($dosis, $kondisi, $statusDominan, $blok);
 
         // Fitur 3: Validitas
         $validitas = $this->tentukanValiditasRekomendasi($kondisi, $kecukupanData);
@@ -815,7 +1003,7 @@ class RbsService
     private function hasilDataTidakCukup(BlokLahan $blok, KondisiLahan $kondisi, array $kecukupanData): array
     {
         $dosis = $this->hitungDosisStandar($blok, $kondisi);
-        $jadwal = $this->generateJadwalPemupukan($dosis, $kondisi, 'Normal');
+        $jadwal = $this->generateJadwalPemupukan($dosis, $kondisi, 'Normal', $blok);
         $confidence = $this->hitungConfidence($kondisi, []);
 
         $hasil = $this->simpanDenganHistori($blok->id, [
@@ -853,7 +1041,7 @@ class RbsService
     private function hasilNormal(BlokLahan $blok, KondisiLahan $kondisi, array $kecukupanData): array
     {
         $dosis = $this->hitungDosisStandar($blok, $kondisi);
-        $jadwal = $this->generateJadwalPemupukan($dosis, $kondisi, 'Normal');
+        $jadwal = $this->generateJadwalPemupukan($dosis, $kondisi, 'Normal', $blok);
         $validitas = $this->tentukanValiditasRekomendasi($kondisi, $kecukupanData);
         $confidence = $this->hitungConfidence($kondisi, []);
 
@@ -889,7 +1077,7 @@ class RbsService
     /**
      * Tentukan catatan kontekstual untuk dosis berdasarkan status dan masalah.
      */
-    private function tentukanCatatanDosis(string $statusDominan, array $masalah, array $dosis): string
+    private function tentukanCatatanDosis(string $statusDominan, array $masalah, array $dosis, KondisiLahan $kondisi): string
     {
         $masalahStr = implode(' ', $masalah);
         $multiplierInfo = $dosis['multiplier_waktu_info'] ?? '';
@@ -916,6 +1104,16 @@ class RbsService
             }
         } elseif ($statusDominan === 'Segera') {
             $catatan = 'Segera aplikasikan dosis pupuk standar ini bersamaan dengan penanganan masalah yang teridentifikasi.';
+            if ($kondisi->ada_gulma_dominan || $kondisi->ada_serangan_hama) {
+                $notes = [];
+                if ($kondisi->ada_gulma_dominan) {
+                    $notes[] = 'kendalikan gulma dominan';
+                }
+                if ($kondisi->ada_serangan_hama) {
+                    $notes[] = 'atasi serangan hama';
+                }
+                $catatan = 'PENTING: Harap ' . implode(' dan ', $notes) . ' sebelum pupuk kimia ditabur agar penyerapan hara oleh pokok sawit optimal.';
+            }
         } else {
             $catatan = 'Kondisi lahan normal. Dosis dapat diaplikasikan sesuai jadwal pemupukan standar.';
         }

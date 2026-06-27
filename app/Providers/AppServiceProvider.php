@@ -18,11 +18,20 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.app', function ($view) {
             $blokDarurat = \App\Models\BlokLahan::whereHas('rekomendasiRbsTerbaru', function ($q) {
                 $q->where('status_kebutuhan_dominan', 'Darurat');
-            })->with('anggota')->limit(5)->get();
+            })->with(['anggota', 'kondisiTerbaru', 'rekomendasiRbsTerbaru'])->get();
 
-            $jumlahDarurat = \App\Models\RekomendasiRbs::where('status_kebutuhan_dominan', 'Darurat')->count();
+            // Filter out blocks where the latest conditions are newer than the latest recommendations (outdated)
+            $blokDarurat = $blokDarurat->filter(function ($blok) {
+                $kondisi = $blok->kondisiTerbaru;
+                $rbs = $blok->rekomendasiRbsTerbaru;
+                if (!$kondisi || !$rbs) return false;
+                return !$kondisi->updated_at->gt($rbs->updated_at);
+            });
 
-            $view->with('notifBlokDarurat', $blokDarurat);
+            $jumlahDarurat = $blokDarurat->count();
+            $blokDaruratLimit = $blokDarurat->take(5);
+
+            $view->with('notifBlokDarurat', $blokDaruratLimit);
             $view->with('jumlahNotifDarurat', $jumlahDarurat);
         });
     }

@@ -124,7 +124,7 @@
                 @php
                     $rbs = $blok->rekomendasiRbsTerbaru;
                     $kondisi = $blok->kondisiTerbaru;
-                    $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->tanggal_analisis);
+                    $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->updated_at);
                     $dataBlokKurang = !$blok->tahun_tanam || !$blok->jenis_tanah || !$blok->topografi;
                     $statusConfig = match($rbs?->status_kebutuhan_dominan) {
                         'Darurat' => ['bg' => 'bg-red-50 text-red-700', 'label' => 'Defisiensi Berat'],
@@ -208,7 +208,7 @@
         @php
             $rbs = $blok->rekomendasiRbsTerbaru;
             $kondisi = $blok->kondisiTerbaru;
-            $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->tanggal_analisis);
+            $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->updated_at);
             $dataBlokKurang = !$blok->tahun_tanam || !$blok->jenis_tanah || !$blok->topografi;
             $statusConfig = match($rbs?->status_kebutuhan_dominan) {
                 'Darurat' => ['bg' => 'bg-red-100 text-red-800', 'label' => 'Defisiensi Berat'],

@@ -69,7 +69,7 @@
                     @php
                         $kondisi = $blok->kondisiTerbaru;
                         $rbs = $blok->rekomendasiRbsTerbaru;
-                        $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->tanggal_analisis);
+                        $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->updated_at);
                         $belumDianalisis = $kondisi && !$rbs;
                     @endphp
                     <tr class="hover:bg-slate-50/50">
@@ -80,17 +80,29 @@
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ $kondisi->musim_saat_ini ?? '—' }}</td>
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ $kondisi->kondisi_drainase ?? '—' }}</td>
                         <td class="px-4 py-2.5 text-center">
+                            @php
+                                $statusConfig = match($rbs?->status_kebutuhan_dominan) {
+                                    'Darurat' => ['bg' => 'bg-red-50 text-red-700 border-red-200', 'label' => 'Defisiensi Berat'],
+                                    'Segera'  => ['bg' => 'bg-orange-50 text-orange-700 border-orange-200', 'label' => 'Perlu Pupuk'],
+                                    'Normal'  => ['bg' => 'bg-emerald-50 text-emerald-700 border-emerald-200', 'label' => 'Sehat'],
+                                    'Tunda'   => ['bg' => 'bg-slate-50 text-slate-600 border-slate-200', 'label' => 'Tunda Pupuk'],
+                                    default   => ['bg' => 'bg-blue-50 text-blue-600 border-blue-200', 'label' => 'Belum Dianalisis'],
+                                };
+                            @endphp
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold {{ $statusConfig['bg'] }} border">
+                                {{ $statusConfig['label'] }}
+                            </span>
                             @if($perluAnalisisUlang)
-                            <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold bg-amber-50 text-amber-700 border border-amber-200" title="Kondisi diperbarui setelah analisis terakhir">⚠️ Perlu Analisis Ulang</span>
-                            @elseif($belumDianalisis)
-                            <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold bg-blue-50 text-blue-600 border border-blue-200">Belum Dianalisis</span>
-                            @else
-                            <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Sinkron</span>
+                            <span class="block mt-1 text-[8px] text-amber-600 font-semibold" title="Kondisi diperbarui setelah analisis terakhir">⚠️ Perlu Analisis Ulang</span>
                             @endif
                         </td>
                         <td class="px-4 py-2.5 text-right">
-                            <div class="flex items-center gap-1 justify-end">
-                                <a href="{{ route('kondisi-lahan.edit', $kondisi) }}" class="p-1 rounded-md bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-all" title="Edit">
+                            <div class="flex items-center gap-1.5 justify-end">
+                                <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blok->id]) }}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px] font-bold rounded-lg transition-all shadow-sm" title="Input Observasi Baru">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Observasi Baru
+                                </a>
+                                <a href="{{ route('kondisi-lahan.edit', $kondisi) }}" class="p-1 rounded-md bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-all" title="Edit Observasi Terakhir">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
                                 <form action="{{ route('kondisi-lahan.destroy', $kondisi) }}" method="POST" class="inline">
@@ -113,17 +125,27 @@
             @php
                 $kondisi = $blok->kondisiTerbaru;
                 $rbs = $blok->rekomendasiRbsTerbaru;
-                $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->tanggal_analisis);
+                $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->updated_at);
                 $belumDianalisis = $kondisi && !$rbs;
             @endphp
             <div class="px-4 py-3">
                 <div class="flex items-center justify-between gap-2 mb-1">
                     <p class="font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }} <span class="font-normal text-slate-400">· {{ $kondisi->tanggal_observasi->format('d/m/Y') }}</span></p>
-                    @if($perluAnalisisUlang)
-                    <span class="inline-flex px-1.5 py-0.5 rounded-full text-[8px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 flex-shrink-0">⚠️ Perlu Ulang</span>
-                    @elseif($belumDianalisis)
-                    <span class="inline-flex px-1.5 py-0.5 rounded-full text-[8px] font-semibold bg-blue-50 text-blue-600 border border-blue-200 flex-shrink-0">Belum</span>
-                    @endif
+                    @php
+                        $statusConfig = match($rbs?->status_kebutuhan_dominan) {
+                            'Darurat' => ['bg' => 'bg-red-50 text-red-700 border-red-200', 'label' => 'Defisiensi Berat'],
+                            'Segera'  => ['bg' => 'bg-orange-50 text-orange-700 border-orange-200', 'label' => 'Perlu Pupuk'],
+                            'Normal'  => ['bg' => 'bg-emerald-50 text-emerald-700 border-emerald-200', 'label' => 'Sehat'],
+                            'Tunda'   => ['bg' => 'bg-slate-50 text-slate-600 border-slate-200', 'label' => 'Tunda Pupuk'],
+                            default   => ['bg' => 'bg-blue-50 text-blue-600 border-blue-200', 'label' => 'Belum'],
+                        };
+                    @endphp
+                    <div class="flex flex-col items-end gap-0.5">
+                        <span class="inline-flex px-1.5 py-0.5 rounded-full text-[8px] font-semibold {{ $statusConfig['bg'] }} border flex-shrink-0">{{ $statusConfig['label'] }}</span>
+                        @if($perluAnalisisUlang)
+                        <span class="text-[8px] text-amber-600 font-semibold flex-shrink-0">⚠️ Perlu Ulang</span>
+                        @endif
+                    </div>
                 </div>
                 <div class="flex items-center justify-between gap-2">
                     <div class="flex flex-wrap gap-x-2 text-[10px] text-slate-500">
@@ -131,7 +153,8 @@
                         @if($kondisi->ph_tanah)<span>pH {{ number_format($kondisi->ph_tanah, 1) }}</span>@endif
                         @if($kondisi->musim_saat_ini)<span>{{ $kondisi->musim_saat_ini }}</span>@endif
                     </div>
-                    <div class="flex items-center gap-1 flex-shrink-0">
+                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <a href="{{ route('kondisi-lahan.create', ['blok_lahan_id' => $blok->id]) }}" class="px-2 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[9px] font-bold rounded-md" title="Input Observasi Baru">Baru</a>
                         <a href="{{ route('kondisi-lahan.edit', $kondisi) }}" class="px-2 py-1 bg-blue-50 border border-blue-200 text-blue-700 text-[9px] font-medium rounded-md">Edit</a>
                         <form action="{{ route('kondisi-lahan.destroy', $kondisi) }}" method="POST" class="inline">
                             @csrf @method('DELETE')

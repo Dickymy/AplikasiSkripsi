@@ -101,9 +101,10 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">pH Tanah</label>
-                    <input type="number" name="ph_tanah" value="{{ old('ph_tanah') }}"
+                    <input type="number" name="ph_tanah" id="ph_tanah_input" value="{{ old('ph_tanah') }}"
                         step="0.1" min="3" max="8" placeholder="Contoh: 5.2"
                         class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors @error('ph_tanah') border-red-400 @enderror">
+                    <p id="ph-warning-alert" class="mt-1 text-xs text-red-600 font-semibold hidden">⚠️ Nilai pH di luar skala normal (3.0 - 8.0)!</p>
                     <p class="mt-1 text-xs text-slate-400">Skala 3.0–8.0 · Optimal sawit: 5.5–6.5</p>
                     <p class="mt-0.5 text-xs text-amber-600">⚡ pH &lt; 4.5 = pupuk tidak efektif, perlu kapur dulu</p>
                     @error('ph_tanah') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
@@ -929,5 +930,29 @@ function fetchCuacaOtomatis() {
         showToast('error', '❌ ' + msg, 6000);
     });
 }
+
+// pH Input Warning Validation
+(function() {
+    var phInput = document.getElementById('ph_tanah_input');
+    var warning = document.getElementById('ph-warning-alert');
+    if (phInput) {
+        phInput.addEventListener('input', function() {
+            var val = parseFloat(this.value);
+            if (this.value !== '' && (val < 3.0 || val > 8.0)) {
+                if (warning) warning.classList.remove('hidden');
+            } else {
+                if (warning) warning.classList.add('hidden');
+            }
+        });
+        phInput.addEventListener('blur', function() {
+            var val = parseFloat(this.value);
+            if (this.value !== '' && (val < 3.0 || val > 8.0)) {
+                alert('Peringatan: Nilai pH tanah (' + this.value + ') berada di luar skala normal (3.0 - 8.0). Silakan masukkan nilai antara 3.0 hingga 8.0.');
+                this.value = '';
+                if (warning) warning.classList.add('hidden');
+            }
+        });
+    }
+})();
 </script>
 @endpush

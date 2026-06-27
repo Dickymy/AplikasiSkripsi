@@ -22,32 +22,32 @@
     {{-- Grid pattern --}}
     <div class="absolute inset-0 opacity-[0.03]" style="background-image: linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px); background-size: 40px 40px;"></div>
 
-    <div class="relative z-10 w-full max-w-md px-6">
+    <div class="relative z-10 w-full max-w-md px-6 py-8">
         {{-- Title --}}
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold text-slate-900">SPK Sawit</h1>
-            <p class="text-slate-600 text-sm mt-1">Sistem Pendukung Keputusan Pemupukan Kelapa Sawit</p>
-            <p class="text-slate-400 text-xs mt-1">Portal Internal Admin Kelompok Tani</p>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">SPK Sawit</h1>
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mt-2.5">Sistem Pendukung Keputusan Pemupukan</p>
+            <p class="text-slate-400 text-[10px] mt-1">Portal Internal Admin Kelompok Tani</p>
         </div>
 
         {{-- Login Card --}}
         <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-xl">
-            <h2 class="text-lg font-semibold text-slate-800 mb-6">Masuk ke Sistem</h2>
+            <h2 class="text-base font-bold text-slate-800 mb-5">Masuk ke Sistem</h2>
 
             {{-- Error alert --}}
             @if($errors->any())
-                <div class="mb-5 flex items-start gap-3 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="mb-5 flex items-start gap-3 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs leading-relaxed">
+                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span>{{ $errors->first() }}</span>
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login.submit') }}" class="space-y-5">
+            <form method="POST" action="{{ route('login.submit') }}" class="space-y-4">
                 @csrf
 
                 {{-- Username --}}
                 <div>
-                    <label for="username" class="block text-sm font-medium text-slate-700 mb-2">Username</label>
+                    <label for="username" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Username</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,14 +62,14 @@
                             autocomplete="username"
                             required
                             placeholder="Masukkan username"
-                            class="w-full pl-10 pr-4 py-3 bg-white border {{ $errors->has('username') ? 'border-red-500' : 'border-slate-200' }} rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                            class="w-full pl-10 pr-4 py-2.5 bg-white border {{ $errors->has('username') ? 'border-red-500' : 'border-slate-200' }} rounded-xl text-base text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                         >
                     </div>
                 </div>
 
                 {{-- Password --}}
                 <div>
-                    <label for="password" class="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                    <label for="password" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Password</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,26 +83,23 @@
                             autocomplete="current-password"
                             required
                             placeholder="Masukkan password"
-                            class="w-full pl-10 pr-4 py-3 bg-white border {{ $errors->has('password') ? 'border-red-500' : 'border-slate-200' }} rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                            class="w-full pl-10 pr-4 py-2.5 bg-white border {{ $errors->has('password') ? 'border-red-500' : 'border-slate-200' }} rounded-xl text-base text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                         >
                     </div>
                 </div>
 
                 {{-- Submit --}}
-                <button
-                    type="submit"
-                    id="btn-login"
-                    class="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-600/10 transition-all duration-200 hover:shadow-emerald-600/20 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white"
-                >
-                    Masuk ke Sistem
-                </button>
+                <div class="pt-2">
+                    <button
+                        type="submit"
+                        id="btn-login"
+                        class="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white text-sm font-bold rounded-xl shadow-md shadow-emerald-600/10 transition-all duration-200 hover:shadow-emerald-600/20 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white"
+                    >
+                        Masuk ke Sistem
+                    </button>
+                </div>
             </form>
         </div>
-
-        {{-- Footer note --}}
-        <p class="text-center text-slate-400 text-xs mt-6">
-            Sistem ini hanya untuk Admin Kelompok Tani yang berwenang
-        </p>
     </div>
 </body>
 </html>

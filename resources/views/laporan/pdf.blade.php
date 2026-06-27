@@ -5,87 +5,302 @@
     <title>Laporan Rekomendasi Pemupukan — {{ $rekomendasiRbs->blokLahan->nama_blok }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #1e293b; line-height: 1.6; padding: 24px 32px; }
+        
+        @page {
+            size: A4;
+            margin: 20mm 15mm 20mm 15mm;
+        }
+        
+        body { 
+            font-family: 'DejaVu Sans', sans-serif; 
+            font-size: 10px; 
+            color: #1e293b; 
+            line-height: 1.5; 
+            background: #ffffff;
+        }
 
         /* Header */
-        .header { text-align: center; margin-bottom: 18px; border-bottom: 3px solid #059669; padding-bottom: 14px; }
-        .header h1 { font-size: 15px; font-weight: 700; color: #059669; margin-bottom: 3px; letter-spacing: 0.5px; }
-        .header h2 { font-size: 13px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
-        .header p { font-size: 10px; color: #6b7280; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border-bottom: 2px double #1e293b; 
+            padding-bottom: 12px; 
+        }
+        .header h1 { 
+            font-size: 14px; 
+            font-weight: 700; 
+            color: #0f172a; 
+            margin-bottom: 2px; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px; 
+        }
+        .header h2 { 
+            font-size: 11px; 
+            font-weight: 600; 
+            color: #334155; 
+            margin-bottom: 4px; 
+        }
+        .header p { 
+            font-size: 9px; 
+            color: #64748b; 
+        }
 
-        /* Status Banner — besar dan jelas */
-        .status-banner { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; text-align: center; }
-        .status-darurat { background: #fef2f2; border: 2px solid #f87171; color: #991b1b; }
-        .status-segera { background: #fff7ed; border: 2px solid #fb923c; color: #9a3412; }
-        .status-normal { background: #f0fdf4; border: 2px solid #4ade80; color: #166534; }
-        .status-tunda { background: #f8fafc; border: 2px solid #94a3b8; color: #475569; }
-        .status-banner .label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; opacity: 0.7; }
-        .status-banner .value { font-size: 18px; font-weight: 800; margin-top: 2px; }
+        /* Status Banner — print-friendly grayscale */
+        .status-banner { 
+            padding: 10px; 
+            border: 1px solid #1e293b; 
+            background: #f8fafc;
+            border-radius: 4px; 
+            margin-bottom: 16px; 
+            text-align: center; 
+            page-break-inside: avoid;
+        }
+        .status-banner .label { 
+            font-size: 8px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            font-weight: 700; 
+            color: #475569; 
+        }
+        .status-banner .value { 
+            font-size: 15px; 
+            font-weight: 800; 
+            color: #0f172a;
+            margin-top: 2px; 
+        }
 
         /* Section */
-        .section { margin-bottom: 16px; }
-        .section-title { font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1.5px solid #d1d5db; }
+        .section { 
+            margin-bottom: 18px; 
+            page-break-inside: avoid;
+        }
+        .section-title { 
+            font-size: 10px; 
+            font-weight: 700; 
+            color: #0f172a; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            margin-bottom: 6px; 
+            padding-bottom: 3px; 
+            border-bottom: 1px solid #475569; 
+        }
 
         /* Info Grid */
-        .info-grid { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-        .info-grid td { padding: 6px 10px; border: 1px solid #e5e7eb; vertical-align: top; font-size: 11px; }
-        .info-grid .label { color: #6b7280; width: 30%; background: #f9fafb; font-weight: 500; }
-        .info-grid .value { color: #1e293b; font-weight: 600; }
+        .info-grid { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 10px; 
+        }
+        .info-grid td { 
+            padding: 5px 8px; 
+            border: 1px solid #cbd5e1; 
+            vertical-align: top; 
+            font-size: 10px; 
+        }
+        .info-grid .label { 
+            color: #475569; 
+            width: 25%; 
+            background: #f8fafc; 
+            font-weight: 600; 
+        }
+        .info-grid .value { 
+            color: #0f172a; 
+            font-weight: 600; 
+        }
 
-        /* Logistik — tabel paling penting, dibuat besar */
-        .logistik-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-        .logistik-table th, .logistik-table td { border: 1.5px solid #d1d5db; padding: 8px 12px; text-align: center; }
-        .logistik-table th { background: #f3f4f6; font-size: 10px; font-weight: 700; color: #374151; text-transform: uppercase; }
-        .logistik-table td { font-size: 13px; font-weight: 700; }
-        .logistik-table .urea { color: #92400e; }
-        .logistik-table .kcl { color: #0e7490; }
+        /* Logistik — table */
+        .logistik-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 10px; 
+        }
+        .logistik-table th, .logistik-table td { 
+            border: 1px solid #1e293b; 
+            padding: 6px 10px; 
+            text-align: center; 
+        }
+        .logistik-table th { 
+            background: #f1f5f9; 
+            font-size: 9px; 
+            font-weight: 700; 
+            color: #0f172a; 
+            text-transform: uppercase; 
+        }
+        .logistik-table td { 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: #0f172a;
+        }
 
         /* Jadwal table */
-        .jadwal-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-        .jadwal-table th, .jadwal-table td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; font-size: 10px; }
-        .jadwal-table th { background: #f9fafb; font-weight: 700; color: #4b5563; font-size: 9px; text-transform: uppercase; }
-        .jadwal-table .num { text-align: right; font-weight: 700; }
-        .jadwal-table .urea { color: #92400e; }
-        .jadwal-table .kcl { color: #0e7490; }
+        .jadwal-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 10px; 
+        }
+        .jadwal-table th, .jadwal-table td { 
+            border: 1px solid #cbd5e1; 
+            padding: 5px 7px; 
+            text-align: left; 
+            font-size: 9.5px; 
+        }
+        .jadwal-table th { 
+            background: #f8fafc; 
+            font-weight: 700; 
+            color: #0f172a; 
+            font-size: 8.5px; 
+            text-transform: uppercase; 
+        }
+        .jadwal-table .num { 
+            text-align: right; 
+            font-weight: 700; 
+            color: #0f172a;
+        }
 
         /* Saran box */
-        .saran-box { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 6px; padding: 10px 12px; margin-bottom: 14px; }
-        .saran-box .title { font-size: 10px; font-weight: 700; color: #92400e; text-transform: uppercase; margin-bottom: 4px; }
-        .saran-box .text { font-size: 11px; color: #78350f; line-height: 1.6; }
+        .saran-box { 
+            background: #f8fafc; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 4px; 
+            padding: 8px 10px; 
+            margin-bottom: 12px; 
+            page-break-inside: avoid;
+        }
+        .saran-box .title { 
+            font-size: 9px; 
+            font-weight: 700; 
+            color: #0f172a; 
+            text-transform: uppercase; 
+            margin-bottom: 3px; 
+        }
+        .saran-box .text { 
+            font-size: 10px; 
+            color: #334155; 
+            line-height: 1.5; 
+        }
 
         /* Catatan box */
-        .catatan-box { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 6px; padding: 10px 12px; margin-bottom: 14px; }
-        .catatan-box .title { font-size: 10px; font-weight: 700; color: #1e40af; text-transform: uppercase; margin-bottom: 4px; }
-        .catatan-box .text { font-size: 11px; color: #1e3a5f; line-height: 1.6; }
+        .catatan-box { 
+            background: #f8fafc; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 4px; 
+            padding: 8px 10px; 
+            margin-bottom: 12px; 
+            page-break-inside: avoid;
+        }
+        .catatan-box .title { 
+            font-size: 9px; 
+            font-weight: 700; 
+            color: #0f172a; 
+            text-transform: uppercase; 
+            margin-bottom: 3px; 
+        }
+        .catatan-box .text { 
+            font-size: 10px; 
+            color: #334155; 
+            line-height: 1.5; 
+        }
 
         /* Masalah */
-        .masalah-item { display: inline-block; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 3px 8px; font-size: 10px; margin: 2px 3px 2px 0; color: #374151; font-weight: 500; }
+        .masalah-item { 
+            display: inline-block; 
+            background: #f8fafc; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 3px; 
+            padding: 2px 6px; 
+            font-size: 9px; 
+            margin: 2px 3px 2px 0; 
+            color: #0f172a; 
+            font-weight: 600; 
+        }
 
         /* Pupuk card */
-        .pupuk-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; }
-        .pupuk-card .nama { font-size: 12px; font-weight: 700; color: #15803d; margin-bottom: 3px; }
-        .pupuk-card .detail { font-size: 10px; color: #4b5563; line-height: 1.5; }
+        .pupuk-card { 
+            background: #f8fafc; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 4px; 
+            padding: 6px 10px; 
+            margin-bottom: 5px; 
+            page-break-inside: avoid;
+        }
+        .pupuk-card .nama { 
+            font-size: 10.5px; 
+            font-weight: 700; 
+            color: #0f172a; 
+            margin-bottom: 2px; 
+        }
+        .pupuk-card .detail { 
+            font-size: 9px; 
+            color: #334155; 
+            line-height: 1.4; 
+        }
 
-        /* Rules table — teknis, font lebih kecil */
-        .rules-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        .rules-table th, .rules-table td { border: 1px solid #e5e7eb; padding: 4px 6px; text-align: left; font-size: 9px; }
-        .rules-table th { background: #f9fafb; font-weight: 700; color: #6b7280; }
-        .rules-table td { color: #4b5563; }
+        /* Rules table */
+        .rules-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 10px; 
+        }
+        .rules-table th, .rules-table td { 
+            border: 1px solid #e2e8f0; 
+            padding: 4px 6px; 
+            text-align: left; 
+            font-size: 8.5px; 
+        }
+        .rules-table th { 
+            background: #f8fafc; 
+            font-weight: 700; 
+            color: #475569; 
+        }
+        .rules-table td { 
+            color: #334155; 
+        }
 
-        .badge { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700; }
-        .badge-darurat { background: #fee2e2; color: #991b1b; }
-        .badge-segera { background: #ffedd5; color: #9a3412; }
-        .badge-normal { background: #dcfce7; color: #166534; }
-        .badge-tunda { background: #f1f5f9; color: #475569; }
+        .badge { 
+            display: inline-block; 
+            padding: 1px 4px; 
+            border-radius: 2px; 
+            font-size: 7.5px; 
+            font-weight: 700; 
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #0f172a;
+        }
 
         /* Disclaimer */
-        .disclaimer { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px 10px; margin-bottom: 12px; font-size: 9px; color: #64748b; line-height: 1.5; }
+        .disclaimer { 
+            background: #f8fafc; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 4px; 
+            padding: 6px 8px; 
+            margin-bottom: 10px; 
+            font-size: 8px; 
+            color: #475569; 
+            line-height: 1.4; 
+            page-break-inside: avoid;
+        }
 
         /* Footer */
-        .footer { margin-top: 16px; padding-top: 10px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 9px; color: #9ca3af; }
+        .footer { 
+            margin-top: 15px; 
+            padding-top: 8px; 
+            border-top: 1px solid #cbd5e1; 
+            text-align: center; 
+            font-size: 8px; 
+            color: #64748b; 
+        }
 
         /* Meta info kecil */
-        .meta-info { font-size: 9px; color: #6b7280; margin-bottom: 14px; padding: 6px 10px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; }
+        .meta-info { 
+            font-size: 8.5px; 
+            color: #475569; 
+            margin-bottom: 12px; 
+            padding: 5px 8px; 
+            background: #f8fafc; 
+            border-radius: 4px; 
+            border: 1px solid #cbd5e1; 
+            page-break-inside: avoid;
+        }
     </style>
 </head>
 <body>
@@ -174,30 +389,99 @@
         </table>
         <p style="font-size: 9px; color: #6b7280; text-align: right;">*1 karung = 50 kg</p>
     </div>
+    @else
+    <div class="section">
+        <div class="section-title">Kebutuhan Pupuk</div>
+        <div class="saran-box" style="border-left: 3px solid #475569; background-color: #f8fafc; padding: 10px;">
+            <div class="title" style="color: #0f172a; font-weight: 700; font-size: 9px;">APLIKASI PUPUK KIMIA DITUNDA</div>
+            <div class="text" style="color: #334155; font-size: 9.5px; line-height: 1.5; margin-top: 4px;">
+                @if($rekomendasiRbs->status_kebutuhan_dominan === 'Darurat')
+                    Rekomendasi pemupukan Urea &amp; KCl ditangguhkan sementara karena status lahan <strong>Defisiensi Berat / Darurat</strong>. Sangat disarankan untuk memprioritaskan tindakan korektif (seperti pengapuran dengan Dolomit) terlebih dahulu sebelum mengaplikasikan pupuk kimia guna memastikan penyerapan unsur hara optimal.
+                @else
+                    @php
+                        $masalahStr = implode(' ', $rekomendasiRbs->masalah_teridentifikasi ?? []);
+                        $pesanTunda = 'Kondisi pembatas lahan saat ini (genangan air atau kekeringan ekstrem) tidak ideal untuk pemupukan. Pemupukan kimia standar ditunda sementara waktu guna mencegah pemborosan pupuk akibat pencucian (leaching) atau penguapan (volatilisasi).';
+                        if (str_contains($masalahStr, 'Waterlogging') || str_contains($masalahStr, 'tergenang') || str_contains($masalahStr, 'drainase') || str_contains($masalahStr, 'Drainase')) {
+                            $pesanTunda = '<strong>Lahan Tergenang (Waterlogging)</strong>: Pemupukan tanah ditunda sementara. Air tergenang akan mencuci bersih pupuk (leaching) dan membuat akar kelapa sawit kekurangan oksigen untuk menyerap hara secara efektif. Disarankan untuk memprioritaskan perbaikan parit drainase terlebih dahulu.';
+                        } elseif (str_contains($masalahStr, 'Kekeringan') || str_contains($masalahStr, 'kering') || str_contains($masalahStr, 'Kemarau')) {
+                            $pesanTunda = '<strong>Cekaman Kekeringan</strong>: Pemupukan ditunda sementara. Tanah yang terlalu kering membuat pupuk tidak dapat larut untuk diserap akar, serta berisiko membakar akar rambut kelapa sawit. Disarankan fokus pada pemberian mulsing organik (seperti janjang kosong) untuk menjaga kelembaban dan menunggu hingga curah hujan cukup.';
+                        } elseif (str_contains($masalahStr, 'Tua Renta') || str_contains($masalahStr, 'Tua')) {
+                            $pesanTunda = '<strong>Tanaman Tua Renta</strong>: Pemupukan standar ditangguhkan untuk analisis ekonomi. Pohon berusia di atas 25 tahun memiliki efisiensi penyerapan hara yang sangat rendah. Disarankan mengevaluasi kelayakan replanting (peremajaan lahan) dibandingkan biaya pemeliharaan pupuk.';
+                        }
+                    @endphp
+                    {!! $pesanTunda !!}
+                @endif
+            </div>
+        </div>
+    </div>
     @endif
 
     {{-- ═══ 5. JADWAL PEMUPUKAN — kapan harus bertindak ═══ --}}
     @if($rekomendasiRbs->jadwal_pemupukan && count($rekomendasiRbs->jadwal_pemupukan) > 0)
     <div class="section">
         <div class="section-title">Jadwal Pemupukan</div>
+        @if($rekomendasiRbs->kondisiLahan?->ada_gulma_dominan || $rekomendasiRbs->kondisiLahan?->ada_serangan_hama)
+        <div class="saran-box" style="border-left: 3px solid #d97706; background-color: #fffbeb; margin-bottom: 8px; padding: 8px 10px;">
+            <div class="title" style="color: #b45309; font-weight: 700; font-size: 9px;">TINDAKAN SEBELUM PEMUPUKAN KIMIA</div>
+            <div class="text" style="color: #92400e; font-size: 9px; line-height: 1.4; margin-top: 4px;">
+                Sebelum melakukan pemupukan sesuai jadwal di bawah, pastikan tindakan berikut telah diselesaikan:
+                <ul style="margin-left: 12px; margin-top: 3px; padding-left: 0; list-style-type: disc;">
+                    @if($rekomendasiRbs->kondisiLahan?->ada_gulma_dominan)
+                    <li><strong>Pengendalian Gulma</strong>: Bersihkan gulma di piringan pohon terlebih dahulu agar pupuk kimia terserap sepenuhnya oleh tanaman utama, bukan oleh gulma pengganggu.</li>
+                    @endif
+                    @if($rekomendasiRbs->kondisiLahan?->ada_serangan_hama)
+                    <li><strong>Pengendalian Hama &amp; Penyakit</strong>: Tangani serangan hama aktif menggunakan pestisida/fungisida yang sesuai sebelum pemupukan dilakukan, agar tanaman dapat fokus pulih secara optimal.</li>
+                    @endif
+                </ul>
+            </div>
+        </div>
+        @endif
         <table class="jadwal-table">
             <thead>
                 <tr>
-                    <th style="width:14%">Tahap</th>
-                    <th style="width:24%">Waktu Aplikasi</th>
-                    <th style="width:12%">Urea</th>
-                    <th style="width:12%">KCl</th>
-                    <th style="width:38%">Catatan</th>
+                    <th style="width:18%">Tahap</th>
+                    <th style="width:22%">Waktu Aplikasi</th>
+                    <th style="width:14%">Dosis/Pokok</th>
+                    <th style="width:14%">Total Blok</th>
+                    <th style="width:32%">Cara & Petunjuk</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($rekomendasiRbs->jadwal_pemupukan as $jadwal)
+                @php
+                    $hasUrea = isset($jadwal['urea_kg']) && $jadwal['urea_kg'] > 0;
+                    $hasKcl = isset($jadwal['kcl_kg']) && $jadwal['kcl_kg'] > 0;
+                    $isCombined = $hasUrea && $hasKcl;
+                    
+                    $dosisPokok = '-';
+                    $totalKg = '-';
+                    
+                    if ($isCombined) {
+                        $dosisU = isset($jadwal['urea_per_pokok']) ? $jadwal['urea_per_pokok'] : ($jadwal['urea_kg'] / max(1, ($rekomendasiRbs->blokLahan->sph * $rekomendasiRbs->blokLahan->luas_ha)));
+                        $dosisK = isset($jadwal['kcl_per_pokok']) ? $jadwal['kcl_per_pokok'] : ($jadwal['kcl_kg'] / max(1, ($rekomendasiRbs->blokLahan->sph * $rekomendasiRbs->blokLahan->luas_ha)));
+                        $dosisPokok = 'U: ' . number_format($dosisU, 1) . ' | K: ' . number_format($dosisK, 1);
+                        $totalKg = 'U: ' . number_format($jadwal['urea_kg'], 0) . ' | K: ' . number_format($jadwal['kcl_kg'], 0);
+                    } elseif ($hasUrea) {
+                        $dosisU = isset($jadwal['urea_per_pokok']) ? $jadwal['urea_per_pokok'] : ($jadwal['urea_kg'] / max(1, ($rekomendasiRbs->blokLahan->sph * $rekomendasiRbs->blokLahan->luas_ha)));
+                        $dosisPokok = number_format($dosisU, 2) . ' kg';
+                        $totalKg = number_format($jadwal['urea_kg'], 1) . ' kg';
+                    } elseif ($hasKcl) {
+                        $dosisK = isset($jadwal['kcl_per_pokok']) ? $jadwal['kcl_per_pokok'] : ($jadwal['kcl_kg'] / max(1, ($rekomendasiRbs->blokLahan->sph * $rekomendasiRbs->blokLahan->luas_ha)));
+                        $dosisPokok = number_format($dosisK, 2) . ' kg';
+                        $totalKg = number_format($jadwal['kcl_kg'], 1) . ' kg';
+                    }
+                @endphp
                 <tr>
                     <td style="font-weight:600;">{{ $jadwal['nama_tahap'] }}</td>
                     <td>{{ $jadwal['estimasi_waktu'] }}</td>
-                    <td class="num urea">{{ number_format($jadwal['urea_kg'], 1) }} kg</td>
-                    <td class="num kcl">{{ number_format($jadwal['kcl_kg'], 1) }} kg</td>
-                    <td style="font-style:italic;">{{ $jadwal['catatan'] }}</td>
+                    <td class="num">{{ $dosisPokok }}</td>
+                    <td class="num">{{ $totalKg }}</td>
+                    <td>
+                        <span style="font-size:8.5px;">{{ $jadwal['metode_aplikasi'] }}</span>
+                        @if(!empty($jadwal['catatan']))
+                        <div style="font-size:8px; color:#92400e; margin-top:2px; font-style:italic;">⚠️ {{ $jadwal['catatan'] }}</div>
+                        @endif
+                    </td>
                 </tr>
                 @endforeach
             </tbody>

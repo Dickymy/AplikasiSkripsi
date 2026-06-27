@@ -74,6 +74,34 @@
         </div>
     </div>
 </div>
+@else
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-5 mt-5">
+    <h3 class="text-sm font-bold text-slate-800 mb-2">🧮 Kebutuhan Pupuk Kimia</h3>
+    <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-3.5 flex items-start gap-3">
+        <span class="text-xl">⏸️</span>
+        <div>
+            <p class="text-xs font-bold text-amber-800">Aplikasi Pupuk Kimia Ditunda</p>
+            <p class="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
+                @if($rbs->status_kebutuhan_dominan === 'Darurat')
+                    Status <strong>Defisiensi Berat / Darurat</strong> terdeteksi pada lahan ini. Pemupukan Urea &amp; KCl ditangguhkan sementara. Sangat disarankan untuk memprioritaskan tindakan koreksi (seperti pengapuran dengan Dolomit) sesuai petunjuk jadwal di bawah sebelum mengaplikasikan pupuk kimia utama.
+                @else
+                    @php
+                        $masalahStr = implode(' ', $rbs->masalah_teridentifikasi ?? []);
+                        $pesanTunda = 'Kondisi pembatas lahan saat ini (genangan air atau kekeringan ekstrem) tidak ideal untuk pemupukan. Pemupukan kimia standar ditunda sementara waktu guna mencegah pemborosan pupuk akibat pencucian (leaching) atau penguapan (volatilisasi).';
+                        if (str_contains($masalahStr, 'Waterlogging') || str_contains($masalahStr, 'tergenang') || str_contains($masalahStr, 'drainase') || str_contains($masalahStr, 'Drainase')) {
+                            $pesanTunda = '<strong>Lahan Tergenang (Waterlogging)</strong>: Pemupukan tanah ditunda sementara. Air tergenang akan mencuci bersih pupuk (leaching) dan membuat akar kelapa sawit kekurangan oksigen untuk menyerap hara secara efektif. Disarankan untuk memprioritaskan perbaikan parit drainase terlebih dahulu.';
+                        } elseif (str_contains($masalahStr, 'Kekeringan') || str_contains($masalahStr, 'kering') || str_contains($masalahStr, 'Kemarau')) {
+                            $pesanTunda = '<strong>Cekaman Kekeringan</strong>: Pemupukan ditunda sementara. Tanah yang terlalu kering membuat pupuk tidak dapat larut untuk diserap akar, serta berisiko membakar akar rambut kelapa sawit. Disarankan fokus pada pemberian mulsing organik (seperti janjang kosong) untuk menjaga kelembaban dan menunggu hingga curah hujan cukup.';
+                        } elseif (str_contains($masalahStr, 'Tua Renta') || str_contains($masalahStr, 'Tua')) {
+                            $pesanTunda = '<strong>Tanaman Tua Renta</strong>: Pemupukan standar ditangguhkan untuk analisis ekonomi. Pohon berusia di atas 25 tahun memiliki efisiensi penyerapan hara yang sangat rendah. Disarankan mengevaluasi kelayakan replanting (peremajaan lahan) dibandingkan biaya pemeliharaan pupuk.';
+                        }
+                    @endphp
+                    {!! $pesanTunda !!}
+                @endif
+            </p>
+        </div>
+    </div>
+</div>
 @endif
 
 {{-- ═══════════════════════════════════════════════════════════ --}}
@@ -123,23 +151,99 @@
 @if($rbs->jadwal_pemupukan && count($rbs->jadwal_pemupukan) > 0)
 <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-5">
     <div class="px-4 sm:px-5 py-4 border-b border-slate-100">
-        <h3 class="text-sm font-bold text-slate-800">📅 Jadwal Pemupukan</h3>
-        <p class="text-xs text-slate-400 mt-0.5">Pembagian dosis per tahap aplikasi</p>
+        <h3 class="text-sm font-bold text-slate-800">📅 Jadwal Pemupukan Tahap demi Tahap</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Rencana aplikasi dosis per pokok dan total kebutuhan blok</p>
     </div>
-    <div class="divide-y divide-slate-100">
-        @foreach($rbs->jadwal_pemupukan as $jadwal)
-        <div class="px-4 sm:px-5 py-3">
-            <div class="flex items-center justify-between gap-2 mb-1.5">
-                <p class="text-xs font-bold text-slate-800">{{ $jadwal['nama_tahap'] }}</p>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">{{ $jadwal['estimasi_waktu'] }}</span>
+    <div class="px-4 sm:px-5 py-5">
+        @if($blokLahan->kondisiTerbaru?->ada_gulma_dominan || $blokLahan->kondisiTerbaru?->ada_serangan_hama)
+        <div class="mb-5 bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-800 flex items-start gap-2.5">
+            <span class="text-base flex-shrink-0">⚠️</span>
+            <div>
+                <p class="font-bold">Perlu Tindakan Sebelum Pemupukan Kimia:</p>
+                <ul class="list-disc pl-4 mt-1.5 space-y-1 text-[11px] leading-relaxed text-amber-700">
+                    @if($blokLahan->kondisiTerbaru?->ada_gulma_dominan)
+                    <li><strong>Pembersihan Gulma</strong>: Lakukan pengendalian gulma (penyiangan piringan / ring weeding) secara manual atau menggunakan herbisida sebelum melakukan pemupukan. Gulma yang dominan akan merebut unsur hara yang ditaburkan sehingga pemupukan menjadi tidak efektif.</li>
+                    @endif
+                    @if($blokLahan->kondisiTerbaru?->ada_serangan_hama)
+                    <li><strong>Pengendalian Hama &amp; Penyakit</strong>: Tangani serangan hama aktif dengan insektisida/fungisida yang tepat terlebih dahulu. Pemupukan kimia tanah hanya boleh diaplikasikan jika serangan hama telah terkendali agar tanaman dapat fokus pada pemulihan vegetatif.</li>
+                    @endif
+                </ul>
             </div>
-            <div class="flex gap-4 text-xs mb-1">
-                <span class="text-amber-700 font-semibold">Urea: {{ number_format($jadwal['urea_kg'], 1) }} kg</span>
-                <span class="text-cyan-700 font-semibold">KCl: {{ number_format($jadwal['kcl_kg'], 1) }} kg</span>
-            </div>
-            <p class="text-[10px] text-slate-500 italic">{{ $jadwal['catatan'] }}</p>
         </div>
-        @endforeach
+        @endif
+        
+        <div class="relative border-l-2 border-slate-100 ml-3 space-y-6">
+            @foreach($rbs->jadwal_pemupukan as $index => $jadwal)
+            <div class="relative pb-2" style="padding-left: 32px;">
+                <!-- Bullet point -->
+                <div class="absolute top-1.5 w-4 h-4 rounded-full border-2 border-emerald-500 bg-white flex items-center justify-center" style="left: -9px;">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                    <h4 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                        {{ $jadwal['nama_tahap'] }}
+                    </h4>
+                    <span class="inline-flex self-start sm:self-auto text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 font-medium">
+                        🗓️ {{ $jadwal['estimasi_waktu'] }}
+                    </span>
+                </div>
+
+                <!-- Info Dosis Card -->
+                @if((isset($jadwal['urea_kg']) && $jadwal['urea_kg'] > 0) || (isset($jadwal['kcl_kg']) && $jadwal['kcl_kg'] > 0))
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 mb-2.5">
+                    @if(isset($jadwal['urea_kg']) && $jadwal['urea_kg'] > 0)
+                    <div class="bg-amber-50/60 border border-amber-100 rounded-xl p-3 flex items-start gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-[10px] flex-shrink-0">
+                            N
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] text-amber-700 font-semibold uppercase">Urea</p>
+                            <p class="text-xs text-slate-700 font-medium mt-0.5">
+                                Dosis: <span class="font-bold text-slate-900">{{ isset($jadwal['urea_per_pokok']) ? number_format($jadwal['urea_per_pokok'], 2) : number_format($jadwal['urea_kg'] / max(1, ($blokLahan->sph * $blokLahan->luas_ha)), 2) }}</span> kg/pokok
+                            </p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">
+                                Total Blok: {{ number_format($jadwal['urea_kg'], 1) }} kg (±{{ ceil($jadwal['urea_kg'] / 50) }} Karung)
+                            </p>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if(isset($jadwal['kcl_kg']) && $jadwal['kcl_kg'] > 0)
+                    <div class="bg-cyan-50/60 border border-cyan-100 rounded-xl p-3 flex items-start gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center text-cyan-700 font-bold text-[10px] flex-shrink-0">
+                            K
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] text-cyan-700 font-semibold uppercase">KCl</p>
+                            <p class="text-xs text-slate-700 font-medium mt-0.5">
+                                Dosis: <span class="font-bold text-slate-900">{{ isset($jadwal['kcl_per_pokok']) ? number_format($jadwal['kcl_per_pokok'], 2) : number_format($jadwal['kcl_kg'] / max(1, ($blokLahan->sph * $blokLahan->luas_ha)), 2) }}</span> kg/pokok
+                            </p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">
+                                Total Blok: {{ number_format($jadwal['kcl_kg'], 1) }} kg (±{{ ceil($jadwal['kcl_kg'] / 50) }} Karung)
+                            </p>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+                @endif
+
+                <!-- Cara & Catatan -->
+                <div class="bg-slate-50 rounded-xl p-3 space-y-2 border border-slate-100">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-semibold uppercase">Cara Penaburan</p>
+                        <p class="text-xs text-slate-700 mt-0.5 leading-relaxed">{{ $jadwal['metode_aplikasi'] }}</p>
+                    </div>
+                    @if(!empty($jadwal['catatan']))
+                    <div class="pt-2 border-t border-slate-200/60">
+                        <p class="text-[10px] text-amber-600 font-semibold uppercase">⚠️ Petunjuk Penting</p>
+                        <p class="text-xs text-slate-600 mt-0.5 italic leading-relaxed">{{ $jadwal['catatan'] }}</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
     </div>
 </div>
 @endif

@@ -273,7 +273,7 @@
             <div class="flex-1"></div>
             {{-- Filters --}}
             <div class="relative">
-                <select id="filter-pemilik" class="min-w-[140px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                <select id="filter-pemilik" class="min-w-[140px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none bg-none">
                     <option value="">Semua Pemilik</option>
                 </select>
                 <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
@@ -281,7 +281,7 @@
                 </div>
             </div>
             <div class="relative">
-                <select id="filter-blok" disabled class="min-w-[130px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                <select id="filter-blok" disabled class="min-w-[130px] pl-2.5 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none bg-none">
                     <option value="">Semua Blok</option>
                 </select>
                 <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
@@ -313,7 +313,7 @@
             {{-- Baris 2: Filter pemilik + blok --}}
             <div class="flex items-center gap-2">
                 <div class="relative flex-1">
-                    <select id="filter-pemilik-mobile" class="w-full pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                    <select id="filter-pemilik-mobile" class="w-full pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none bg-none">
                         <option value="">Semua Pemilik</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
@@ -321,7 +321,7 @@
                     </div>
                 </div>
                 <div class="relative flex-1">
-                    <select id="filter-blok-mobile" disabled class="w-full pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none">
+                    <select id="filter-blok-mobile" disabled class="w-full pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none bg-none">
                         <option value="">Semua Blok</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
