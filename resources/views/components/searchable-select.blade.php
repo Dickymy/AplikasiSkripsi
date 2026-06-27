@@ -33,7 +33,7 @@
     <div id="{{ $uid }}-dropdown"
         data-uid="{{ $uid }}"
         class="ss-panel"
-        style="display:none; position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.16); z-index:99999; overflow:hidden;">
+        style="display:none; position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.16); z-index:4999; overflow:hidden;">
 
         {{-- Scroll indicator (tampil hanya jika opsi banyak) --}}
         @if($options->count() > 4)
@@ -150,14 +150,18 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', onScrollResize, { passive: true });
 
     // ── Tutup saat klik di luar ───────────────────────────────────
-    document.addEventListener('click', function(e) {
+    function handleOutsideClick(e) {
         if (!_openUid) return;
         var search   = document.getElementById(_openUid + '-search');
         var dropdown = document.getElementById(_openUid + '-dropdown');
         if (search   && search.contains(e.target))   return;
         if (dropdown && dropdown.contains(e.target)) return;
-        closeDropdown(_openUid);
-    }, true);
+        if (dropdown && typeof dropdown._closeDropdown === 'function') {
+            dropdown._closeDropdown(_openUid);
+        }
+    }
+    document.addEventListener('click', handleOutsideClick, true);
+    document.addEventListener('touchstart', handleOutsideClick, { passive: true, capture: true });
 
     // ── Scroll-arrow update saat user scroll dalam panel ─────────
     document.addEventListener('scroll', function(e) {
@@ -191,24 +195,45 @@ document.addEventListener('DOMContentLoaded', function() {
             if (emptyEl) emptyEl.style.display = visible === 0 ? '' : 'none';
         }
 
+        function showAllOptions() {
+            items.forEach(function(item) {
+                item.style.display = '';
+            });
+            if (emptyEl) emptyEl.style.display = 'none';
+        }
+
         function openDropdown() {
             // Portal: pindahkan ke body
             if (dropdown.parentElement !== document.body) {
                 document.body.appendChild(dropdown);
             }
-            filterOptions();
+            showAllOptions();
             dropdown.style.display = 'block';
             _openUid = uid;
             ssPositionDropdown(uid);
             updateScrollArrows(uid);
             // Highlight border
             searchEl.style.borderColor = '#10b981';
+            // Select text
+            searchEl.select();
         }
 
         function closeDropdown(targetUid) {
             if (targetUid && targetUid !== uid) return;
             dropdown.style.display = 'none';
             searchEl.style.borderColor = '';
+            
+            // Restore search input value to match the hidden valueEl value
+            var currentVal = valueEl.value;
+            var selectedOpt = Array.from(items).find(function(item) {
+                return item.dataset.value === currentVal;
+            });
+            if (selectedOpt) {
+                searchEl.value = selectedOpt.dataset.label;
+            } else {
+                searchEl.value = '';
+            }
+            
             if (_openUid === uid) _openUid = null;
         }
 

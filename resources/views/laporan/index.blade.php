@@ -101,7 +101,7 @@
         $anggota = $group['anggota'];
         $items = $group['items'];
     @endphp
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="anggota-group-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden" data-nama-anggota="{{ strtolower($anggota->nama ?? '') }}">
         {{-- Header anggota --}}
         <div class="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <div class="flex items-center gap-2">
@@ -151,7 +151,7 @@
                         };
                         $layak = in_array($r->status_kebutuhan_dominan, ['Normal', 'Segera']);
                     @endphp
-                    <tr class="hover:bg-slate-50/50">
+                    <tr class="block-row hover:bg-slate-50/50" data-nama-blok="{{ strtolower($r->blokLahan->nama_blok ?? '') }}">
                         <td class="px-4 py-2.5 font-medium text-slate-800 text-xs">{{ $r->blokLahan->nama_blok }}</td>
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ number_format($r->blokLahan->luas_ha, 2) }} Ha</td>
                         <td class="px-4 py-2.5">
@@ -203,7 +203,7 @@
                 };
                 $layak = in_array($r->status_kebutuhan_dominan, ['Normal', 'Segera']);
             @endphp
-            <div class="px-4 py-3">
+            <div class="block-row px-4 py-3" data-nama-blok="{{ strtolower($r->blokLahan->nama_blok ?? '') }}">
                 <div class="flex items-center justify-between gap-2 mb-1.5">
                     <p class="font-semibold text-slate-800 text-xs">{{ $r->blokLahan->nama_blok }} <span class="font-normal text-slate-400">· {{ number_format($r->blokLahan->luas_ha, 2) }} Ha</span></p>
                     <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-semibold {{ $sc }} flex-shrink-0">{{ \App\Models\RekomendasiRbs::labelStatus($r->status_kebutuhan_dominan) }}</span>

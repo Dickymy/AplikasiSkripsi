@@ -60,7 +60,7 @@
         <div id="{{ $cid }}-panel"
             data-cid="{{ $cid }}"
             class="cs-panel"
-            style="display:none; position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.16); z-index:99999; overflow:hidden;">
+            style="display:none; position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.16); z-index:4999; overflow:hidden;">
 
             @if(count($opts) > 4)
             {{-- Panah atas — muncul saat bisa scroll ke atas --}}
@@ -309,14 +309,16 @@
     window.addEventListener('resize',  onScrollResize, { passive: true });
 
     // ── Tutup panel saat klik di luar ────────────────────────────
-    document.addEventListener('click', function(e) {
+    function handleCsOutsideClick(e) {
         if (!_openCid) return;
         var btn   = document.getElementById(_openCid + '-btn');
         var panel = document.getElementById(_openCid + '-panel');
         if (btn   && btn.contains(e.target))   return;
         if (panel && panel.contains(e.target)) return;
         csClose(_openCid);
-    }, true);
+    }
+    document.addEventListener('click', handleCsOutsideClick, true);
+    document.addEventListener('touchstart', handleCsOutsideClick, { passive: true, capture: true });
 
     // ── Hover style untuk option ─────────────────────────────────
     document.addEventListener('mouseover', function(e) {

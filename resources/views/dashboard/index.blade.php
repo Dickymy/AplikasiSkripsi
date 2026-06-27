@@ -347,7 +347,7 @@
     <div class="p-1.5 sm:p-3 relative">
         <div id="map"></div>
         {{-- Zoom Slider --}}
-        <div class="zoom-slider-container" id="zoom-slider-container">
+        <div class="zoom-slider-container" id="zoom-slider-container" style="display: none;">
             <button type="button" id="zoom-in-btn" title="Zoom In">+</button>
             <input type="range" id="zoom-slider" min="1" max="19" step="0.1" value="5" orient="vertical" title="Zoom Level">
             <button type="button" id="zoom-out-btn" title="Zoom Out">−</button>
@@ -590,6 +590,7 @@ function toggleFullscreen(){
     var mapEl=document.getElementById('map');
     var sidebar=document.getElementById('sidebar');
     var header=document.getElementById('map-header');
+    var zoomSlider=document.getElementById('zoom-slider-container');
     isFullscreen=!isFullscreen;
 
     if(isFullscreen){
@@ -604,6 +605,7 @@ function toggleFullscreen(){
         mapEl.style.borderRadius='0';
         document.body.style.overflow='hidden';
         if(sidebar)sidebar.style.display='none';
+        if(zoomSlider)zoomSlider.style.display='flex';
         // Switch button to "Kecilkan"
         btnFsDesktop.classList.remove('expand');
         btnFsDesktop.classList.add('shrink');
@@ -622,6 +624,7 @@ function toggleFullscreen(){
         mapEl.style.borderRadius='';
         document.body.style.overflow='';
         if(sidebar)sidebar.style.display='';
+        if(zoomSlider)zoomSlider.style.display='none';
         // Switch button back to "Perluas Peta"
         btnFsDesktop.classList.remove('shrink');
         btnFsDesktop.classList.add('expand');

@@ -93,7 +93,7 @@
     $anggota = $group['anggota'];
     $bloks = $group['bloks'];
 @endphp
-<div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-4">
+<div class="anggota-group-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-4" data-nama-anggota="{{ strtolower($anggota->nama ?? '') }}">
     {{-- Header anggota --}}
     <div class="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
         <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
@@ -134,7 +134,7 @@
                         default   => ['bg' => 'bg-blue-50 text-blue-700', 'label' => 'Belum Dicek'],
                     };
                 @endphp
-                <tr class="hover:bg-slate-50/50">
+                <tr class="block-row hover:bg-slate-50/50" data-nama-blok="{{ strtolower($blok->nama_blok ?? '') }}">
                     <td class="px-4 py-2.5">
                         <p class="font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }}</p>
                         <p class="text-[10px] text-slate-400">{{ number_format($blok->luas_ha, 2) }} Ha · SPH {{ $blok->sph }}</p>
@@ -218,7 +218,7 @@
                 default   => ['bg' => 'bg-blue-50 text-blue-700', 'label' => 'Belum Dicek'],
             };
         @endphp
-        <div class="px-4 py-3">
+        <div class="block-row px-4 py-3" data-nama-blok="{{ strtolower($blok->nama_blok ?? '') }}">
             {{-- Row 1: Nama blok + Status --}}
             <div class="flex items-center justify-between gap-2 mb-1.5">
                 <div>

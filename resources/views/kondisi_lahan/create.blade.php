@@ -947,7 +947,7 @@ function fetchCuacaOtomatis() {
         phInput.addEventListener('blur', function() {
             var val = parseFloat(this.value);
             if (this.value !== '' && (val < 3.0 || val > 8.0)) {
-                alert('Peringatan: Nilai pH tanah (' + this.value + ') berada di luar skala normal (3.0 - 8.0). Silakan masukkan nilai antara 3.0 hingga 8.0.');
+                showToast('error', '⚠️ Peringatan: Nilai pH tanah (' + this.value + ') berada di luar skala normal (3.0 - 8.0). Silakan masukkan nilai antara 3.0 hingga 8.0.', 7000);
                 this.value = '';
                 if (warning) warning.classList.add('hidden');
             }

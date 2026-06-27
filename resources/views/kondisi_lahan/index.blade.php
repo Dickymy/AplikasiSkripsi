@@ -37,7 +37,7 @@
     {{-- Grouped by Anggota --}}
     @forelse($grouped as $group)
     @php $anggota = $group['anggota']; $bloks = $group['bloks']; @endphp
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="anggota-group-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden" data-nama-anggota="{{ strtolower($anggota->nama ?? '') }}">
         {{-- Header anggota --}}
         <div class="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
@@ -72,7 +72,7 @@
                         $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->updated_at);
                         $belumDianalisis = $kondisi && !$rbs;
                     @endphp
-                    <tr class="hover:bg-slate-50/50">
+                    <tr class="block-row hover:bg-slate-50/50" data-nama-blok="{{ strtolower($blok->nama_blok ?? '') }}">
                         <td class="px-4 py-2.5 font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }}</td>
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ $kondisi->tanggal_observasi->format('d/m/Y') }}</td>
                         <td class="px-4 py-2.5 text-xs text-slate-600">{{ $kondisi->warna_daun ?? '—' }}</td>
@@ -128,7 +128,7 @@
                 $perluAnalisisUlang = $kondisi && $rbs && $kondisi->updated_at->gt($rbs->updated_at);
                 $belumDianalisis = $kondisi && !$rbs;
             @endphp
-            <div class="px-4 py-3">
+            <div class="block-row px-4 py-3" data-nama-blok="{{ strtolower($blok->nama_blok ?? '') }}">
                 <div class="flex items-center justify-between gap-2 mb-1">
                     <p class="font-semibold text-slate-800 text-xs">{{ $blok->nama_blok }} <span class="font-normal text-slate-400">· {{ $kondisi->tanggal_observasi->format('d/m/Y') }}</span></p>
                     @php

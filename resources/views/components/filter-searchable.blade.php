@@ -43,8 +43,22 @@
     var opts = drop.querySelectorAll('.fs-opt');
     var empty = drop.querySelector('.fs-empty');
 
-    input.addEventListener('focus', function(){ drop.classList.remove('hidden'); filter(); });
-    input.addEventListener('input', function(){ filter(); });
+    input.addEventListener('focus', function(){ 
+        drop.classList.remove('hidden'); 
+        showAll(); 
+        input.select(); 
+    });
+    input.addEventListener('input', function(){ 
+        filter(); 
+        filterPage();
+    });
+
+    function showAll(){
+        opts.forEach(function(o){
+            o.style.display = '';
+        });
+        empty.style.display = 'none';
+    }
 
     function filter(){
         var q = input.value.toLowerCase().trim();
@@ -55,6 +69,37 @@
             if(show) v++;
         });
         empty.style.display = v === 0 ? '' : 'none';
+    }
+
+    function filterPage() {
+        var q = input.value.toLowerCase().trim();
+        var cards = document.querySelectorAll('.anggota-group-card');
+        
+        cards.forEach(function(card) {
+            var name = card.dataset.namaAnggota || '';
+            var matchesName = name.includes(q);
+            
+            var blockRows = card.querySelectorAll('.block-row');
+            var matchedBlocksCount = 0;
+            
+            blockRows.forEach(function(row) {
+                var blockName = row.dataset.namaBlok || '';
+                var matchesBlock = blockName.includes(q);
+                
+                if (matchesName || matchesBlock) {
+                    row.style.display = '';
+                    matchedBlocksCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            if (q === '' || matchesName || matchedBlocksCount > 0) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
     }
 
     opts.forEach(function(o){
@@ -68,6 +113,20 @@
         });
     });
 
-    document.addEventListener('click', function(e){ if(!wrap.contains(e.target)) drop.classList.add('hidden'); });
+    document.addEventListener('click', function(e){ 
+        if(!wrap.contains(e.target)) {
+            drop.classList.add('hidden'); 
+            // Restore search input value to match the hidden val value
+            var currentVal = val.value;
+            var selectedOpt = Array.from(opts).find(function(o) {
+                return o.dataset.value === currentVal;
+            });
+            if (selectedOpt) {
+                input.value = selectedOpt.dataset.label;
+            } else {
+                input.value = '';
+            }
+        }
+    });
 })();
 </script>
