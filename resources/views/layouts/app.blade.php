@@ -105,6 +105,12 @@
         [id$="-drop"] {
             max-width: none !important;
         }
+        /* Clean Map: Hide leaflet attribution on mobile */
+        @media (max-width: 640px) {
+            .leaflet-control-attribution {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-full bg-slate-50 text-slate-800 font-[Inter]">

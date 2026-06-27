@@ -21,7 +21,7 @@
 
     /* Legend */
     .map-legend { position: absolute; bottom: 10px; right: 10px; z-index: 42; background: rgba(255,255,255,0.93); border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    @media (max-width: 640px) { .map-legend { bottom: 6px; right: 6px; left: 6px; padding: 5px 8px; } .map-legend .legend-items { display: flex; flex-wrap: wrap; gap: 4px 10px; } }
+    @media (max-width: 640px) { .map-legend { bottom: 8px; right: 8px; left: auto; max-width: 220px; padding: 5px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); } .map-legend .legend-items { display: flex; flex-wrap: wrap; gap: 4px 10px; } }
 
     /* Hide default Leaflet zoom control */
     .leaflet-control-zoom { display: none !important; }
@@ -141,14 +141,22 @@
     }
     @media (max-width: 640px) {
         #map-container.is-fullscreen .map-legend {
-            bottom: calc(env(safe-area-inset-bottom) + 30px) !important;
-            left: 10px !important;
-            right: 10px !important;
+            bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+            right: 12px !important;
+            left: auto !important;
+            max-width: 220px !important;
         }
         #map-container.is-fullscreen .zoom-slider-container {
-            bottom: calc(env(safe-area-inset-bottom) + 90px) !important;
-            left: 14px !important;
+            bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+            left: 12px !important;
         }
+    }
+    .scrollbar-none::-webkit-scrollbar {
+        display: none !important;
+    }
+    .scrollbar-none {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
     }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #64748b; padding: 1px 0; }
     .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
@@ -288,12 +296,12 @@
 {{-- Luas per Status --}}
 <div class="mb-3 sm:mb-4">
     <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Luas Lahan per Status</p>
-    <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2">
-        <div class="luas-status-item"><div class="luas-dot" style="background:#dc2626;"></div><span class="luas-label">Def. Berat</span><span class="luas-value" id="luas-darurat">0 Ha</span></div>
-        <div class="luas-status-item"><div class="luas-dot" style="background:#f97316;"></div><span class="luas-label">Perlu Pupuk</span><span class="luas-value" id="luas-segera">0 Ha</span></div>
-        <div class="luas-status-item"><div class="luas-dot" style="background:#22c55e;"></div><span class="luas-label">Sehat</span><span class="luas-value" id="luas-normal">0 Ha</span></div>
-        <div class="luas-status-item"><div class="luas-dot" style="background:#94a3b8;"></div><span class="luas-label">Tunda</span><span class="luas-value" id="luas-tunda">0 Ha</span></div>
-        <div class="luas-status-item"><div class="luas-dot" style="background:#475569;"></div><span class="luas-label">Belum Dicek</span><span class="luas-value" id="luas-belum">0 Ha</span></div>
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none whitespace-nowrap -mx-3 px-3" style="-webkit-overflow-scrolling: touch;">
+        <div class="luas-status-item flex-shrink-0"><div class="luas-dot" style="background:#dc2626;"></div><span class="luas-label">Def. Berat</span><span class="luas-value" id="luas-darurat">0 Ha</span></div>
+        <div class="luas-status-item flex-shrink-0"><div class="luas-dot" style="background:#f97316;"></div><span class="luas-label">Perlu Pupuk</span><span class="luas-value" id="luas-segera">0 Ha</span></div>
+        <div class="luas-status-item flex-shrink-0"><div class="luas-dot" style="background:#22c55e;"></div><span class="luas-label">Sehat</span><span class="luas-value" id="luas-normal">0 Ha</span></div>
+        <div class="luas-status-item flex-shrink-0"><div class="luas-dot" style="background:#94a3b8;"></div><span class="luas-label">Tunda</span><span class="luas-value" id="luas-tunda">0 Ha</span></div>
+        <div class="luas-status-item flex-shrink-0"><div class="luas-dot" style="background:#475569;"></div><span class="luas-label">Belum Dicek</span><span class="luas-value" id="luas-belum">0 Ha</span></div>
     </div>
 </div>
 
@@ -346,12 +354,12 @@
         {{-- Mobile layout --}}
         <div class="sm:hidden space-y-2">
             {{-- Baris 1: Filter status --}}
-            <div class="flex flex-wrap items-center gap-1" id="status-filter-buttons-mobile">
-                <button type="button" class="status-filter-btn active" data-status="Darurat" onclick="toggleStatusFilter(this)">Def. Berat</button>
-                <button type="button" class="status-filter-btn active" data-status="Segera" onclick="toggleStatusFilter(this)">Perlu Pupuk</button>
-                <button type="button" class="status-filter-btn active" data-status="Normal" onclick="toggleStatusFilter(this)">Sehat</button>
-                <button type="button" class="status-filter-btn active" data-status="Tunda" onclick="toggleStatusFilter(this)">Tunda Pupuk</button>
-                <button type="button" class="status-filter-btn active" data-status="Belum Dianalisis" onclick="toggleStatusFilter(this)">Belum Dicek</button>
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none whitespace-nowrap -mx-3 px-3" id="status-filter-buttons-mobile" style="-webkit-overflow-scrolling: touch;">
+                <button type="button" class="status-filter-btn active flex-shrink-0" data-status="Darurat" onclick="toggleStatusFilter(this)">Def. Berat</button>
+                <button type="button" class="status-filter-btn active flex-shrink-0" data-status="Segera" onclick="toggleStatusFilter(this)">Perlu Pupuk</button>
+                <button type="button" class="status-filter-btn active flex-shrink-0" data-status="Normal" onclick="toggleStatusFilter(this)">Sehat</button>
+                <button type="button" class="status-filter-btn active flex-shrink-0" data-status="Tunda" onclick="toggleStatusFilter(this)">Tunda Pupuk</button>
+                <button type="button" class="status-filter-btn active flex-shrink-0" data-status="Belum Dianalisis" onclick="toggleStatusFilter(this)">Belum Dicek</button>
             </div>
             {{-- Baris 2: Filter pemilik + blok --}}
             <div class="flex items-center gap-2">
