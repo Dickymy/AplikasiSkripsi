@@ -107,6 +107,30 @@
         .zoom-slider-container button { width: 24px; height: 24px; font-size: 14px; }
         .zoom-slider-container input[type="range"] { height: 70px; }
     }
+    #map-container.is-fullscreen {
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 8000 !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+    }
+    #map-container.is-fullscreen #map-body {
+        flex: 1 !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+    }
+    #map-container.is-fullscreen #map {
+        flex: 1 !important;
+        height: 100% !important;
+        min-height: unset !important;
+        border-radius: 0 !important;
+    }
     #map-container.is-fullscreen .map-legend {
         bottom: 24px;
         right: 16px;
@@ -363,7 +387,7 @@
     </div>
 
     {{-- PETA --}}
-    <div class="p-1.5 sm:p-3 relative">
+    <div class="p-1.5 sm:p-3 relative" id="map-body">
         <div id="map"></div>
         {{-- Zoom Slider --}}
         <div class="zoom-slider-container" id="zoom-slider-container" style="display: none;">
@@ -606,23 +630,12 @@ var btnFsMobileText=document.getElementById('btn-fs-mobile-text');
 
 function toggleFullscreen(){
     var container=document.getElementById('map-container');
-    var mapEl=document.getElementById('map');
     var sidebar=document.getElementById('sidebar');
-    var header=document.getElementById('map-header');
     var zoomSlider=document.getElementById('zoom-slider-container');
     isFullscreen=!isFullscreen;
 
     if(isFullscreen){
         container.classList.add('is-fullscreen');
-        container.style.position='fixed';
-        container.style.inset='0';
-        container.style.zIndex='8000';
-        container.style.borderRadius='0';
-        container.style.margin='0';
-        var hH=header.offsetHeight;
-        mapEl.style.height='calc(100vh - '+(hH+8)+'px)';
-        mapEl.style.minHeight='unset';
-        mapEl.style.borderRadius='0';
         document.body.style.overflow='hidden';
         if(sidebar)sidebar.style.display='none';
         if(zoomSlider)zoomSlider.style.display='flex';
@@ -635,14 +648,6 @@ function toggleFullscreen(){
         btnFsMobileText.textContent='Kecilkan';
     }else{
         container.classList.remove('is-fullscreen');
-        container.style.position='';
-        container.style.inset='';
-        container.style.zIndex='';
-        container.style.borderRadius='';
-        container.style.margin='';
-        mapEl.style.height='';
-        mapEl.style.minHeight='';
-        mapEl.style.borderRadius='';
         document.body.style.overflow='';
         if(sidebar)sidebar.style.display='';
         if(zoomSlider)zoomSlider.style.display='none';

@@ -97,13 +97,18 @@
         left: 0 !important;
         width: 100vw !important;
         height: 100vh !important;
+        height: 100dvh !important;
         z-index: 9100 !important;
         border-radius: 0 !important;
         border: none !important;
         overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
     .map-wrapper.is-fullscreen #draw-map {
-        height: 100vh !important;
+        flex: 1 !important;
+        height: 100% !important;
+        min-height: unset !important;
         margin-top: 0 !important;
     }
     .map-wrapper.is-fullscreen .leaflet-top {
@@ -333,7 +338,7 @@
                         {{-- Peta Leaflet --}}
                         <div id="draw-map"></div>
                         {{-- Zoom Slider --}}
-                        <div class="zoom-slider-container" id="zoom-slider-container">
+                        <div class="zoom-slider-container" id="zoom-slider-container" style="display: none;">
                             <button type="button" id="zoom-in-btn" title="Zoom In">+</button>
                             <input type="range" id="zoom-slider" min="1" max="19" step="0.1" value="10" orient="vertical" title="Zoom Level">
                             <button type="button" id="zoom-out-btn" title="Zoom Out">−</button>
@@ -646,8 +651,10 @@ var drawDragTimer = null;
 function perluasPeta() {
     var wrapper = document.getElementById('draw-map-wrapper');
     var topBar = document.getElementById('map-top-bar');
+    var zoomSlider = document.getElementById('zoom-slider-container');
     wrapper.classList.add('is-fullscreen');
     topBar.classList.remove('hidden');
+    if (zoomSlider) zoomSlider.style.display = 'flex';
     syncLuasFullscreen();
     setTimeout(function() { drawMap.invalidateSize(); }, 150);
     document.body.style.overflow = 'hidden';
@@ -656,8 +663,10 @@ function perluasPeta() {
 function kecilkanPeta() {
     var wrapper = document.getElementById('draw-map-wrapper');
     var topBar = document.getElementById('map-top-bar');
+    var zoomSlider = document.getElementById('zoom-slider-container');
     wrapper.classList.remove('is-fullscreen');
     topBar.classList.add('hidden');
+    if (zoomSlider) zoomSlider.style.display = 'none';
     setTimeout(function() { drawMap.invalidateSize(); }, 150);
     document.body.style.overflow = '';
 }
