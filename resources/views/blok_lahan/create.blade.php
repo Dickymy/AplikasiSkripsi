@@ -207,6 +207,16 @@
         .zoom-slider-container button { width: 24px; height: 24px; font-size: 14px; }
         .zoom-slider-container input[type="range"] { height: 60px; }
     }
+    .map-wrapper.is-fullscreen .zoom-slider-container {
+        bottom: 24px;
+        right: 16px;
+    }
+    @media (max-width: 640px) {
+        .map-wrapper.is-fullscreen .zoom-slider-container {
+            bottom: calc(env(safe-area-inset-bottom) + 30px) !important;
+            right: 14px !important;
+        }
+    }
 </style>
 @endpush
 

@@ -107,6 +107,25 @@
         .zoom-slider-container button { width: 24px; height: 24px; font-size: 14px; }
         .zoom-slider-container input[type="range"] { height: 70px; }
     }
+    #map-container.is-fullscreen .map-legend {
+        bottom: 24px;
+        right: 16px;
+    }
+    #map-container.is-fullscreen .zoom-slider-container {
+        bottom: 24px;
+        left: 16px;
+    }
+    @media (max-width: 640px) {
+        #map-container.is-fullscreen .map-legend {
+            bottom: calc(env(safe-area-inset-bottom) + 30px) !important;
+            left: 10px !important;
+            right: 10px !important;
+        }
+        #map-container.is-fullscreen .zoom-slider-container {
+            bottom: calc(env(safe-area-inset-bottom) + 90px) !important;
+            left: 14px !important;
+        }
+    }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #64748b; padding: 1px 0; }
     .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
@@ -594,6 +613,7 @@ function toggleFullscreen(){
     isFullscreen=!isFullscreen;
 
     if(isFullscreen){
+        container.classList.add('is-fullscreen');
         container.style.position='fixed';
         container.style.inset='0';
         container.style.zIndex='8000';
@@ -614,6 +634,7 @@ function toggleFullscreen(){
         btnFsMobile.classList.add('shrink');
         btnFsMobileText.textContent='Kecilkan';
     }else{
+        container.classList.remove('is-fullscreen');
         container.style.position='';
         container.style.inset='';
         container.style.zIndex='';
