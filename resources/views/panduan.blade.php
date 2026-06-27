@@ -7,13 +7,6 @@
 @section('content')
 <div class="max-w-3xl mx-auto space-y-5">
 
-    {{-- Intro --}}
-    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
-        <h2 class="text-sm font-bold text-emerald-800 mb-2">👋 Selamat Datang di SPK Sawit</h2>
-        <p class="text-xs text-emerald-700 leading-relaxed">
-            Sistem ini membantu Anda menentukan <strong>dosis pupuk yang tepat</strong> untuk setiap blok lahan kelapa sawit berdasarkan kondisi tanaman dan lingkungan. Ikuti langkah-langkah berikut untuk mendapatkan rekomendasi pemupukan.
-        </p>
-    </div>
 
     {{-- Langkah-langkah --}}
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
