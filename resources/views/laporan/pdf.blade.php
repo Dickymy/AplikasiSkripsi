@@ -8,7 +8,7 @@
         
         @page {
             size: A4;
-            margin: 20mm 15mm 20mm 15mm;
+            margin: 20mm;
         }
         
         body { 
@@ -308,16 +308,10 @@
     {{-- ═══ 1. KOP SURAT RESMI ═══ --}}
     <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 5px;">
         <tr>
-            <td style="width: 15%; text-align: center; border: none; padding: 0; vertical-align: middle;">
-                <div style="width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid #0f172a; line-height: 44px; text-align: center; font-size: 24px; font-weight: bold; color: #16a34a; margin: 0 auto; background-color: #f8fafc;">
-                    🌴
-                </div>
-            </td>
-            <td style="width: 85%; text-align: center; border: none; padding: 0 10px; font-family: 'Times-Roman', 'DejaVu Serif', serif;">
-                <div style="font-size: 14px; font-weight: bold; text-transform: uppercase; color: #0f172a; letter-spacing: 0.5px;">KELOMPOK TANI SAWIT JAYA</div>
-                <div style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: #1e293b; margin-top: 2px;">DESA TANJUNG MULIA, KECAMATAN MENTAYA HULU</div>
-                <div style="font-size: 9px; font-weight: 500; color: #334155; margin-top: 1px;">Kabupaten Kotawaringin Timur - Provinsi Kalimantan Tengah</div>
-                <div style="font-size: 8px; color: #475569; font-style: italic; margin-top: 2px;">Sekretariat: Jl. Poros Tanjung Mulia No. 12, Kode Pos 74351</div>
+            <td style="width: 100%; text-align: center; border: none; padding: 0; font-family: 'Times-Roman', 'DejaVu Serif', serif;">
+                <div style="font-size: 15px; font-weight: bold; text-transform: uppercase; color: #0f172a; letter-spacing: 0.5px;">KELOMPOK TANI</div>
+                <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; color: #1e293b; margin-top: 2px;">DESA RESAK, KECAMATAN BONGAN</div>
+                <div style="font-size: 10px; font-weight: 500; color: #334155; margin-top: 2px;">Kabupaten Kutai Barat - Provinsi Kalimantan Timur</div>
             </td>
         </tr>
     </table>
@@ -602,25 +596,6 @@
         <strong>Catatan:</strong> Rekomendasi ini dihasilkan oleh sistem berbasis aturan (Rule-Based System) berdasarkan data observasi lapangan. Hasil ini bersifat rekomendasi dan bukan pengganti analisis laboratorium tanah/daun. Untuk keputusan yang lebih akurat, disarankan melengkapi dengan hasil uji lab.
     </div>
 
-    {{-- ═══ 13. TANDA TANGAN PENGESAHAN ═══ --}}
-    <table style="width: 100%; margin-top: 25px; border-collapse: collapse; border: none; page-break-inside: avoid;">
-        <tr>
-            <td style="width: 50%; text-align: center; border: none; padding: 10px 15px; font-size: 9.5px; line-height: 1.5; font-family: 'Times-Roman', 'DejaVu Serif', serif;">
-                Mengetahui,<br>
-                <strong>Ketua Kelompok Tani Sawit Jaya</strong>
-                <br><br><br><br><br>
-                <span style="text-decoration: underline; font-weight: bold;">( ............................................ )</span><br>
-                Jabatan: Ketua Kelompok Tani
-            </td>
-            <td style="width: 50%; text-align: center; border: none; padding: 10px 15px; font-size: 9.5px; line-height: 1.5; font-family: 'Times-Roman', 'DejaVu Serif', serif;">
-                Tanjung Mulia, {{ $rekomendasiRbs->tanggal_analisis->translatedFormat('d F Y') }}<br>
-                <strong>Admin Pembuat Laporan</strong>
-                <br><br><br><br><br>
-                <span style="text-decoration: underline; font-weight: bold;">( {{ $rekomendasiRbs->admin->nama_lengkap }} )</span><br>
-                NIP/ID: {{ sprintf('%04d', $rekomendasiRbs->admin->id) }}
-            </td>
-        </tr>
-    </table>
 
     {{-- ═══ FOOTER ═══ --}}
     <div class="footer">
