@@ -12,9 +12,9 @@
         }
         
         body { 
-            font-family: 'DejaVu Sans', sans-serif; 
-            font-size: 10px; 
-            color: #1e293b; 
+            font-family: 'Times-Roman', 'DejaVu Serif', 'Times New Roman', serif; 
+            font-size: 10.5px; 
+            color: #0f172a; 
             line-height: 1.5; 
             background: #ffffff;
         }
@@ -305,11 +305,27 @@
 </head>
 <body>
 
-    {{-- ═══ 1. HEADER ═══ --}}
-    <div class="header">
-        <h1>LAPORAN REKOMENDASI PEMUPUKAN</h1>
-        <h2>{{ $rekomendasiRbs->blokLahan->nama_blok }} — {{ $rekomendasiRbs->blokLahan->nama_pemilik }}</h2>
-        <p>Tanggal Analisis: {{ $rekomendasiRbs->tanggal_analisis->format('d F Y') }} · Admin: {{ $rekomendasiRbs->admin->nama_lengkap }}</p>
+    {{-- ═══ 1. KOP SURAT RESMI ═══ --}}
+    <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 5px;">
+        <tr>
+            <td style="width: 15%; text-align: center; border: none; padding: 0; vertical-align: middle;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid #0f172a; line-height: 44px; text-align: center; font-size: 24px; font-weight: bold; color: #16a34a; margin: 0 auto; background-color: #f8fafc;">
+                    🌴
+                </div>
+            </td>
+            <td style="width: 85%; text-align: center; border: none; padding: 0 10px; font-family: 'Times-Roman', 'DejaVu Serif', serif;">
+                <div style="font-size: 14px; font-weight: bold; text-transform: uppercase; color: #0f172a; letter-spacing: 0.5px;">KELOMPOK TANI SAWIT JAYA</div>
+                <div style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: #1e293b; margin-top: 2px;">DESA TANJUNG MULIA, KECAMATAN MENTAYA HULU</div>
+                <div style="font-size: 9px; font-weight: 500; color: #334155; margin-top: 1px;">Kabupaten Kotawaringin Timur - Provinsi Kalimantan Tengah</div>
+                <div style="font-size: 8px; color: #475569; font-style: italic; margin-top: 2px;">Sekretariat: Jl. Poros Tanjung Mulia No. 12, Kode Pos 74351</div>
+            </td>
+        </tr>
+    </table>
+    <div style="border-top: 2px solid #0f172a; border-bottom: 0.5px solid #0f172a; height: 3px; margin-bottom: 12px; margin-top: 4px;"></div>
+
+    <div style="text-align: center; margin-bottom: 15px; font-family: 'Times-Roman', 'DejaVu Serif', serif;">
+        <h2 style="font-size: 12px; font-weight: bold; color: #0f172a; text-transform: uppercase; text-decoration: underline; margin-bottom: 2px;">LAPORAN REKOMENDASI PEMUPUKAN KELAPA SAWIT</h2>
+        <p style="font-size: 9px; color: #334155; font-weight: 600;">Nomor Dokumen: LHP-RBS/{{ $rekomendasiRbs->blokLahan->id }}/{{ $rekomendasiRbs->id }}/{{ $rekomendasiRbs->tanggal_analisis->format('Y') }}</p>
     </div>
 
     {{-- ═══ 2. STATUS — besar & jelas ═══ --}}
@@ -585,6 +601,26 @@
     <div class="disclaimer">
         <strong>Catatan:</strong> Rekomendasi ini dihasilkan oleh sistem berbasis aturan (Rule-Based System) berdasarkan data observasi lapangan. Hasil ini bersifat rekomendasi dan bukan pengganti analisis laboratorium tanah/daun. Untuk keputusan yang lebih akurat, disarankan melengkapi dengan hasil uji lab.
     </div>
+
+    {{-- ═══ 13. TANDA TANGAN PENGESAHAN ═══ --}}
+    <table style="width: 100%; margin-top: 25px; border-collapse: collapse; border: none; page-break-inside: avoid;">
+        <tr>
+            <td style="width: 50%; text-align: center; border: none; padding: 10px 15px; font-size: 9.5px; line-height: 1.5; font-family: 'Times-Roman', 'DejaVu Serif', serif;">
+                Mengetahui,<br>
+                <strong>Ketua Kelompok Tani Sawit Jaya</strong>
+                <br><br><br><br><br>
+                <span style="text-decoration: underline; font-weight: bold;">( ............................................ )</span><br>
+                Jabatan: Ketua Kelompok Tani
+            </td>
+            <td style="width: 50%; text-align: center; border: none; padding: 10px 15px; font-size: 9.5px; line-height: 1.5; font-family: 'Times-Roman', 'DejaVu Serif', serif;">
+                Tanjung Mulia, {{ $rekomendasiRbs->tanggal_analisis->translatedFormat('d F Y') }}<br>
+                <strong>Admin Pembuat Laporan</strong>
+                <br><br><br><br><br>
+                <span style="text-decoration: underline; font-weight: bold;">( {{ $rekomendasiRbs->admin->nama_lengkap }} )</span><br>
+                NIP/ID: {{ sprintf('%04d', $rekomendasiRbs->admin->id) }}
+            </td>
+        </tr>
+    </table>
 
     {{-- ═══ FOOTER ═══ --}}
     <div class="footer">
