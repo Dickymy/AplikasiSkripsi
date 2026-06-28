@@ -222,44 +222,54 @@
 @section('content')
 
 {{-- Stats Cards --}}
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-3 sm:mb-4" id="stats-cards">
-    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
-        <p class="stat-label text-xs text-slate-500 mb-0.5">Total Blok</p>
-        <p class="stat-value text-xl sm:text-2xl font-bold text-slate-900" id="stat-total-blok">{{ $stats['total_blok'] }}</p>
-        <p class="stat-sub text-xs text-slate-400">blok terdaftar</p>
+<div class="flex items-stretch gap-2.5 overflow-x-auto pb-2.5 sm:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:gap-3 mb-3 sm:mb-4" id="stats-cards" style="-webkit-overflow-scrolling: touch;">
+    <div class="stat-card flex-shrink-0 w-[145px] sm:w-auto bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm flex flex-col justify-between">
+        <div>
+            <p class="stat-label text-xs text-slate-500 mb-0.5">Total Blok</p>
+            <p class="stat-value text-xl sm:text-2xl font-bold text-slate-900" id="stat-total-blok">{{ $stats['total_blok'] }}</p>
+        </div>
+        <p class="stat-sub text-xs text-slate-400 mt-1">blok terdaftar</p>
     </div>
-    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
-        <p class="stat-label text-xs text-slate-500 mb-0.5">Total Luas</p>
-        <p class="stat-value text-xl sm:text-2xl font-bold text-emerald-600" id="stat-total-luas">{{ number_format($stats['total_luas'], 2) }}</p>
-        <p class="stat-sub text-xs text-slate-400">hektar</p>
+    <div class="stat-card flex-shrink-0 w-[145px] sm:w-auto bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm flex flex-col justify-between">
+        <div>
+            <p class="stat-label text-xs text-slate-500 mb-0.5">Total Luas</p>
+            <p class="stat-value text-xl sm:text-2xl font-bold text-emerald-600" id="stat-total-luas">{{ number_format($stats['total_luas'], 2) }}</p>
+        </div>
+        <p class="stat-sub text-xs text-slate-400 mt-1">hektar</p>
     </div>
-    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
-        <p class="stat-label text-xs text-slate-500 mb-0.5">Dianalisis</p>
-        <p class="stat-value text-xl sm:text-2xl font-bold text-blue-600" id="stat-sudah-analisis">{{ $stats['sudah_analisis'] }}</p>
-        <p class="stat-sub text-xs text-slate-400">dari {{ $stats['total_blok'] }} blok</p>
+    <div class="stat-card flex-shrink-0 w-[145px] sm:w-auto bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm flex flex-col justify-between">
+        <div>
+            <p class="stat-label text-xs text-slate-500 mb-0.5">Dianalisis</p>
+            <p class="stat-value text-xl sm:text-2xl font-bold text-blue-600" id="stat-sudah-analisis">{{ $stats['sudah_analisis'] }}</p>
+        </div>
+        <p class="stat-sub text-xs text-slate-400 mt-1">dari {{ $stats['total_blok'] }} blok</p>
     </div>
-    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-red-500">
-        <p class="stat-label text-xs text-slate-500 mb-0.5">Defisiensi Berat</p>
-        <p class="stat-value text-xl sm:text-2xl font-bold text-red-600" id="stat-darurat">{{ $stats['darurat'] }}</p>
+    <div class="stat-card flex-shrink-0 w-[145px] sm:w-auto bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-red-500 flex flex-col justify-between">
+        <div>
+            <p class="stat-label text-xs text-slate-500 mb-0.5">Defisiensi Berat</p>
+            <p class="stat-value text-xl sm:text-2xl font-bold text-red-600" id="stat-darurat">{{ $stats['darurat'] }}</p>
+        </div>
         @php $deltaDarurat = $stats['darurat'] - ($statsBulanLalu['darurat'] ?? 0); @endphp
         @if($deltaDarurat > 0)
-        <p class="stat-sub text-xs text-red-500">↑ {{ $deltaDarurat }} dari bulan lalu</p>
+        <p class="stat-sub text-xs text-red-500 mt-1">↑ {{ $deltaDarurat }} dari bulan lalu</p>
         @elseif($deltaDarurat < 0)
-        <p class="stat-sub text-xs text-green-600">↓ {{ abs($deltaDarurat) }} dari bulan lalu</p>
+        <p class="stat-sub text-xs text-green-600 mt-1">↓ {{ abs($deltaDarurat) }} dari bulan lalu</p>
         @else
-        <p class="stat-sub text-xs text-slate-400">= sama dengan bulan lalu</p>
+        <p class="stat-sub text-xs text-slate-400 mt-1">= sama dengan bulan lalu</p>
         @endif
     </div>
-    <div class="stat-card bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-orange-400">
-        <p class="stat-label text-xs text-slate-500 mb-0.5">Perlu Pupuk</p>
-        <p class="stat-value text-xl sm:text-2xl font-bold text-orange-500" id="stat-segera">{{ $stats['segera'] }}</p>
+    <div class="stat-card flex-shrink-0 w-[145px] sm:w-auto bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-l-orange-400 flex flex-col justify-between">
+        <div>
+            <p class="stat-label text-xs text-slate-500 mb-0.5">Perlu Pupuk</p>
+            <p class="stat-value text-xl sm:text-2xl font-bold text-orange-500" id="stat-segera">{{ $stats['segera'] }}</p>
+        </div>
         @php $deltaSegera = $stats['segera'] - ($statsBulanLalu['segera'] ?? 0); @endphp
         @if($deltaSegera > 0)
-        <p class="stat-sub text-xs text-red-500">↑ {{ $deltaSegera }} dari bulan lalu</p>
+        <p class="stat-sub text-xs text-red-500 mt-1">↑ {{ $deltaSegera }} dari bulan lalu</p>
         @elseif($deltaSegera < 0)
-        <p class="stat-sub text-xs text-green-600">↓ {{ abs($deltaSegera) }} dari bulan lalu</p>
+        <p class="stat-sub text-xs text-green-600 mt-1">↓ {{ abs($deltaSegera) }} dari bulan lalu</p>
         @else
-        <p class="stat-sub text-xs text-slate-400">= sama dengan bulan lalu</p>
+        <p class="stat-sub text-xs text-slate-400 mt-1">= sama dengan bulan lalu</p>
         @endif
     </div>
 </div>
