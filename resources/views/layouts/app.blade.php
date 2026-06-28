@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Sistem Pendukung Keputusan Pemupukan Kelapa Sawit - Kelompok Tani">
-    <title>@yield('title', 'Dashboard') — SPK Sawit</title>
+    <title>@yield('title', 'Dashboard') — webgis-pupuk-sawit</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -122,7 +122,7 @@
         {{-- Nama Aplikasi --}}
         <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
             <div>
-                <p class="text-sm font-bold text-slate-900 leading-tight">SPK Sawit</p>
+                <p class="text-sm font-bold text-slate-900 leading-tight">webgis-pupuk-sawit</p>
                 <p class="text-xs text-slate-500">Kelompok Tani</p>
             </div>
             {{-- Tombol collapse sidebar (desktop) --}}

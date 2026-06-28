@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Login Admin - SPK Pemupukan Kelapa Sawit">
-    <title>Login Admin — SPK Sawit</title>
+    <title>Login Admin — webgis-pupuk-sawit</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
     <div class="relative z-10 w-full max-w-md px-6 py-8">
         {{-- Title --}}
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">SPK Sawit</h1>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">webgis-pupuk-sawit</h1>
             <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mt-2.5">Sistem Pendukung Keputusan Pemupukan</p>
             <p class="text-slate-400 text-[10px] mt-1">Portal Internal Admin Kelompok Tani</p>
         </div>

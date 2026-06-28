@@ -599,7 +599,7 @@
 
     {{-- ═══ FOOTER ═══ --}}
     <div class="footer">
-        Sistem Pendukung Keputusan Pemupukan Kelapa Sawit (SPK Sawit)<br>
+        Sistem Pendukung Keputusan Pemupukan Kelapa Sawit (webgis-pupuk-sawit)<br>
         Dicetak: {{ now()->translatedFormat('d F Y, H:i') }} WITA
     </div>
 </body>
