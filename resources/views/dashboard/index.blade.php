@@ -150,6 +150,19 @@
             bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
             left: 12px !important;
         }
+        #map-container.is-fullscreen #status-filter-buttons-mobile {
+            display: none !important;
+        }
+        #map-container.is-fullscreen #mobile-dropdown-filters {
+            display: none !important;
+        }
+        #map-container.is-fullscreen #btn-tambah-mobile {
+            display: none !important;
+        }
+        #map-container.is-fullscreen #btn-fs-mobile {
+            width: 100% !important;
+            flex: none !important;
+        }
     }
     .scrollbar-none::-webkit-scrollbar {
         display: none !important;
@@ -372,7 +385,7 @@
                 <button type="button" class="status-filter-btn active flex-shrink-0" data-status="Belum Dianalisis" onclick="toggleStatusFilter(this)">Belum Dicek</button>
             </div>
             {{-- Baris 2: Filter pemilik + blok --}}
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2" id="mobile-dropdown-filters">
                 <div class="relative flex-1">
                     <select id="filter-pemilik-mobile" class="w-full pl-2.5 pr-6 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer appearance-none bg-none">
                         <option value="">Semua Pemilik</option>
@@ -392,7 +405,7 @@
             </div>
             {{-- Baris 3: Tambah + Perluas/Kecilkan (sama panjang) --}}
             <div class="flex items-center gap-2" id="mobile-btn-row">
-                <a href="{{ route('blok-lahan.create') }}" class="btn-map tambah flex-1">
+                <a href="{{ route('blok-lahan.create') }}" class="btn-map tambah flex-1" id="btn-tambah-mobile">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     Tambah Blok
                 </a>
